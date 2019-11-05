@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "mc": {
+      "commandName": "Project",
+      "commandLineArgs": "slide1.sld presentation"
+    }
+  }
+}
