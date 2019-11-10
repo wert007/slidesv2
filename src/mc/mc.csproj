@@ -1,6 +1,24 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <None Remove="core.css" />
+    <None Remove="core.js" />
+    <None Remove="datatypes.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="core.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="core.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="datatypes.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\HTMLWriter\HTMLWriter.csproj" />
     <ProjectReference Include="..\Minsk\Minsk.csproj" />
   </ItemGroup>
