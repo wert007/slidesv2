@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using Minsk.CodeAnalysis.Binding;
 using Minsk.CodeAnalysis.SlidesTypes;
 using Minsk.CodeAnalysis.Symbols;
 using Minsk.CodeAnalysis.Syntax;
@@ -313,6 +314,12 @@ namespace Minsk.CodeAnalysis
 		internal void ReportUnusedVariable(VariableSymbol unusedVariable, TextSpan span)
 		{
 			var message = $"No references to '{unusedVariable}' found.";
+			Report(span, message, DiagnosticLevel.Warning);
+		}
+
+		public void ReportCouldNotCheckFile(BoundNodeKind kind, TextSpan span)
+		{
+			var message = $"Could not check file. {kind} will only be evaluate during runtime.";
 			Report(span, message, DiagnosticLevel.Warning);
 		}
 	}

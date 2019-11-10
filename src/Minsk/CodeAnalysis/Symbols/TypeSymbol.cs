@@ -27,6 +27,10 @@ namespace Minsk.CodeAnalysis.Symbols
 		public override TypeType Type => TypeType.Tuple;
 
 		//TODO: Huh?!
+		//I mean it's kinda data type. 
+		//On the other hand, if you have two container
+		//in it, then those will be added to the slide
+		//No questions asked.
 		public override bool IsData => false;
 
 		public override bool AllowsNone => false;

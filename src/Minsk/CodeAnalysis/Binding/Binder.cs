@@ -1165,6 +1165,16 @@ namespace Minsk.CodeAnalysis.Binding
 				_diagnostics.ReportCannotFindFunction(syntax.Span, name, bestMatch, parameterDiagnostics[index]);
 				return new BoundErrorExpression();
 			}
+
+			switch (bestMatch.Name)
+			{
+				case "image":
+					BindImageFunction(syntax.Span, bestMatch, arguments.ToImmutable());
+					break;
+				case "font":
+					BindFontFunction(syntax.Span, bestMatch, arguments.ToImmutable());
+					break;
+			}
 			return new BoundFunctionExpression(bestMatch, arguments.ToImmutable(), source);
 		}
 
@@ -1173,40 +1183,6 @@ namespace Minsk.CodeAnalysis.Binding
 			if ((expression.Type == PrimitiveTypeSymbol.Integer || expression.Type == PrimitiveTypeSymbol.Float) && targetType == PrimitiveTypeSymbol.Unit)
 				return new BoundConversion(expression, targetType);
 			return expression;
-		}
-
-		private BoundExpression BindFunctionExpression(FunctionExpressionSyntax syntax, FunctionSymbol function)
-		{
-			if (function.Parameter.Count != syntax.Arguments.Length)
-			{
-				_diagnostics.ReportCannotMatchArguments(syntax.Span, function.Parameter.Count, syntax.Arguments.Length);
-				return new BoundErrorExpression();
-			}
-			var arguments = ImmutableArray.CreateBuilder<BoundExpression>();
-
-			for (int i = 0; i < function.Parameter.Count; i++)
-			{
-				var expression = BindExpression(syntax.Arguments[i]);
-				if (!expression.Type.CanBeConvertedTo(function.Parameter[i].Type))
-				{
-					_diagnostics.ReportCannotConvert(syntax.Arguments[i].Span, expression.Type, function.Parameter[i].Type);
-					return new BoundErrorExpression();
-				}
-				arguments.Add(expression);
-			}
-			var immutableArguments = arguments.ToImmutable();
-			switch (function.Name)
-			{
-				case "constructor":
-					throw new Exception();
-				case "image":
-					BindImageFunction(syntax.Span, function, immutableArguments);
-					break;
-				case "font":
-					BindFontFunction(syntax.Span, function, immutableArguments);
-					break;
-			}
-			return new BoundFunctionExpression(function, immutableArguments, null);
 		}
 
 		private void BindFontFunction(TextSpan span, FunctionSymbol function, ImmutableArray<BoundExpression> immutableArguments)
@@ -1229,6 +1205,7 @@ namespace Minsk.CodeAnalysis.Binding
 			else
 			{
 				Logger.LogCannotTestImageFunction(pathExpression.Kind.ToString());
+				
 			}
 		}
 

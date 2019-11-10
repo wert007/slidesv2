@@ -63,21 +63,21 @@ namespace Minsk.CodeAnalysis
 			if (diagnostics.Any(d => d.Level == DiagnosticLevel.Error))
 				return new EvaluationResult(diagnostics, null, new TimeWatcher());
 
-			timewatch.Record($"write {SyntaxTree.Text.FileName}.bsld");
 			var statement = GetStatement();
-			using(FileStream fs = new FileStream($@".\{SyntaxTree.Text.FileName}.bsld", FileMode.Create))
-			using (StreamWriter sw = new StreamWriter(fs))
-			{
-				sw.WriteLine(Serializer.Serialize(statement));
-			}
-			timewatch.Record($"read {SyntaxTree.Text.FileName}.bsld");
-			using (FileStream fs = new FileStream($@".\{SyntaxTree.Text.FileName}.bsld", FileMode.Open))
-			using (StreamReader sr = new StreamReader(fs))
-			{
-				var content = sr.ReadToEnd();
-				var deserializer = new Deserializer(content);
-				var root = deserializer.Deserialize();
-			}
+			//timewatch.Record($"write {SyntaxTree.Text.FileName}.bsld");
+			//using(FileStream fs = new FileStream($@".\{SyntaxTree.Text.FileName}.bsld", FileMode.Create))
+			//using (StreamWriter sw = new StreamWriter(fs))
+			//{
+			//	sw.WriteLine(Serializer.Serialize(statement));
+			//}
+			//timewatch.Record($"read {SyntaxTree.Text.FileName}.bsld");
+			//using (FileStream fs = new FileStream($@".\{SyntaxTree.Text.FileName}.bsld", FileMode.Open))
+			//using (StreamReader sr = new StreamReader(fs))
+			//{
+			//	var content = sr.ReadToEnd();
+			//	var deserializer = new Deserializer(content);
+			//	var root = deserializer.Deserialize();
+			//}
 
 				var evaluator = new Evaluator(statement, variables, References);
 			timewatch.Record("create new evaluator");
