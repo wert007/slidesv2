@@ -62,6 +62,9 @@
   <ItemGroup>
     <Content Include="core.css" />
     <Content Include="core.js" />
+    <Content Include="datatypes.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
