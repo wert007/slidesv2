@@ -1,4 +1,5 @@
 ﻿using Slides.Filters;
+using System;
 
 namespace Slides
 {
@@ -24,6 +25,8 @@ namespace Slides
 		}
 	}
 
+	//TODO: Why do we need this?!
+	[Serializable]
 	public class Library
 	{
 		public string Name { get; }

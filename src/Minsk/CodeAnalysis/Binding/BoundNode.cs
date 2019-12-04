@@ -6,6 +6,7 @@ using System.Reflection;
 
 namespace Minsk.CodeAnalysis.Binding
 {
+	[Serializable]
     internal abstract class BoundNode
     {
         public abstract BoundNodeKind Kind { get; }

@@ -91,7 +91,6 @@ slide introduction:
 	step:
 		//quoteGoesUp.play(quoteBox, 2s);
 		//quoteBox.filter = myFilter~;
-		quoteBox.filter = blur(5);
 		unblur.play(quoteBox, 2s);
 endslide
 

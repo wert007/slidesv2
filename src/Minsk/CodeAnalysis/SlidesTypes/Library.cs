@@ -7,6 +7,7 @@ using Slides;
 
 namespace Minsk.CodeAnalysis.SlidesTypes
 {
+	[Serializable]
 	public class LibrarySymbol
 	{
 		//TODO
@@ -24,15 +25,15 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 		public Style[] Styles { get; }
 		public VariableValueCollection GlobalVariables { get; }
 		public FunctionSymbol[] GlobalFunctions { get; }
-		private MethodInfo[] _globalFunctionsReflections { get; }
+		private string[] _globalFunctionsReflections { get; }
 		public string[] Imports { get; }
 		public static LibrarySymbol Seperator => GetSeperator();
 
 
 		public LibrarySymbol(string name, LibrarySymbol[] libraries, BodySymbol[] customTypes, Style[] styles, VariableValueCollection globalVariables, string[] imports)
-			: this(name, libraries, customTypes, styles, globalVariables, new FunctionSymbol[0], new MethodInfo[0], imports)
+			: this(name, libraries, customTypes, styles, globalVariables, new FunctionSymbol[0], new string[0], imports)
 		{ }
-		public LibrarySymbol(string name, LibrarySymbol[] libraries, BodySymbol[] customTypes, Style[] styles, VariableValueCollection globalVariables, FunctionSymbol[] globalFunctions, MethodInfo[] globalFunctionsReflections, string[] imports)
+		public LibrarySymbol(string name, LibrarySymbol[] libraries, BodySymbol[] customTypes, Style[] styles, VariableValueCollection globalVariables, FunctionSymbol[] globalFunctions, string[] globalFunctionsReflections, string[] imports)
 		{
 			Name = name;
 			Libraries = libraries;
@@ -87,9 +88,9 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 						TypeSymbolTypeConverter.Instance.LookSymbolUp(typeof(Container)),
 					})),
 			};
-			var globalFunctionsReflections = new MethodInfo[]
+			var globalFunctionsReflections = new string[]
 			{
-				typeof(LibrarySymbol).GetMethod(nameof(CreateVerticalSeperator)),
+				nameof(CreateVerticalSeperator),
 			};
 			var imports = new string[0];
 			var result = new LibrarySymbol(name, libraries, customTypes, styles, globalVariables, globalFunctions, globalFunctionsReflections, imports);
@@ -105,7 +106,8 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 		public MethodInfo LookMethodInfoUp(FunctionSymbol symbol)
 		{
 			var index = Array.IndexOf(GlobalFunctions, symbol);
-			return _globalFunctionsReflections[index];
+			return typeof(LibrarySymbol).GetMethod(_globalFunctionsReflections[index]);
+			//return _globalFunctionsReflections[index];
 		}
 	}
 }

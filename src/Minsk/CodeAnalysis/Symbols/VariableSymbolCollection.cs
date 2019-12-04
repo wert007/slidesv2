@@ -5,6 +5,7 @@ using System.Linq;
 
 namespace Minsk.CodeAnalysis.Symbols
 {
+	[Serializable]
 	public class VariableSymbolCollection : ICollection<VariableSymbol>
 	{
 		List<VariableSymbol> symbols = new List<VariableSymbol>();

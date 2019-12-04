@@ -1,10 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
+﻿using Minsk.CodeAnalysis.Binding;
 using Minsk.CodeAnalysis.SlidesTypes;
 using Minsk.CodeAnalysis.Symbols;
 using Minsk.CodeAnalysis.Syntax;
+using Slides;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace Minsk.CodeAnalysis
 {
@@ -12,11 +16,11 @@ namespace Minsk.CodeAnalysis
 	{
 		//TODO: sort fields
 		private string _presentationName = null;
-		private Dictionary<string, string[]> _references = new Dictionary<string, string[]>();
-		private Dictionary<string, Compilation> _loadedCompilations = new Dictionary<string, Compilation>();
-		private Dictionary<string, LibrarySymbol> _collectedLibraries = new Dictionary<string, LibrarySymbol>();
-		private List<string> _referencedInFile = new List<string>();
-		private Queue<Compilation> _toCollectReferences = new Queue<Compilation>();
+		private readonly Dictionary<string, string[]> _references = new Dictionary<string, string[]>();
+		private readonly Dictionary<string, Compilation> _loadedCompilations = new Dictionary<string, Compilation>();
+		private readonly Dictionary<string, LibrarySymbol> _collectedLibraries = new Dictionary<string, LibrarySymbol>();
+		private readonly List<string> _referencedInFile = new List<string>();
+		private readonly Queue<Compilation> _toCollectReferences = new Queue<Compilation>();
 
 		private void CreateTree(string file)
 		{
@@ -35,7 +39,7 @@ namespace Minsk.CodeAnalysis
 		private LibrarySymbol[] Bind(TimeWatcher timewatcher)
 		{
 			var bindedFiles = new List<string>();
-			while(bindedFiles.Count < _references.Count - 1)
+			while (bindedFiles.Count < _references.Count - 1)
 			{
 				foreach (var reference in _references)
 				{
@@ -43,7 +47,7 @@ namespace Minsk.CodeAnalysis
 						continue;
 					if (reference.Key == _presentationName)
 						continue;
-					if(reference.Value.All(r => bindedFiles.Contains(r)))
+					if (reference.Value.All(r => bindedFiles.Contains(r)))
 					{
 						bindedFiles.Add(reference.Key);
 						_collectedLibraries.Add(reference.Key, Bind(reference.Key, timewatcher));
@@ -69,10 +73,12 @@ namespace Minsk.CodeAnalysis
 			var syntaxTree = _loadedCompilations[key].SyntaxTree;
 			DiagnosticBag.OutputToConsole(result.Diagnostics, syntaxTree.Text);
 
-			if(result.Diagnostics.Any(d => d.Level == DiagnosticLevel.Error))
-			{
+			if (result.Diagnostics.Any(d => d.Level == DiagnosticLevel.Error))
 				return new LibrarySymbol(key);
-			}
+
+			IFormatter formatter = new BinaryFormatter();
+			using (var stream = new FileStream(@".\{key}.bsld", FileMode.Create, FileAccess.Write))
+				formatter.Serialize(stream, result.Value);
 			return (LibrarySymbol)result.Value;
 		}
 
@@ -136,13 +142,6 @@ namespace Minsk.CodeAnalysis
 						var fileName = (string)literal.Value;
 						AddImport(fileName);
 					}
-					//else if(functionName == "stdlib")
-					//{
-					//	var literal = (LiteralExpressionSyntax)expression.Arguments[0];
-					//	var fileName = (string)literal.Value;
-					//	AddStandardImport(fileName);
-
-					//}
 					break;
 				default:
 					//Logger.LogUnexpectedBoundNodeKind(expression.Kind);
@@ -155,11 +154,30 @@ namespace Minsk.CodeAnalysis
 			_referencedInFile.Add(fileName);
 			if (!_loadedCompilations.ContainsKey(fileName))
 			{
+				//TODO: Check if bsld file exists
+				//If it does, just load that one
+				//Otherwise return the loaded one
+				//and save it as bsld
+				//if (File.Exists(fileName + ".bsld"))
+				//{
+				//	var bsld = Loader.LoadBSLDFile(fileName + ".bsld");
+				//	var evaluator = new Evaluator((BoundBlockStatement)bsld.Statement, new Dictionary<VariableSymbol, object>(), new LibrarySymbol[0]);
+				//	var evaluationResult = evaluator.Evaluate();
+				//	_collectedLibraries.Add(fileName, (LibrarySymbol)evaluationResult);
+				//	return;
+				//}
 				var compilation = Loader.LoadCompilationFromFile(fileName);
 				if (compilation == null)
 					throw new Exception();
 				_toCollectReferences.Enqueue(compilation);
+
+
+
+				//using (FileStream fs = new FileStream(fileName + ".bsld", FileMode.Create))
+				//using (StreamWriter sw = new StreamWriter(fs))
+				//	sw.Write(Serializer.Serialize(compilation.GlobalScope.Statement));
 			}
 		}
+
 	}
 }

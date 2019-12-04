@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Minsk.CodeAnalysis.Symbols
 {
-
+	[Serializable]
 	public sealed class VariableSymbol
 	{
 		public VariableSymbol(string name, bool isReadOnly, TypeSymbol type, bool needsDataFlag)

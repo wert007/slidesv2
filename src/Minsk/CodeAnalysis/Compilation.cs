@@ -79,7 +79,7 @@ namespace Minsk.CodeAnalysis
 			//	var root = deserializer.Deserialize();
 			//}
 
-				var evaluator = new Evaluator(statement, variables, References);
+			var evaluator = new Evaluator(statement, variables, References);
 			timewatch.Record("create new evaluator");
 			var value = evaluator.Evaluate();
 			timewatch.Record("evaluate");

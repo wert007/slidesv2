@@ -41,6 +41,7 @@ namespace Minsk.CodeAnalysis.Symbols
 
 	}
 
+	[Serializable]
 	public abstract class TypeSymbol
 	{
 		private static Dictionary<string, TypeSymbol> registeredTypes = new Dictionary<string, TypeSymbol>();

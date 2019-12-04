@@ -5,6 +5,7 @@ using System.Linq;
 
 namespace Minsk.CodeAnalysis
 {
+	[Serializable]
 	public sealed class FunctionSymbol
 	{
 		public FunctionSymbol(string name, TypeSymbol returnType)

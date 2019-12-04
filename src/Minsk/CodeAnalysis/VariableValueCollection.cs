@@ -4,6 +4,7 @@ using Minsk.CodeAnalysis.Symbols;
 
 namespace Minsk.CodeAnalysis
 {
+	[Serializable]
 	public sealed class VariableValueCollection : Dictionary<VariableSymbol, object>
 	{
 		public new object this[VariableSymbol symbol]
@@ -27,7 +28,10 @@ namespace Minsk.CodeAnalysis
 
 		public VariableValueCollection Parent { get; private set; }
 		
-
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="parent">can be null</param>
 		public VariableValueCollection(VariableValueCollection parent)
 		{
 			Parent = parent;

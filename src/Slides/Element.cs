@@ -18,6 +18,7 @@ namespace Slides
 		List
 	}
 
+	[Serializable]
 	public class Style
 	{
 		public string Name { get; }

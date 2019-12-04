@@ -1,4 +1,5 @@
-﻿using Minsk.CodeAnalysis.Symbols;
+﻿using Minsk.CodeAnalysis.Binding;
+using Minsk.CodeAnalysis.Symbols;
 using Minsk.CodeAnalysis.Syntax;
 using Minsk.CodeAnalysis.Text;
 using System;
@@ -37,6 +38,26 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			return new Compilation(syntaxTree);
 		}
 
+		internal static BoundGlobalScope LoadBSLDFile(string path)
+		{
+			Console.WriteLine($"Loading {path}...");
+			string fileContent;
+			if (!File.Exists(path))
+				return null;
+			using (FileStream fs = new FileStream(path, FileMode.Open))
+			using (StreamReader reader = new StreamReader(fs))
+			{
+				fileContent = reader.ReadToEnd();
+			}
+			var deserializer = new Deserializer(fileContent);
+			var root = deserializer.Deserialize();
+			var boundGlobalScope = new BoundGlobalScope(null, ImmutableArray.Create<Diagnostic>(), ImmutableArray.Create<VariableSymbol>(), root);
+
+			return boundGlobalScope;
+		}
+
+
+		//Entry Point.
 		public static EvaluationResult LoadFromFile(string path, bool showTree, bool showProgram)
 		{
 			var timewatch = new TimeWatcher();

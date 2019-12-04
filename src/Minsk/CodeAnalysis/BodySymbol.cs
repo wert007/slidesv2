@@ -1,9 +1,11 @@
 ﻿using Minsk.CodeAnalysis.Binding;
 using Minsk.CodeAnalysis.SlidesTypes;
 using Minsk.CodeAnalysis.Symbols;
+using System;
 
 namespace Minsk.CodeAnalysis
 {
+	[Serializable]
 	public class BodySymbol
 	{
 		//TODO: Maybe use TypeSymbol instead of VariableSymbol
