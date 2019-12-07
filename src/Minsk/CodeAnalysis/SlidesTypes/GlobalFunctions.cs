@@ -78,6 +78,11 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			return result;
 		}
 
+		public static Unit px(float value) => new Unit(value, Unit.UnitKind.Pixel);
+		public static Unit pt(float value) => new Unit(value, Unit.UnitKind.Point);
+		public static Unit pct(float value) => new Unit(value, Unit.UnitKind.Percent);
+		public static float @float(Unit value) => value.Value;
+
 		public static ImportExpression<LibrarySymbol> lib(string path)
 		{
 			throw new NotSupportedException();
@@ -87,18 +92,24 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			//return new ImportExpression<LibrarySymbol>((LibrarySymbol)lib.Value);
 		}
 
-		public static Font gfont(string name)
+		//public static Font gfont(string name)
+		//{
+		//	return _gfont(name).Value;
+		//}
+
+		public static ImportExpression<Font> font(string name)
 		{
-			return _gfont(name).Value;
+			var font = new Font(name);
+			return new ImportExpression<Font>(font);
 		}
 
-		public static ImportExpression<Font> _gfont(string name)
+		public static ImportExpression<Font> gfont(string name)
 		{
 			var font = new Font(name);
 
 			var tmp = Path.GetTempFileName();
 			var href = $"https://fonts.googleapis.com/css?family={name}";
-			
+
 			using (var client = new WebClient())
 			{
 				client.DownloadFile(href, tmp);
@@ -118,7 +129,7 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 
 		private static string GtSrc(string url)
 		{
-			url=url.Substring(url.IndexOf("url("));
+			url = url.Substring(url.IndexOf("url("));
 			url = url.Substring(url.IndexOf('('));
 			url = url.Remove(url.IndexOf(')'));
 			url = url.Trim('(', ')');
@@ -130,11 +141,11 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 				{
 					client.DownloadFile(url, tmp);
 				}
-				catch(Exception e)
+				catch (Exception e)
 				{
 					Logger.LogConnectionProblems(url);
 				}
-				}
+			}
 			return tmp;
 		}
 

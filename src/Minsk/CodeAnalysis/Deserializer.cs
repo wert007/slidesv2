@@ -596,6 +596,11 @@ namespace Minsk.CodeAnalysis
 		{
 			ConsumeStatementHeader();
 			var identifier = ConsumeToken();
+			VariableSymbol template = null;
+			if(PeekToken() == "<")
+			{
+				template = DeserializeTemplateStatement();
+			}
 			var variable = new VariableSymbol(identifier, true, _builtInTypes.LookSymbolUp(typeof(SlideAttributes)), false);
 			var statements = new List<BoundStepStatement>();
 			ConsumeToken(); //:
@@ -604,7 +609,14 @@ namespace Minsk.CodeAnalysis
 				statements.Add(DeserializeStepStatement());
 			}
 			ConsumeStatementTail();
-			return new BoundSlideStatement(variable, statements.ToArray());
+			return new BoundSlideStatement(variable, template, statements.ToArray());
+		}
+
+		private VariableSymbol DeserializeTemplateStatement()
+		{
+			ConsumeToken(); //<
+			var identifier = ConsumeToken();
+			return new VariableSymbol(identifier, true, _builtInTypes.LookSymbolUp(typeof(Template)), false);
 		}
 
 		private BoundStepStatement DeserializeStepStatement()

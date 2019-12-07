@@ -131,7 +131,18 @@ namespace HTMLWriter
 			{
 				WriteStep(slide, step);
 			}
+			if(slide.Parent != null)
+				Write(slide, slide.Parent);
 			_htmlWriter.EndTag();
+		}
+
+		private static void Write(Slide parent, Template template)
+		{
+			_htmlWriter.WriteComment($"Inserted by template '{template.Name}'.");
+			foreach (var element in template.VisualChildren)
+			{
+				WriteElement(parent.Name, element);
+			}
 		}
 
 		private static void WriteStep(Slide parent, Step step)

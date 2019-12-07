@@ -15,7 +15,7 @@ endgroup
 
 group Title(content~: string):
 	let lblTitle = new Label(content~);
-	lblTitle.fontsize = 36pt;
+	lblTitle.fontsize = 32pt;
 	lblTitle.orientation~ = Horizontal.Left | Vertical.Top;
 	initWidth = lblTitle.width;
 	initHeight = lblTitle.height;

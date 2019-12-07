@@ -133,5 +133,8 @@ namespace Minsk.CodeAnalysis.Syntax
 		FilterKeyword,
 		EndFilterKeyword,
 		FilterStatement,
+		TemplateKeyword,
+		EndTemplateKeyword,
+		TemplateStatement,
 	}
 }

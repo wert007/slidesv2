@@ -15,6 +15,7 @@ namespace Slides
 		{
 			this.text = text;
 			align = Alignment.Left;
+			fontsize = new Unit(14, Unit.UnitKind.Point);
 		}
 
 		public override ElementType type => ElementType.Label;

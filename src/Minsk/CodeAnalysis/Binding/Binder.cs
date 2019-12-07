@@ -37,6 +37,7 @@ namespace Minsk.CodeAnalysis.Binding
 			_builtInTypes = TypeSymbolTypeConverter.Instance;
 			_builtInConstants = new Dictionary<string, VariableSymbol>();
 			_builtInConstants.Add("seperator", new VariableSymbol("seperator", true, _builtInTypes.LookSymbolUp(typeof(LibrarySymbol)), false));
+			_builtInConstants.Add("auto", new VariableSymbol("auto", true, _builtInTypes.LookSymbolUp(typeof(Unit)), false));
 			foreach (var color in Color.GetStaticColors())
 			{
 				_builtInConstants.Add(color.Key, new VariableSymbol(color.Key, true, _builtInTypes.LookSymbolUp(typeof(Color)), false));
@@ -93,6 +94,8 @@ namespace Minsk.CodeAnalysis.Binding
 					return BindFileBlockStatement((FileBlockStatementSyntax)syntax);
 				case SyntaxKind.BlockStatement:
 					return BindBlockStatement((BlockStatementSyntax)syntax);
+				case SyntaxKind.TemplateStatement:
+					return BindTemplateStatement((TemplateStatementSyntax)syntax);
 				case SyntaxKind.SlideStatement:
 					return BindSlideStatement((SlideStatementSyntax)syntax);
 				case SyntaxKind.GroupStatement:
@@ -577,10 +580,31 @@ namespace Minsk.CodeAnalysis.Binding
 			}
 		}
 
+		private BoundTemplateStatement BindTemplateStatement(TemplateStatementSyntax syntax)
+		{
+			var name = syntax.Identifier.Text;
+			var variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(Template)), false);
+
+			if (!_scope.TryDeclare(variable, null))
+				_diagnostics.ReportVariableAlreadyDeclared(syntax.Identifier.Span, name);
+			var parameter = BindParameterStatement(syntax.ParameterStatement.ParameterStatement, _builtInTypes.LookSymbolUp(typeof(SlideAttributes)), false);
+			_scope.TryDeclare(new VariableSymbol("slideCount", true, PrimitiveTypeSymbol.Integer, false));
+			var body = BindBlockStatement(syntax.Body);
+			return new BoundTemplateStatement(variable, parameter, body);
+		}
+
 		private BoundStatement BindSlideStatement(SlideStatementSyntax syntax)
 		{
 			var name = syntax.Identifier.Text;
 			var variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(SlideAttributes)), false);
+
+			VariableSymbol template = null;
+			if(syntax.Template != null)
+			{
+				var templateName = syntax.Template.Identifier.Text;
+				if (!_scope.TryLookup(templateName, out template))
+					_diagnostics.ReportUndefinedVariable(syntax.Template.Identifier.Span, templateName);
+			}
 
 			if (!_scope.TryDeclare(variable, null))
 				_diagnostics.ReportVariableAlreadyDeclared(syntax.Identifier.Span, name);
@@ -596,7 +620,7 @@ namespace Minsk.CodeAnalysis.Binding
 			}
 			CheckUnusedSymbols(_scope);
 			_scope = _scope.Parent;
-			return new BoundSlideStatement(variable, boundStatements.ToArray());
+			return new BoundSlideStatement(variable, template, boundStatements.ToArray());
 		}
 
 		private BoundStepStatement BindStepStatement(StepStatementSyntax statement)

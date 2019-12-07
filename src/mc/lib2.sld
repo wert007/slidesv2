@@ -34,10 +34,18 @@ group introductingQuote(quote~: string, author~: string):
 	padding = padding(5%);
 endgroup
 
-group map():
+group map(w~: Unit):
 	let map~ = image(@'city\map.png');
 	let imgMap = new Image(map~);
+	imgMap.width = 100%;
+	imgMap.height = auto;
 	imgMap.orientation = Horizontal.Right | Vertical.Top;
+	imgMap.position = 'relative';
+	//imgMap.#position = 'relative';
+	//imgMap.position! = 'relative';
+	//imgMap.*position = 'relative';
+	//imgMap.position* = 'relative';
+	//imgMap.css += 'position = relative';
 	let lblMap = new Label('(c) wikimedia');
 	lblMap.orientation = Horizontal.Right | Vertical.Bottom;
 
@@ -47,23 +55,21 @@ group map():
 	marker.borderStyle = BorderStyle.Dashed;
 	marker.borderColor = red;
 
-	initWidth = imgMap.width;
-	initHeight = imgMap.height;
+	initWidth = 100%;
+	initHeight = auto; //You probably should be making sure, that this is fine here...
 endgroup
 
 group imageBanner():
 	let oil~ = image(@'city\oil.jpg');
 	let imgOil = new basics.CaptionedImage(oil~, '(c) wikimedia');
-	imgOil.width = 100%;
+	imgOil.height = 50%;
 
 	let night~ = image(@'city\night.jpg');
 	let imgNight = new basics.CaptionedImage(night~, '(c) pixabay');
-	imgNight.width = 100%;
-	imgNight.margin = margin(0, 50%, 0, 0);
+	imgNight.height = 50%;
+	imgNight.margin = margin(50%, 0, 0, 0);
 
-	print('loooool');
-
-	initWidth = imgOil.width;
+	initWidth = 100%;
 	initHeight = 100%;
 endgroup
 

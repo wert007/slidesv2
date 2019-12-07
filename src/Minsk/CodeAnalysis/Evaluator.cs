@@ -18,6 +18,7 @@ namespace Minsk.CodeAnalysis
 		public bool AnimationsAllowed { get; set; }
 		public bool GroupsAllowed { get; set; }
 		public bool DatasAllowed { get; set; }
+		public bool TemplatesAllowed { get; internal set; }
 	}
 
 	internal sealed class Evaluator
@@ -43,6 +44,7 @@ namespace Minsk.CodeAnalysis
 		private readonly Dictionary<TypeSymbol, BodySymbol> _customTypes = new Dictionary<TypeSymbol, BodySymbol>();
 		private readonly Dictionary<VariableSymbol, Style> _styles = new Dictionary<VariableSymbol, Style>();
 		private readonly Dictionary<Element, AnimationCall> _animations = new Dictionary<Element, AnimationCall>();
+		private readonly Dictionary<VariableSymbol, BoundTemplateStatement> _templates = new Dictionary<VariableSymbol, BoundTemplateStatement>();
 
 		private readonly List<string> _imports = new List<string>();
 
@@ -61,6 +63,7 @@ namespace Minsk.CodeAnalysis
 			if (!variables.Any())
 			{
 				_variables.Add(new VariableSymbol("seperator", true, _typeConverter.LookSymbolUp(typeof(LibrarySymbol)), false), Library.Seperator);
+				_variables.Add(new VariableSymbol("auto", true, _typeConverter.LookSymbolUp(typeof(Unit)), false), new Unit(0, Unit.UnitKind.Auto));
 				foreach (var color in Color.GetStaticColors())
 				{
 					_variables.Add(new VariableSymbol(color.Key, true, _typeConverter.LookSymbolUp(typeof(Color)), false), color.Value);
@@ -77,6 +80,7 @@ namespace Minsk.CodeAnalysis
 			_flags.DatasAllowed = true;
 			_flags.GroupsAllowed = true;
 			_flags.StyleAllowed = true;
+			_flags.TemplatesAllowed = true;
 			while (index < _root.Statements.Length)
 			{
 				var s = _root.Statements[index];
@@ -129,6 +133,9 @@ namespace Minsk.CodeAnalysis
 					break;
 				case BoundNodeKind.BlockStatement:
 					EvaluateBlockStatement((BoundBlockStatement)node);
+					break;
+				case BoundNodeKind.TemplateStatement:
+					EvaluateTemplateStatement((BoundTemplateStatement)node);
 					break;
 				case BoundNodeKind.SlideStatement:
 					EvaluateSlideStatement((BoundSlideStatement)node);
@@ -503,20 +510,59 @@ namespace Minsk.CodeAnalysis
 			_customTypes.Add(node.Type, group);
 		}
 
+		private void EvaluateTemplateStatement(BoundTemplateStatement node)
+		{
+			if (!_flags.TemplatesAllowed)
+				throw new Exception();
+
+			var template = new BodySymbol(node.Variable, node.Body);
+			_templates.Add(node.Variable, node);
+
+
+		}
+
 		private void EvaluateSlideStatement(BoundSlideStatement node)
 		{
 			if (_flags.IsLibrarySymbol)
 				throw new Exception();
 			_variables = _variables.Push();
-			_currentSlide = new SlideAttributes(node.Variable.Name);
+			_currentSlide = new SlideAttributes(node.Variable.Name, _slides.Count);
 
 			_steps = new List<Step>();
 			foreach (var statement in node.Statements)
 			{
 				_steps.Add(EvaluateStepStatement(statement));
 			}
-
-			var slide = new Slide(_currentSlide, _steps.ToArray());
+			Template template = null;
+			if(node.Template != null)
+			{
+				_variables = _variables.Push();
+				var currentTemplate = _templates[node.Template];
+				_variables[currentTemplate.SlideParameter.Variable] = _currentSlide;
+				_variables[new VariableSymbol("slideCount", true, PrimitiveTypeSymbol.Integer, false)] = _slides.Count; //TODO: Where do we get our actual slideCount?
+				_variables = _variables.Push();
+				Evaluate(_templates[node.Template].Body);
+				_variables = _variables.Pop(out var children);
+				var dataChildren = new List<object>();
+				var visualChildren = new List<Element>();
+				foreach (var value in children)
+				{
+					if (value.Key.IsVisible && value.Value is Element e)
+					{
+						e.name = value.Key.Name;
+						visualChildren.Add(e);
+					}
+					else
+						switch (value.Key.Name)
+						{
+							default:
+								dataChildren.Add(value);
+								break;
+						}
+				}
+				template = new Template(node.Template.Name, visualChildren.ToArray(), dataChildren.ToArray());
+			}
+			var slide = new Slide(_currentSlide, _steps.ToArray(), template);
 			_currentSlide = null;
 			_slides.Add(node.Variable, slide);
 		}
@@ -936,22 +982,22 @@ namespace Minsk.CodeAnalysis
 						element.background = Brush.FromObject(variable.Value);
 						break;
 					case "width":
-						element.width = (Unit)variable.Value;
+						element.width = Unit.Convert(variable.Value);
 						break;
 					case "height":
-						element.height = (Unit)variable.Value;
+						element.height = Unit.Convert(variable.Value);
 						break;
 					case "fontsize":
-						element.fontsize = (Unit)variable.Value;
+						element.fontsize = Unit.Convert(variable.Value);
 						break;
 					case "padding":
 						element.padding = (Thickness)variable.Value;
 						break;
 					case "initHeight":
-						element.initHeight = (Unit)variable.Value;
+						element.initHeight = Unit.Convert(variable.Value);
 						break;
 					case "initWidth":
-						element.initWidth = (Unit)variable.Value;
+						element.initWidth = Unit.Convert(variable.Value);
 						break;
 					default:
 						var type = variable.Value.GetType();

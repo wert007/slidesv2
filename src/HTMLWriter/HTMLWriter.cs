@@ -123,5 +123,10 @@ namespace HTMLWriter
 		{
 			_writer.Write(text);
 		}
+
+		public void WriteComment(string text)
+		{
+			_writer.WriteLine($"<!--{text}-->");
+		}
 	}
 }

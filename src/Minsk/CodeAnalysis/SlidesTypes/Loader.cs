@@ -57,7 +57,7 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 
 
 		//Entry Point.
-		public static EvaluationResult LoadFromFile(string path, bool showTree, bool showProgram)
+		public static EvaluationResult LoadFromFile(string path, bool showTree, bool showProgram, bool completeRebuild)
 		{
 			var timewatch = new TimeWatcher();
 			timewatch.Start();
@@ -65,7 +65,7 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			timewatch.Record("load Compilation");
 			var variables = new Dictionary<VariableSymbol, object>();
 			var syntaxTree = compilation.SyntaxTree;
-			var linker = new Linker();
+			var linker = new Linker(completeRebuild);
 			timewatch.Record("initialise linker");
 			timewatch.Push();
 			compilation.References = linker.Link(compilation, timewatch, path);

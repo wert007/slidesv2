@@ -15,12 +15,20 @@ namespace Minsk.CodeAnalysis
 	public sealed class Linker
 	{
 		//TODO: sort fields
+		//I dont know what that (^) means. but make clear when you use what!
 		private string _presentationName = null;
 		private readonly Dictionary<string, string[]> _references = new Dictionary<string, string[]>();
 		private readonly Dictionary<string, Compilation> _loadedCompilations = new Dictionary<string, Compilation>();
 		private readonly Dictionary<string, LibrarySymbol> _collectedLibraries = new Dictionary<string, LibrarySymbol>();
 		private readonly List<string> _referencedInFile = new List<string>();
 		private readonly Queue<Compilation> _toCollectReferences = new Queue<Compilation>();
+		private bool _completeRebuild;
+
+		public Linker(bool completeRebuild)
+		{
+			_completeRebuild = completeRebuild;
+		}
+
 
 		private void CreateTree(string file)
 		{
@@ -162,7 +170,7 @@ namespace Minsk.CodeAnalysis
 				//Otherwise return the loaded one
 				//and save it as bsld
 				string fileName = Path.GetFileNameWithoutExtension(path);
-				if (File.Exists(fileName + ".bsld"))
+				if (!_completeRebuild && File.Exists(fileName + ".bsld"))
 				{
 					using (var stream = new FileStream($@".\{fileName}.bsld", FileMode.Open, FileAccess.Read))
 					{

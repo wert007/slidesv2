@@ -107,6 +107,7 @@
     <Compile Include="Filters\SVGFilter.cs" />
     <Compile Include="Data\Thickness.cs" />
     <Compile Include="Data\Time.cs" />
+    <Compile Include="Style.cs" />
     <Compile Include="Transition.cs" />
     <Compile Include="TupleType.cs" />
     <Compile Include="Data\Unit.cs" />

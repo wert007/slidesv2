@@ -8,6 +8,7 @@ namespace Slides
 	public class SlideAttributes
 	{
 		public string name { get; }
+		public int index { get; }
 		public Brush background { get; set; }
 		public Color color { get; set; }
 		public Font font { get; set; }
@@ -17,9 +18,10 @@ namespace Slides
 		public Filter filter { get; set; }
 		private HashSet<Style> appliedStyles = new HashSet<Style>();
 
-		public SlideAttributes(string name)
+		public SlideAttributes(string name, int index)
 		{
 			this.name = name;
+			this.index = index;
 		}
 
 		public void hide(Time delay)

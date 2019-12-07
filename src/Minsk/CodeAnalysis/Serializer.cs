@@ -200,7 +200,9 @@ namespace Minsk.CodeAnalysis
 		}
 
 		private static string SerializeSlideStatement(BoundSlideStatement statement)
-			=> $"{statement.Variable.Name}:{string.Join("", statement.Statements.Select(s => Serialize(s)))}";
+			=> $"{statement.Variable.Name}{SerializeTemplateStatement(statement.Template)}:{string.Join("", statement.Statements.Select(s => Serialize(s)))}";
+
+		private static string SerializeTemplateStatement(VariableSymbol variable) => $"<{variable.Name}";
 
 		private static string SerializeStepStatement(BoundStepStatement statement)
 		{

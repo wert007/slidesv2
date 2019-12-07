@@ -137,5 +137,16 @@ namespace Slides
 					return null;
 			}
 		}
+
+		public static Unit Convert(object value)
+		{
+			if (value is Unit u)
+				return u;
+			if (value is float f)
+				return new Unit(f * 100, UnitKind.Percent);
+			if (value is int i)
+				return new Unit(i, UnitKind.Pixel);
+			return new Unit(-1, UnitKind.Auto);
+		}
 	}
 }

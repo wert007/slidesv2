@@ -39,5 +39,6 @@ namespace Minsk.CodeAnalysis.Binding
 		TransitionStatement,
 		Conversion,
 		FilterStatement,
+		TemplateStatement,
 	}
 }

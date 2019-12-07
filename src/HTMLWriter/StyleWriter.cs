@@ -199,10 +199,15 @@ namespace HTMLWriter
 			{
 				hasExactSize = parent.get_StyleWidth().Kind != Unit.UnitKind.Auto && parent.get_StyleHeight().Kind != Unit.UnitKind.Auto;
 			}
-			if (parent != null && parent is Stack)
-				writer.WriteAttribute("position", "relative");
+			if (element.position == null)
+			{
+				if (parent != null && parent is Stack)
+					writer.WriteAttribute("position", "relative");
+				else
+					writer.WriteAttribute("position", "absolute");
+			}
 			else
-				writer.WriteAttribute("position", "absolute");
+				writer.WriteAttribute("position", element.position);
 			var margin = element.margin ?? new Thickness();
 			var padding = new Thickness();
 			if (element.padding != null)
@@ -242,7 +247,7 @@ namespace HTMLWriter
 				if (hasVerticalCenter)
 					writer.WriteAttribute("height", unit100Percent - padding.Vertical);
 				else if (element is Image i)
-					writer.WriteAttribute("height", "100%");
+					writer.WriteAttribute("height", "auto");
 				else
 					writer.WriteAttribute("height", "fit-content");
 			}
@@ -257,7 +262,7 @@ namespace HTMLWriter
 				if (hasHorizontalCenter)
 					writer.WriteAttribute("width", unit100Percent - padding.Horizontal);
 				else if (element is Image i)
-					writer.WriteAttribute("width", "100%");
+					writer.WriteAttribute("width", "auto");
 				else
 					writer.WriteAttribute("width", "fit-content");
 			}

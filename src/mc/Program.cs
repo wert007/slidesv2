@@ -18,13 +18,16 @@ namespace Minsk
 	{
 		private static void Main(string[] args)
 		{
+			bool completeRebuild = false;
 			foreach (var arg in args)
 			{
 				Console.WriteLine($">> arg '{arg}' received");
 			}
-			if(args.Length == 2)
+			if(args.Length >= 2)
 			{
-				LoadFromFile(args[0], args[1]);
+				if (args.Contains("-build-fresh"))
+					completeRebuild = true;
+				LoadFromFile(args[0], args[1], completeRebuild);
 			}
 			else
 			{
@@ -33,9 +36,9 @@ namespace Minsk
 		}
 
 
-		private static void LoadFromFile(string fileName, string targetDirectory)
+		private static void LoadFromFile(string fileName, string targetDirectory, bool completeRebuild)
 		{
-			var result = Loader.LoadFromFile(fileName, false, false);
+			var result = Loader.LoadFromFile(fileName, false, false, completeRebuild);
 			if(!result.Diagnostics.Any(d => d.Level == DiagnosticLevel.Error))
 			{
 				var presentation = result.Value as Presentation;

@@ -81,6 +81,8 @@ namespace Minsk.CodeAnalysis.Syntax
 					return ParseSlideStatement();
 				case SyntaxKind.StepKeyword:
 					return ParseStepStatement();
+				case SyntaxKind.TemplateKeyword:
+					return ParseTemplateStatement();
 				case SyntaxKind.GroupKeyword:
 					return ParseGroupStatement();
 				case SyntaxKind.StyleKeyword:
@@ -359,15 +361,26 @@ namespace Minsk.CodeAnalysis.Syntax
 			return new StyleStatementSyntax(styleKeyword, identifier, parameter, colonToken, body, endStyleKeyword);
 		}
 
+		private TemplateInheritance ParseTemplateInheritance()
+		{
+			var lessToken = MatchToken(SyntaxKind.LessToken);
+			var identifier = MatchToken(SyntaxKind.IdentifierToken);
+
+			return new TemplateInheritance(lessToken, identifier);
+		}
+
 		private SlideStatementSyntax ParseSlideStatement()
 		{
 			var slideKeyword = MatchToken(SyntaxKind.SlideKeyword);
 			var identifier = MatchToken(SyntaxKind.IdentifierToken);
+			TemplateInheritance template = null;
+			if(Current.Kind == SyntaxKind.LessToken)
+				template = ParseTemplateInheritance();
 			var colonToken = MatchToken(SyntaxKind.ColonToken);
 			var statements = ParseSlideBlockStatement();
 			var endslideKeyword = MatchToken(SyntaxKind.EndSlideKeyword);
 
-			return new SlideStatementSyntax(slideKeyword, identifier, colonToken, statements, endslideKeyword);
+			return new SlideStatementSyntax(slideKeyword, identifier, template, colonToken, statements, endslideKeyword);
 		}
 
 
@@ -520,6 +533,26 @@ namespace Minsk.CodeAnalysis.Syntax
 			var closeParenthesis = MatchToken(SyntaxKind.CloseParenthesisToken);
 
 			return new ParameterBlockStatementSyntax(openParenthesis, statements.ToArray(), closeParenthesis);
+		}
+
+		private TemplateStatementSyntax ParseTemplateStatement()
+		{
+			var templateKeyword = MatchToken(SyntaxKind.TemplateKeyword);
+			var identifier = MatchToken(SyntaxKind.IdentifierToken);
+			var parameterStatement = ParseTemplateParameterStatement();
+			var colonToken = MatchToken(SyntaxKind.ColonToken);
+			var body = ParseBlockStatement(SyntaxKind.TemplateKeyword);
+			var endTemplateKeyword = MatchToken(SyntaxKind.EndTemplateKeyword);
+
+			return new TemplateStatementSyntax(templateKeyword, identifier, parameterStatement, colonToken, body, endTemplateKeyword);
+		}
+
+		private SingleParameterStatement ParseTemplateParameterStatement()
+		{
+			var openParenthesis = MatchToken(SyntaxKind.OpenParenthesisToken);
+			var parameterStatement = ParseParameterStatement();
+			var closeParenthesis = MatchToken(SyntaxKind.CloseParenthesisToken);
+			return new SingleParameterStatement(openParenthesis, parameterStatement, closeParenthesis);
 		}
 
 		private GroupStatementSyntax ParseGroupStatement()

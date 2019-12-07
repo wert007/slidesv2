@@ -1,5 +1,4 @@
 ﻿using Slides.Filters;
-using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -18,21 +17,11 @@ namespace Slides
 		List
 	}
 
-	[Serializable]
-	public class Style
-	{
-		public string Name { get; }
-		public Dictionary<string, object> ModifiedFields { get; }
-
-		public Style(string name, Dictionary<string, object> modifiedFields)
-		{
-			Name = name;
-			ModifiedFields = modifiedFields;
-		}
-	}
-
 	public abstract class Element : IFilterInput
 	{
+		//Maybe temporary. Could be that we need to support all css attributes. 
+		//If that happens we should think about something a little smarter..
+		public string position { get; set; } = null;
 		public Color borderColor { get; set; }
 		public Thickness borderThickness { get; set; }
 		public BorderStyle borderStyle { get; set; }
@@ -149,121 +138,5 @@ namespace Slides
 				return initHeight;
 			return new Unit(100, Unit.UnitKind.Auto);
 		}
-
-		//public void setMargin(float value)
-		//{
-		//	setMargin(new Unit(value, Unit.UnitKind.Percent));
-		//}
-
-		//public void marginTop(float value)
-		//{
-		//	marginTop(new Unit(value, Unit.UnitKind.Percent));
-		//}
-
-		//public void marginLeft(float value)
-		//{
-		//	marginLeft(new Unit(value, Unit.UnitKind.Percent));
-		//}
-
-		//public void marginBottom(float value)
-		//{
-		//	marginBottom(new Unit(value, Unit.UnitKind.Percent));
-		//}
-
-		//public void marginRight(float value)
-		//{
-		//	marginRight(new Unit(value, Unit.UnitKind.Percent));
-		//}
-
-		//public void setMargin(Unit value)
-		//{
-		//	margin = new Thickness(value, value, value, value);
-		//}
-
-		//public void marginTop(Unit value)
-		//{
-		//	if (margin == null)
-		//		margin = new Thickness();
-		//	margin.Top = value;
-		//}
-
-		//public void marginLeft(Unit value)
-		//{
-		//	if (margin == null)
-		//		margin = new Thickness();
-		//	margin.Left = value;
-		//}
-
-		//public void marginBottom(Unit value)
-		//{
-		//	if (margin == null)
-		//		margin = new Thickness();
-		//	margin.Bottom = value;
-		//}
-
-		//public void marginRight(Unit value)
-		//{
-		//	if (margin == null)
-		//		margin = new Thickness();
-		//	margin.Right = value;
-		//}
-
-		//public void setPadding(float value)
-		//{
-		//	setPadding(new Unit(value, Unit.UnitKind.Percent));
-		//}
-
-		//public void paddingTop(float value)
-		//{
-		//	paddingTop(new Unit(value, Unit.UnitKind.Percent));
-		//}
-
-		//public void paddingLeft(float value)
-		//{
-		//	paddingLeft(new Unit(value, Unit.UnitKind.Percent));
-		//}
-
-		//public void paddingBottom(float value)
-		//{
-		//	paddingBottom(new Unit(value, Unit.UnitKind.Percent));
-		//}
-
-		//public void paddingRight(float value)
-		//{
-		//	paddingRight(new Unit(value, Unit.UnitKind.Percent));
-		//}
-
-		//public void setPadding(Unit value)
-		//{
-		//	padding = new Thickness(value, value, value, value);
-		//}
-
-		//public void paddingTop(Unit value)
-		//{
-		//	if (padding == null)
-		//		padding = new Thickness();
-		//	padding.Top = value;
-		//}
-
-		//public void paddingLeft(Unit value)
-		//{
-		//	if (padding == null)
-		//		padding = new Thickness();
-		//	padding.Left = value;
-		//}
-
-		//public void paddingBottom(Unit value)
-		//{
-		//	if (padding == null)
-		//		padding = new Thickness();
-		//	padding.Bottom = value;
-		//}
-
-		//public void paddingRight(Unit value)
-		//{
-		//	if (padding == null)
-		//		padding = new Thickness();
-		//	padding.Right = value;
-		//}
 	}
 }

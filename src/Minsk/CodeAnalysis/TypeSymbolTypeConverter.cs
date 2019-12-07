@@ -123,6 +123,7 @@ namespace Minsk.CodeAnalysis
 			Add(typeof(Chart));
 			Add(typeof(LineChart));
 
+			Add(typeof(Template));
 			Add(typeof(AnimationSymbol), CreateAnimationSymbol("Animation"));
 			Add(typeof(SlideAttributes), name: "Slide");
 		}

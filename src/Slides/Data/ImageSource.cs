@@ -13,6 +13,7 @@ namespace Slides
 		public string Path { get; }
 		public float width { get; set; }
 		public float height { get; set; }
+		public float aspectRatio => width / height;
 
 	}
 }

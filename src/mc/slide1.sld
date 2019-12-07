@@ -2,9 +2,18 @@
 import lib('lib2.sld') as custom;
 import gfont('Quicksand') as quicksand;
 
+//TODO: Collect declarations.
+
+template pagenumber(child: Slide):
+	let text~ = $'{child.index + 1}/ {slideCount}';
+	let label = new Label(text~);
+	label.orientation = Horizontal.Right | Vertical.Top;
+	label.fontsize = 12pt;
+endtemplate
+
 transition stdTransition(from: Slide, to: Slide):
 	background = black;
-	duration = 2s;
+	duration = 200ms;
 	from.hide(duration);
 	to.fadeIn(0ms, duration);
 endtransition
@@ -101,10 +110,9 @@ slide title:
 	title.orientation = Vertical.Center | Horizontal.Stretch;
 	title.background = alpha(antiquewhite, 0.17f);
 	background = image(@'city\night.jpg');
-	filter = discrete~;
 endslide
 
-slide traits:
+slide traits < pagenumber:
 	let titleText~ = 'Merkmale einer anglo-amerikanischen Stadt';
 	let contents~ = [
 		$'Schachbrettmuster des Straßenverlaufs',
@@ -128,16 +136,22 @@ slide city:
 	let title = new basics.Title(titleText~);
 
 	let logo~ = image(@'city\logo.png');
-	let captionLogo~ = '(c) City of Los Angeles';
-	let imgLogo = new basics.CaptionedImage(logo~, captionLogo~);
+	let imgLogo = new Image(logo~);// new basics.CaptionedImage(logo~, captionLogo~);
 	imgLogo.height = title.height;
 	imgLogo.width = imgLogo.height;
 
 	title.margin = margin(0, 0, 0, imgLogo.right);
+	
+	let captionLogo~ = '(c) City of Los Angeles';
+	let imgLogoCaption = new Label(captionLogo~);
+	imgLogoCaption.orientation = Horizontal.Left | Vertical.Top;
+	imgLogoCaption.margin = margin(title.bottom, 0, 0, 0);
+	imgLogoCaption.fontsize = 8pt;
 
-	let map = new custom.map();
+	let map = new custom.map(50%);
 	map.width = 50%;
 	map.orientation = Vertical.Top | Horizontal.Right;
+	map.margin = margin(title.bottom, 0, 0, 0);
 
 	let contents~ = [
 		'Zweitgrößte Stadt der USA',
@@ -148,7 +162,7 @@ slide city:
 	];
 	let list = new List(contents~);
 	list.fontsize = 24pt;
-	list.margin = margin(title.height, 0, 0, 0);
+	list.margin = margin(imgLogoCaption.bottom, 0, 0, 0);
 	padding = padding(5%);
 endslide
 
@@ -183,7 +197,7 @@ slide cityDevelopment:
 	//
 	//I'd say no. Because why would you?
 	
-	let left, right = seperator.vertical(30%);
+	let left, right = seperator.vertical(20%);
 	left.fill(new custom.imageBanner());
 	let ~text = new custom.cityDevelopmentText(args~);
 	~text.height = 100%;

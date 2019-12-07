@@ -1,7 +1,20 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Slides
 {
+	public class Template
+	{
+		public string Name { get; }
+		public Element[] VisualChildren { get; }
+		public object[] DataChildren { get; }
+		public Template(string name, Element[] visualChildren, object[] dataChildren)
+		{
+			Name = name;
+			VisualChildren = visualChildren;
+			DataChildren = dataChildren;
+		}
+	}
 	public class Step
 	{
 		public string Name { get; }
@@ -23,12 +36,14 @@ namespace Slides
 		public string Name { get; }
 		public SlideAttributes Attributes { get; }
 		public Step[] Steps { get; }
+		public Template Parent { get; }
 
-		public Slide(SlideAttributes attributes, Step[] steps)
+		public Slide(SlideAttributes attributes, Step[] steps, Template parent)
 		{
 			Name = attributes.name;
 			Attributes = attributes;
 			Steps = steps;
+			Parent = parent;
 		}
 	}
 }
