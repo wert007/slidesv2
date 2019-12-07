@@ -32,6 +32,7 @@ namespace Minsk.CodeAnalysis
 		private SlideAttributes _currentSlide = null;
 		private LibrarySymbol _currentReferenced = null;
 
+		private readonly Dictionary<VariableSymbol, BoundStatement> _declarations;
 
 		private List<CaseSymbol> _animationCases = null;
 		private List<string> _referencedFiles = new List<string>();
@@ -55,10 +56,11 @@ namespace Minsk.CodeAnalysis
 		private Stack<List<Style>> _groupAppliedStyles = new Stack<List<Style>>();
 		private readonly TypeSymbolTypeConverter _typeConverter = TypeSymbolTypeConverter.Instance;
 
-		public Evaluator(BoundBlockStatement root, Dictionary<VariableSymbol, object> variables, LibrarySymbol[] referenced)
+		public Evaluator(BoundBlockStatement root, Dictionary<VariableSymbol, object> variables, LibrarySymbol[] referenced, Dictionary<VariableSymbol, BoundStatement> declarations)
 		{
 			_root = root;
 			_referenced = referenced;
+			_declarations = declarations;
 			_variables = new VariableValueCollection(variables);
 			if (!variables.Any())
 			{
@@ -373,6 +375,9 @@ namespace Minsk.CodeAnalysis
 
 		private void EvaluateStyleStatement(BoundStyleStatement node)
 		{
+			//TODO: I dont know. Can we EVER compute the same style twice?????
+			if(node.Variable != null)
+				_declarations.Remove(node.Variable);
 			if (!_flags.StyleAllowed)
 				throw new Exception();
 
@@ -394,6 +399,8 @@ namespace Minsk.CodeAnalysis
 
 		private void EvaluateAnimationStatement(BoundAnimationStatement node)
 		{
+			if (!_declarations.ContainsKey(node.Variable))
+				return;
 			_animationCases = new List<CaseSymbol>();
 			_variables = _variables.Push();
 			_variables.Add(AnimationSymbol.InitSymbol, 0f);
@@ -404,6 +411,7 @@ namespace Minsk.CodeAnalysis
 			}
 			_variables = _variables.Pop(out var _);
 			_variables[node.Variable] = new AnimationSymbol(node.Variable, node.ElementParameter.Variable, node.TimeParameter.Variable, _animationCases.ToArray());
+			_declarations.Remove(node.Variable);
 		}
 
 		private void EvaluateCaseStatement(BoundCaseStatement node)
@@ -451,6 +459,8 @@ namespace Minsk.CodeAnalysis
 
 		private void EvaluateTransitionStatement(BoundTransitionStatement node)
 		{
+			if (!_declarations.ContainsKey(node.Variable))
+				return;
 			var name = node.Variable.Name;
 			TransitionCall from = null;
 			TransitionCall to = null;
@@ -485,7 +495,9 @@ namespace Minsk.CodeAnalysis
 				}
 			}
 			_transitions.Add(result);
-			_variables.Add(new VariableSymbol(name, true, _typeConverter.LookSymbolUp(typeof(Transition)), false), result);
+			//_variables.Add(new VariableSymbol(name, true, _typeConverter.LookSymbolUp(typeof(Transition)), false), result);
+			_variables.Add(node.Variable, result);
+			_declarations.Remove(node.Variable);
 		}
 
 		private void EvaluateDataStatement(BoundDataStatement node)
@@ -494,6 +506,9 @@ namespace Minsk.CodeAnalysis
 				throw new Exception();
 			var data = new BodySymbol(node.Type, null);
 			_customTypes.Add(node.Type, data);
+			//TODO: Maybe we don't need to collect data statements because they declare a type
+			//and not a variable.
+			_declarations.Remove(new VariableSymbol(node.Type.Name, true, node.Type, false));
 		}
 
 		private void EvaluateGroupStatement(BoundGroupStatement node)
@@ -508,10 +523,14 @@ namespace Minsk.CodeAnalysis
 
 			var group = new BodySymbol(node.Type, node.BoundBody);
 			_customTypes.Add(node.Type, group);
+			_declarations.Remove(new VariableSymbol(node.Type.Name, true, node.Type, false));
 		}
 
+		//TODO: galore! Everythings missing. It's a wonder it's working!
 		private void EvaluateTemplateStatement(BoundTemplateStatement node)
 		{
+			if (!_declarations.ContainsKey(node.Variable))
+				return;
 			if (!_flags.TemplatesAllowed)
 				throw new Exception();
 
@@ -519,10 +538,16 @@ namespace Minsk.CodeAnalysis
 			_templates.Add(node.Variable, node);
 
 
+			_variables[node.Variable] = template;
+			_declarations.Remove(node.Variable);
 		}
 
 		private void EvaluateSlideStatement(BoundSlideStatement node)
 		{
+			//When _declarations doesn't contain our variable
+			//we already evaluated it.
+			if (!_declarations.ContainsKey(node.Variable))
+				return;
 			if (_flags.IsLibrarySymbol)
 				throw new Exception();
 			_variables = _variables.Push();
@@ -565,6 +590,7 @@ namespace Minsk.CodeAnalysis
 			var slide = new Slide(_currentSlide, _steps.ToArray(), template);
 			_currentSlide = null;
 			_slides.Add(node.Variable, slide);
+			_declarations.Remove(node.Variable);
 		}
 
 		private Step EvaluateStepStatement(BoundStepStatement node)
@@ -870,9 +896,7 @@ namespace Minsk.CodeAnalysis
 				if (value.ToString() == node.Value)
 					return value;
 			}
-			if (type != typeof(void))  //probably always true
-				throw new Exception();
-			return null;
+			throw new Exception();
 		}
 
 		private object EvaluateFieldAccessExpression(BoundFieldAccesExpression node)
@@ -1205,6 +1229,13 @@ namespace Minsk.CodeAnalysis
 			if (value == null && _currentReferenced != null)
 			{
 				value = _currentReferenced.GlobalVariables[v.Variable];
+			}
+			if(value == null)
+			{
+				Evaluate(_declarations[v.Variable]);
+				value = _variables[v.Variable];
+				if(value != null)
+					_declarations.Remove(v.Variable);
 			}
 			if (value == null)
 				throw new Exception();

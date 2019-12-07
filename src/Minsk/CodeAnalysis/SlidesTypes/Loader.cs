@@ -37,25 +37,6 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			return new Compilation(syntaxTree);
 		}
 
-		internal static BoundGlobalScope LoadBSLDFile(string path)
-		{
-			Console.WriteLine($"Loading {path}...");
-			string fileContent;
-			if (!File.Exists(path))
-				return null;
-			using (FileStream fs = new FileStream(path, FileMode.Open))
-			using (StreamReader reader = new StreamReader(fs))
-			{
-				fileContent = reader.ReadToEnd();
-			}
-			var deserializer = new Deserializer(fileContent, new LibrarySymbol[0]);
-			var root = deserializer.Deserialize();
-			var boundGlobalScope = new BoundGlobalScope(null, new Diagnostic[0], new VariableSymbol[0], root);
-
-			return boundGlobalScope;
-		}
-
-
 		//Entry Point.
 		public static EvaluationResult LoadFromFile(string path, bool showTree, bool showProgram, bool completeRebuild)
 		{

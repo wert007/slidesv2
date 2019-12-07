@@ -22,8 +22,10 @@ namespace Minsk.CodeAnalysis.Binding
 		private Dictionary<string, VariableSymbol> _builtInConstants;
 		private TypeSymbolTypeConverter _builtInTypes;
 
+		private Dictionary<VariableSymbol, BoundStatement> _declarations = new Dictionary<VariableSymbol, BoundStatement>();
 		private HashSet<VariableSymbol> _assignedVariables = new HashSet<VariableSymbol>();
 		private PresentationFlags _flags = new PresentationFlags();
+		public DiagnosticBag Diagnostics => _diagnostics;
 
 		public Binder(BoundScope parent, LibrarySymbol[] references, string fileName)
 		{
@@ -48,14 +50,16 @@ namespace Minsk.CodeAnalysis.Binding
 		{
 			var parentScope = CreateParentScope(previous);
 			var binder = new Binder(parentScope, references, syntax.Text.FileName);
+			binder.CollectDeclarations(syntax.Root.Statement);
 			var expression = binder.BindStatement(syntax.Root.Statement);
 			var variables = binder._scope.GetDeclaredVariables();
 			var diagnostics = binder.Diagnostics.ToList();
+			var declarations = binder._declarations;
 
 			if (previous != null)
 				diagnostics.InsertRange(0, previous.Diagnostics);
 
-			return new BoundGlobalScope(previous, diagnostics.ToArray(), variables, expression);
+			return new BoundGlobalScope(previous, diagnostics.ToArray(), variables, expression, declarations);
 		}
 
 		private static BoundScope CreateParentScope(BoundGlobalScope previous)
@@ -84,7 +88,169 @@ namespace Minsk.CodeAnalysis.Binding
 			return parent;
 		}
 
-		public DiagnosticBag Diagnostics => _diagnostics;
+		private void CollectDeclarations(StatementSyntax syntax)
+		{
+			switch (syntax.Kind)
+			{
+				case SyntaxKind.FileBlockStatement:
+					CollectDeclarations((FileBlockStatementSyntax)syntax);
+					break;
+				case SyntaxKind.GroupStatement:
+					CollectDeclarations((GroupStatementSyntax)syntax);
+					break;
+				case SyntaxKind.DataStatement:
+					CollectDeclarations((DataStatementSyntax)syntax);
+					break;
+				case SyntaxKind.StyleStatement:
+					CollectDeclarations((StyleStatementSyntax)syntax);
+					break;
+				case SyntaxKind.TransitionStatement:
+					CollectDeclarations((TransitionStatementSyntax)syntax);
+					break;
+				case SyntaxKind.FilterStatement:
+					CollectDeclarations((FilterStatementSyntax)syntax);
+					break;
+				case SyntaxKind.AnimationStatement:
+					CollectDeclarations((AnimationStatementSyntax)syntax);
+					break;
+				case SyntaxKind.TemplateStatement:
+					CollectDeclarations((TemplateStatementSyntax)syntax);
+					break;
+				case SyntaxKind.SlideStatement:
+					CollectDeclarations((SlideStatementSyntax)syntax);
+					break;
+				case SyntaxKind.LibraryStatement:
+				//TODO: Set the presentation-flags during binding time!
+				case SyntaxKind.ImportStatement:
+					//ImportStatements should always be the first thing you do in 
+					//your code. So we don't collect them from anywhere else.
+					break;
+				default:
+					throw new Exception();
+			}
+		}
+
+		private void CollectDeclarations(FileBlockStatementSyntax syntax)
+		{
+			foreach (var statement in syntax.Statements)
+			{
+				CollectDeclarations(statement);
+			}
+		}
+
+		private void CollectDeclarations(GroupStatementSyntax syntax)
+		{
+			var name = syntax.Identifier.Text;
+			_scope = new BoundScope(_scope);
+			var boundParameters = BindParameterBlockStatement(syntax.ParameterStatement);
+			_scope = _scope.Parent;
+			var fields = new VariableSymbolCollection(boundParameters.Statements.Select(p => p.Variable));
+			var constructor = new FunctionSymbolCollection();
+			constructor.Add(new FunctionSymbol("constructor", fields, null));
+			constructor.Seal();
+			var type = new AdvancedTypeSymbol(name, fields, constructor, FunctionSymbolCollection.Empty, _builtInTypes.LookSymbolUp(typeof(Element)));
+			constructor[0].Type = type;
+
+			if (!_scope.TryDeclare(type))
+				_diagnostics.ReportTypeAlreadyDeclared(syntax.Identifier.Span, name);
+			_declarations.Add(new VariableSymbol(name, true, type, false), null);
+		}
+
+		private void CollectDeclarations(DataStatementSyntax syntax)
+		{
+			var name = syntax.Identifier.Text;
+			var fields = BindDataBlockStatement(syntax.Body);
+			var constructor = new FunctionSymbolCollection();
+			constructor.Add(new FunctionSymbol("constructor", VariableSymbolCollection.Empty, null));
+			constructor.Add(new FunctionSymbol("constructor", fields, null));
+			constructor.Seal();
+
+			var customType = new AdvancedTypeSymbol(name, fields, constructor, FunctionSymbolCollection.Empty);
+			customType.SetData(true);
+			constructor[0].Type = customType;
+			constructor[1].Type = customType;
+
+			if (!_scope.TryDeclare(customType))
+				_diagnostics.ReportTypeAlreadyDeclared(syntax.Identifier.Span, name);
+
+			_declarations.Add(new VariableSymbol(name, true, customType, false), null);
+		}
+
+		private void CollectDeclarations(StyleStatementSyntax syntax)
+		{
+			var name = syntax.Identifier.Text;
+			VariableSymbol variable = null;
+			if (syntax.Identifier.Kind != SyntaxKind.StdKeyword)
+			{
+				variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(Style)), true);
+				TextSpan? span = null;
+				if (!_flags.IsLibrarySymbol)
+					span = syntax.Identifier.Span;
+				if (!_flags.StyleAllowed)
+					//todo;
+					_flags.StyleAllowed = true;
+
+				if (!_scope.TryDeclare(variable, span))
+					_diagnostics.ReportVariableAlreadyDeclared(syntax.Identifier.Span, name);
+
+				_declarations.Add(variable, null);
+			}
+		}
+
+		private void CollectDeclarations(TransitionStatementSyntax syntax)
+		{
+			var name = syntax.Identifier.Text;
+			var variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(Transition)), false);
+
+			if (!_scope.TryDeclare(variable, syntax.Identifier.Span))
+				_diagnostics.ReportVariableAlreadyDeclared(syntax.Identifier.Span, name);
+
+			_declarations.Add(variable, null);
+		}
+
+		private void CollectDeclarations(FilterStatementSyntax syntax)
+		{
+			var name = syntax.Identifier.Text;
+			var variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(Filter)), true);
+
+			if (!_scope.TryDeclare(variable, syntax.Identifier.Span))
+				_diagnostics.ReportVariableAlreadyDeclared(syntax.Identifier.Span, name);
+
+			_declarations.Add(variable, null);
+		}
+
+		private void CollectDeclarations(AnimationStatementSyntax syntax)
+		{
+			var name = syntax.Identifier.Text;
+			var variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(AnimationSymbol)), false);
+
+			if (!_scope.TryDeclare(variable, syntax.Identifier.Span))
+				_diagnostics.ReportVariableAlreadyDeclared(syntax.Identifier.Span, name);
+
+			_declarations.Add(variable, null);
+		}
+
+		private void CollectDeclarations(TemplateStatementSyntax syntax)
+		{
+			var name = syntax.Identifier.Text;
+			var variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(Template)), false);
+
+			if (!_scope.TryDeclare(variable, null))
+				_diagnostics.ReportVariableAlreadyDeclared(syntax.Identifier.Span, name);
+
+			_declarations.Add(variable, null);
+		}
+
+		private void CollectDeclarations(SlideStatementSyntax syntax)
+		{
+			var name = syntax.Identifier.Text;
+			var variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(SlideAttributes)), false);
+
+			if (!_scope.TryDeclare(variable, null))
+				_diagnostics.ReportVariableAlreadyDeclared(syntax.Identifier.Span, name);
+
+			_declarations.Add(variable, null);
+		}
 
 		private BoundStatement BindStatement(StatementSyntax syntax)
 		{
@@ -178,7 +344,7 @@ namespace Minsk.CodeAnalysis.Binding
 				var statement = BindParameterStatement(statementSyntax.Parameter);
 				statements.Add(statement.Variable);
 			}
-			
+
 			_scope = _scope.Parent;
 
 			return statements;
@@ -275,21 +441,10 @@ namespace Minsk.CodeAnalysis.Binding
 		private BoundStatement BindDataStatement(DataStatementSyntax syntax)
 		{
 			var name = syntax.Identifier.Text;
-			var fields = BindDataBlockStatement(syntax.Body);
-			var constructor = new FunctionSymbolCollection();
-			//We are matching the parameter count with the constructor now.
-			constructor.Add(new FunctionSymbol("constructor", VariableSymbolCollection.Empty, null));
-			constructor.Add(new FunctionSymbol("constructor", fields, null));
-			constructor.Seal();
-			var customType = new AdvancedTypeSymbol(name, fields, constructor, FunctionSymbolCollection.Empty);
-			customType.SetData(true);
-			constructor[0].Type = customType;
-			constructor[1].Type = customType;
-
-			if (!_scope.TryDeclare(customType))
-				_diagnostics.ReportTypeAlreadyDeclared(syntax.Identifier.Span, name);
-
-			return new BoundDataStatement(customType);
+			_scope.TryLookup(name, out TypeSymbol customType);
+			var result = new BoundDataStatement(customType);
+			_declarations[new VariableSymbol(name, true, customType, false)] = result;
+			return result;
 		}
 
 		private BoundStatement BindLibraryStatement(LibraryStatementSyntax syntax)
@@ -311,7 +466,7 @@ namespace Minsk.CodeAnalysis.Binding
 			var boundElementParameter = BindParameterStatement(syntax.ElementParameter, null, false);
 			var boundTimeParameter = BindParameterStatement(syntax.TimeParameter, _builtInTypes.LookSymbolUp(typeof(Time)), false);
 
-			var parameters = new BoundParameterStatement[] { boundElementParameter, boundTimeParameter};
+			var parameters = new BoundParameterStatement[] { boundElementParameter, boundTimeParameter };
 			var result = new BoundParameterBlockStatement(parameters);
 			return result;
 		}
@@ -319,23 +474,24 @@ namespace Minsk.CodeAnalysis.Binding
 		private BoundStatement BindAnimationStatement(AnimationStatementSyntax syntax)
 		{
 			var name = syntax.Identifier.Text;
-			var variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(AnimationSymbol)), false);
-
-			if (!_scope.TryDeclare(variable, syntax.Identifier.Span))
-				_diagnostics.ReportVariableAlreadyDeclared(syntax.Identifier.Span, name);
+			_scope.TryLookup(name, out VariableSymbol variable);
 
 			_scope = new BoundScope(_scope);
 			var boundParameters = BindAnimationParameterStatement(syntax.Parameters);
+
 			_scope.TryDeclare(new VariableSymbol("interpolation", false, _builtInTypes.LookSymbolUp(typeof(Interpolation)), false), null);
 			_scope.TryDeclare(AnimationSymbol.DoneSymbol, null);
 			_scope.TryDeclare(AnimationSymbol.InitSymbol, null);
 			_scope.TryDeclare(new VariableSymbol("progress", true, PrimitiveTypeSymbol.Float, true)
 			{ NeedsDataFlag = false }, null);
+
 			var boundBody = BindAnimationBodyStatement(syntax.Body);
 			CheckUnusedSymbols(_scope);
 			_scope = _scope.Parent;
 
-			return new BoundAnimationStatement(variable, boundParameters.Statements[0], boundParameters.Statements[1], boundBody);
+			var result = new BoundAnimationStatement(variable, boundParameters.Statements[0], boundParameters.Statements[1], boundBody);
+			_declarations[variable] = result;
+			return result;
 		}
 
 		private BoundCaseStatement[] BindAnimationBodyStatement(BlockStatementSyntax body)
@@ -365,10 +521,7 @@ namespace Minsk.CodeAnalysis.Binding
 		private BoundStatement BindTransitionStatement(TransitionStatementSyntax syntax)
 		{
 			var name = syntax.Identifier.Text;
-			var variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(Transition)), false);
-
-			if (!_scope.TryDeclare(variable, syntax.Identifier.Span))
-				_diagnostics.ReportVariableAlreadyDeclared(syntax.Identifier.Span, name);
+			_scope.TryLookup(name, out VariableSymbol variable);
 
 			_scope = new BoundScope(_scope);
 			var boundParameters = BindTransitionParameters(syntax.Parameters);
@@ -379,29 +532,25 @@ namespace Minsk.CodeAnalysis.Binding
 			var boundBody = BindBlockStatement(syntax.Body);
 			_scope = _scope.Parent;
 
-			return new BoundTransitionStatement(variable, boundParameters, boundBody);
+			var result = new BoundTransitionStatement(variable, boundParameters, boundBody);
+			_declarations[variable] = result;
+			return result;
 		}
 
 		private BoundStatement BindFilterStatement(FilterStatementSyntax syntax)
 		{
-
 			var name = syntax.Identifier.Text;
-			var variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(Filter)), true);
-
-			if (!_scope.TryDeclare(variable, syntax.Identifier.Span))
-				_diagnostics.ReportVariableAlreadyDeclared(syntax.Identifier.Span, name);
+			_scope.TryLookup(name, out VariableSymbol variable);
 
 			_scope = new BoundScope(_scope);
 			var boundParameters = BindParameterBlockStatement(syntax.Parameter);
-			//foreach (var field in ((AdvancedTypeSymbol)_builtInTypes.LookSymbolUp(typeof(Transition))).Fields)
-			//{
-			//	_scope.TryDeclare(field);
-			//}
 			var boundBody = BindBlockStatement(syntax.Body);
 			CheckUnusedSymbols(_scope);
 			_scope = _scope.Parent;
 
-			return new BoundFilterStatement(variable, boundParameters, boundBody);
+			var result = new BoundFilterStatement(variable, boundParameters, boundBody);
+			_declarations[variable] = result;
+			return result;
 		}
 
 		private BoundParameterBlockStatement BindTransitionParameters(TransitionParameterSyntax syntax)
@@ -416,21 +565,7 @@ namespace Minsk.CodeAnalysis.Binding
 
 		private BoundStatement BindStyleStatement(StyleStatementSyntax syntax)
 		{
-			var name = syntax.Identifier.Text;
-			VariableSymbol variable = null;
-			if (syntax.Identifier.Kind != SyntaxKind.StdKeyword)
-			{
-				variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(Style)), true);
-				TextSpan? span = null;
-				if (!_flags.IsLibrarySymbol)
-					span = syntax.Identifier.Span;
-				if (!_flags.StyleAllowed)
-					//todo;
-					_flags.StyleAllowed = true;
 
-				if (!_scope.TryDeclare(variable, span))
-					_diagnostics.ReportVariableAlreadyDeclared(syntax.Identifier.Span, name);
-			}
 			_scope = new BoundScope(_scope);
 			BoundParameterStatement boundParameter = null;
 			if (syntax.Parameter != null)
@@ -445,9 +580,14 @@ namespace Minsk.CodeAnalysis.Binding
 			var boundBody = BindBlockStatement(syntax.Body);
 			CheckUnusedSymbols(_scope);
 			_scope = _scope.Parent;
-
-			return new BoundStyleStatement(variable, boundParameter, boundBody);
-
+			var name = syntax.Identifier.Text;
+			VariableSymbol variable = null;
+			if (syntax.Identifier.Kind != SyntaxKind.StdKeyword)
+				_scope.TryLookup(name, out variable);
+			var result = new BoundStyleStatement(variable, boundParameter, boundBody);
+			if(variable != null)
+				_declarations[variable] = result;
+			return result;
 		}
 
 		private TypeSymbol BindTypeDeclaration(TypeDeclarationSyntax syntax, TypeSymbol targetType = null)
@@ -523,7 +663,7 @@ namespace Minsk.CodeAnalysis.Binding
 			{
 				//TODO: Throw no warnings
 				_scope.Declare(field, true);
-	//			_scope.TryDeclare(field, null);
+				//			_scope.TryDeclare(field, null);
 			}
 			_scope.TryDeclare(new VariableSymbol("fontsize", false, _builtInTypes.LookSymbolUp(typeof(Unit)), false), null);
 			foreach (var function in ((AdvancedTypeSymbol)_builtInTypes.LookSymbolUp(typeof(Element))).Functions)
@@ -547,17 +687,12 @@ namespace Minsk.CodeAnalysis.Binding
 			CheckUnusedSymbols(_scope.Parent);
 			_scope = _scope.Parent.Parent;
 
-			var fields = new VariableSymbolCollection(boundParameters.Statements.Select(p => p.Variable));
-			var constructor = new FunctionSymbolCollection();
-			constructor.Add(new FunctionSymbol("constructor", fields, null));
-			constructor.Seal();
-			var type = new AdvancedTypeSymbol(name, fields, constructor, FunctionSymbolCollection.Empty, _builtInTypes.LookSymbolUp(typeof(Element)));
-			constructor[0].Type = type;
+			//Already declared while collecting declarations.
+			_scope.TryLookup(name, out TypeSymbol type);
 
-			if (!_scope.TryDeclare(type))
-				_diagnostics.ReportTypeAlreadyDeclared(syntax.Identifier.Span, name);
-
-			return new BoundGroupStatement(type, boundParameters, boundBody);
+			var result = new BoundGroupStatement(type, boundParameters, boundBody);
+			_declarations[new VariableSymbol(name, true, type, false)] = result;
+			return result;
 		}
 
 		private void CheckUnusedSymbols(BoundScope scope)
@@ -583,31 +718,29 @@ namespace Minsk.CodeAnalysis.Binding
 		private BoundTemplateStatement BindTemplateStatement(TemplateStatementSyntax syntax)
 		{
 			var name = syntax.Identifier.Text;
-			var variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(Template)), false);
+			_scope.TryLookup(name, out VariableSymbol variable);
 
-			if (!_scope.TryDeclare(variable, null))
-				_diagnostics.ReportVariableAlreadyDeclared(syntax.Identifier.Span, name);
 			var parameter = BindParameterStatement(syntax.ParameterStatement.ParameterStatement, _builtInTypes.LookSymbolUp(typeof(SlideAttributes)), false);
 			_scope.TryDeclare(new VariableSymbol("slideCount", true, PrimitiveTypeSymbol.Integer, false));
 			var body = BindBlockStatement(syntax.Body);
-			return new BoundTemplateStatement(variable, parameter, body);
+			var result = new BoundTemplateStatement(variable, parameter, body);
+			_declarations[variable] = result;
+			return result;
 		}
 
 		private BoundStatement BindSlideStatement(SlideStatementSyntax syntax)
 		{
 			var name = syntax.Identifier.Text;
-			var variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(SlideAttributes)), false);
+			_scope.TryLookup(name, out VariableSymbol variable);
 
 			VariableSymbol template = null;
-			if(syntax.Template != null)
+			if (syntax.Template != null)
 			{
 				var templateName = syntax.Template.Identifier.Text;
 				if (!_scope.TryLookup(templateName, out template))
 					_diagnostics.ReportUndefinedVariable(syntax.Template.Identifier.Span, templateName);
 			}
 
-			if (!_scope.TryDeclare(variable, null))
-				_diagnostics.ReportVariableAlreadyDeclared(syntax.Identifier.Span, name);
 			_scope = new BoundScope(_scope);
 			foreach (var field in ((AdvancedTypeSymbol)_builtInTypes.LookSymbolUp(typeof(SlideAttributes))).Fields)
 			{
@@ -620,7 +753,9 @@ namespace Minsk.CodeAnalysis.Binding
 			}
 			CheckUnusedSymbols(_scope);
 			_scope = _scope.Parent;
-			return new BoundSlideStatement(variable, template, boundStatements.ToArray());
+			var result = new BoundSlideStatement(variable, template, boundStatements.ToArray());
+			_declarations[variable] = result;
+			return result;
 		}
 
 		private BoundStepStatement BindStepStatement(StepStatementSyntax statement)
@@ -655,21 +790,21 @@ namespace Minsk.CodeAnalysis.Binding
 			var variables = new List<VariableSymbol>();
 
 			var type = initializer.Type;
-			if(syntax.Variables.Length > 1)
+			if (syntax.Variables.Length > 1)
 			{
 				var children = new TypeSymbol[syntax.Variables.Length];
 				for (int i = 0; i < children.Length; i++)
 					children[i] = TypeSymbol.Undefined;
 				var targetType = new TupleTypeSymbol(children);
 
-				if(type.Type != TypeType.Tuple)
+				if (type.Type != TypeType.Tuple)
 				{
 					_diagnostics.ReportCannotConvert(syntax.Initializer.Span, type, targetType);
 					return new BoundExpressionStatement(new BoundErrorExpression());
 				}
 
 				var t = (TupleTypeSymbol)type;
-				if(t.Length != targetType.Length)
+				if (t.Length != targetType.Length)
 				{
 					_diagnostics.ReportCannotConvert(syntax.Initializer.Span, t, targetType);
 					return new BoundExpressionStatement(new BoundErrorExpression());
@@ -679,7 +814,7 @@ namespace Minsk.CodeAnalysis.Binding
 			for (int i = 0; i < syntax.Variables.Length; i++)
 			{
 				var variable = syntax.Variables[i];
-				if(syntax.Variables.Length > 1)
+				if (syntax.Variables.Length > 1)
 					type = ((TupleTypeSymbol)initializer.Type).Children[i];
 				variables.Add(CheckGlobalVariableExpression(variable, type, true));
 			}
@@ -1228,7 +1363,7 @@ namespace Minsk.CodeAnalysis.Binding
 			else
 			{
 				Logger.LogCannotTestImageFunction(pathExpression.Kind.ToString());
-				
+
 			}
 		}
 
@@ -1301,7 +1436,7 @@ namespace Minsk.CodeAnalysis.Binding
 				_assignedVariables.Add(boundVariables.Last());
 			}
 			BoundExpression boundExpression = null; // BindExpression(syntax.Expression);
-			if(syntax.Variables.Length == 1)
+			if (syntax.Variables.Length == 1)
 			{
 
 				switch (syntax.OperatorToken.Kind)
@@ -1326,7 +1461,7 @@ namespace Minsk.CodeAnalysis.Binding
 				}
 
 				var variable = boundVariables.First();
-				if(!boundExpression.Type.CanBeConvertedTo(variable.Type))
+				if (!boundExpression.Type.CanBeConvertedTo(variable.Type))
 				{
 					_diagnostics.ReportCannotConvert(syntax.Expression.Span, boundExpression.Type, variable.Type);
 					return new BoundErrorExpression();
@@ -1334,7 +1469,7 @@ namespace Minsk.CodeAnalysis.Binding
 			}
 			else
 			{
-				if(syntax.OperatorToken.Kind != SyntaxKind.EqualsToken)
+				if (syntax.OperatorToken.Kind != SyntaxKind.EqualsToken)
 				{
 					_diagnostics.ReportNoInlineOperatorForTuples(syntax.OperatorToken);
 					return new BoundErrorExpression();
@@ -1342,13 +1477,13 @@ namespace Minsk.CodeAnalysis.Binding
 				boundExpression = BindExpression(syntax.Expression);
 
 				var targetType = new TupleTypeSymbol(boundVariables.Select(v => v.Type).ToArray());
-				if(boundExpression.Type.Type != TypeType.Tuple)
+				if (boundExpression.Type.Type != TypeType.Tuple)
 				{
 					_diagnostics.ReportCannotConvert(syntax.Expression.Span, boundExpression.Type, targetType);
 					return new BoundErrorExpression();
 				}
 				var type = (TupleTypeSymbol)boundExpression.Type;
-				if(type.Length != targetType.Length)
+				if (type.Length != targetType.Length)
 				{
 					_diagnostics.ReportCannotConvert(syntax.Expression.Span, type, targetType);
 					return new BoundErrorExpression();

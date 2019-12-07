@@ -11,13 +11,6 @@ template pagenumber(child: Slide):
 	label.fontsize = 12pt;
 endtemplate
 
-transition stdTransition(from: Slide, to: Slide):
-	background = black;
-	duration = 200ms;
-	from.hide(duration);
-	to.fadeIn(0ms, duration);
-endtransition
-
 style std:
 	color = rgb(26, 26, 26);
 	font = quicksand~;
@@ -29,6 +22,12 @@ style std:
 	//filter = grayscale(0.5f);
 endstyle
 
+transition stdTransition(from: Slide, to: Slide):
+	background = black;
+	duration = 200ms;
+	from.hide(duration);
+	to.fadeIn(0ms, duration);
+endtransition
 
 filter myFilter(source: FilterInput):
 	//let blurred~ = blur(source, 5);

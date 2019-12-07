@@ -63,22 +63,9 @@ namespace Minsk.CodeAnalysis
 				return new EvaluationResult(diagnostics, null, new TimeWatcher());
 
 			var statement = GetStatement();
-			//timewatch.Record($"write {SyntaxTree.Text.FileName}.bsld");
-			//using(FileStream fs = new FileStream($@".\{SyntaxTree.Text.FileName}.bsld", FileMode.Create))
-			//using (StreamWriter sw = new StreamWriter(fs))
-			//{
-			//	sw.WriteLine(Serializer.Serialize(statement));
-			//}
-			//timewatch.Record($"read {SyntaxTree.Text.FileName}.bsld");
-			//using (FileStream fs = new FileStream($@".\{SyntaxTree.Text.FileName}.bsld", FileMode.Open))
-			//using (StreamReader sr = new StreamReader(fs))
-			//{
-			//	var content = sr.ReadToEnd();
-			//	var deserializer = new Deserializer(content);
-			//	var root = deserializer.Deserialize();
-			//}
+			var declarations = GetDeclarations();
 
-			var evaluator = new Evaluator(statement, variables, References);
+			var evaluator = new Evaluator(statement, variables, References, declarations);
 			timewatch.Record("create new evaluator");
 			var value = evaluator.Evaluate();
 			timewatch.Record("evaluate");
@@ -96,6 +83,12 @@ namespace Minsk.CodeAnalysis
 			var result = GlobalScope.Statement;
 			// return Lowerer.Lower(result);
 			return (BoundBlockStatement)result;
+		}
+
+		private Dictionary<VariableSymbol, BoundStatement> GetDeclarations()
+		{
+			var result = GlobalScope.Declarations;
+			return result;
 		}
 	}
 }
