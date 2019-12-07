@@ -2,7 +2,7 @@ using Minsk.CodeAnalysis.Symbols;
 using Minsk.CodeAnalysis.Text;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
+using System.Linq;
 
 namespace Minsk.CodeAnalysis.Binding
 {
@@ -103,24 +103,24 @@ namespace Minsk.CodeAnalysis.Binding
 			return Parent.TryLookup(name, out function);
 		}
 
-		public ImmutableArray<VariableSymbol> GetDeclaredVariables()
+		public VariableSymbol[] GetDeclaredVariables()
 		{
-			return _variables.Values.ToImmutableArray();
+			return _variables.Values.ToArray();
 		}
 
-		public ImmutableArray<TypeSymbol> GetDeclaredCustomTypes()
+		public TypeSymbol[] GetDeclaredCustomTypes()
 		{
-			return _customTypes.Values.ToImmutableArray();
+			return _customTypes.Values.ToArray();
 		}
 
-		public ImmutableArray<FunctionSymbol> GetDeclaredFunctions()
+		public FunctionSymbol[] GetDeclaredFunctions()
 		{
-			return _functions.Values.ToImmutableArray();
+			return _functions.Values.ToArray();
 		}
 
-		public ImmutableArray<VariableSymbol> GetUnusedVariables()
+		public VariableSymbol[] GetUnusedVariables()
 		{
-			return _variables.GetSymbolsWithReferences(0).ToImmutableArray();
+			return _variables.GetSymbolsWithReferences(0).ToArray();
 		}
 
 		public void ClearReferencedVariables()

@@ -1,5 +1,8 @@
-﻿namespace Minsk.CodeAnalysis.Symbols
+﻿using System;
+
+namespace Minsk.CodeAnalysis.Symbols
 {
+	[Serializable]
 	public class EnumTypeSymbol : TypeSymbol
 	{
 		public EnumTypeSymbol(string name, params string[] values) : base(name)

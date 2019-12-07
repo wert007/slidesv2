@@ -5,23 +5,7 @@ using System.IO;
 
 namespace Slides
 {
-	public struct Vector2
-	{
-		public Vector2(SizeF value) : this()
-		{
-			X = value.Width;
-			Y = value.Height;
-		}
-
-		public Vector2(float x, float y) : this()
-		{
-			X = x;
-			Y = y;
-		}
-
-		public float X { get; set; }
-		public float Y { get; set; }
-	}
+	[Serializable]
 	public class Font
 	{
 		public Font(string name)
@@ -41,6 +25,7 @@ namespace Slides
 		public string name { get; }
 		public bool exists { get; private set; }
 
+		[NonSerialized]
 		private FontFamily _fontFamily;
 
 		public override string ToString() => name;

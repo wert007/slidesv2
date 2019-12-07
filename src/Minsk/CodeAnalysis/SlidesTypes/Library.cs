@@ -8,6 +8,72 @@ using Slides;
 namespace Minsk.CodeAnalysis.SlidesTypes
 {
 	[Serializable]
+	public class SerializableLibrarySymbol
+	{
+		public string Name { get; }
+		public SerializableLibrarySymbol[] Referenced { get; }
+		public VariableSymbol[] GlobalVariablesKeys { get; }
+		public object[] GlobalVariablesValues { get; }
+		public FunctionSymbol[] GlobalFunctions { get; }
+		public SerializableBodySymbol[] CustomTypes { get; }
+
+		public Style[] Styles { get; }
+		public string[] Imports { get; }
+		public string[] ReflectionMethodsNames { get; }
+
+		public SerializableLibrarySymbol(LibrarySymbol library)
+		{
+			Name = library.Name;
+			Referenced = new SerializableLibrarySymbol[library.Libraries.Length];
+			for (int i = 0; i < Referenced.Length; i++)
+			{
+				Referenced[i] = new SerializableLibrarySymbol(library.Libraries[i]);
+			}
+			CustomTypes = new SerializableBodySymbol[library.CustomTypes.Length];
+			for (int i = 0; i < CustomTypes.Length; i++)
+			{
+				CustomTypes[i] = new SerializableBodySymbol(library.CustomTypes[i]);
+				CustomTypes[i].Source = this;
+			}
+			GlobalFunctions = library.GlobalFunctions;
+			GlobalVariablesKeys = new VariableSymbol[library.GlobalVariables.Count];
+			GlobalVariablesValues = new object[library.GlobalVariables.Count];
+			for(int i = 0; i < GlobalVariablesKeys.Length; i++)
+			{
+				GlobalVariablesKeys[i] = library.GlobalVariables.ElementAt(i).Key;
+				GlobalVariablesValues[i] = library.GlobalVariables.ElementAt(i).Value;
+			}
+			Styles = library.Styles;
+			Imports = library.Imports;
+			ReflectionMethodsNames = library.GlobalFunctionsReflectionsNames;
+		}
+
+		public LibrarySymbol ToLibrarySymbol()
+		{
+			var libraries = new LibrarySymbol[Referenced.Length];
+			for (int i = 0; i < libraries.Length; i++)
+				libraries[i] = Referenced[i].ToLibrarySymbol();
+			var customTypes = new BodySymbol[CustomTypes.Length];
+			for (int i = 0; i < customTypes.Length; i++)
+			{
+				customTypes[i] = CustomTypes[i].ToBody(libraries);
+				TypeSymbol.RegisterType(customTypes[i].Symbol.Type);
+			}
+			var globalVariablesDict = new Dictionary<VariableSymbol, object>();
+			for (int i = 0; i < GlobalVariablesKeys.Length; i++)
+			{
+				globalVariablesDict.Add(GlobalVariablesKeys[i], GlobalVariablesValues[i]);
+			}
+			var globalVariables = new VariableValueCollection(globalVariablesDict);
+			var result = new LibrarySymbol(Name, libraries, customTypes, Styles, globalVariables, GlobalFunctions, ReflectionMethodsNames, Imports);
+			for (int i = 0; i < customTypes.Length; i++)
+			{
+				customTypes[i].Source = result;
+			}
+			return result;
+		}
+	}
+
 	public class LibrarySymbol
 	{
 		//TODO
@@ -21,11 +87,12 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 
 		public string Name { get; }
 		public LibrarySymbol[] Libraries { get; }
+		//TODO Use Serializer and Deserializer for BoundBlockStatement!
 		public BodySymbol[] CustomTypes { get; }
 		public Style[] Styles { get; }
 		public VariableValueCollection GlobalVariables { get; }
 		public FunctionSymbol[] GlobalFunctions { get; }
-		private string[] _globalFunctionsReflections { get; }
+		public string[] GlobalFunctionsReflectionsNames { get; }
 		public string[] Imports { get; }
 		public static LibrarySymbol Seperator => GetSeperator();
 
@@ -44,7 +111,7 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			if (globalFunctions.Length != globalFunctionsReflections.Length)
 				throw new ArgumentOutOfRangeException();
 			GlobalFunctions = globalFunctions;
-			_globalFunctionsReflections = globalFunctionsReflections;
+			GlobalFunctionsReflectionsNames = globalFunctionsReflections;
 		}
 
 		public LibrarySymbol(string name)
@@ -56,7 +123,7 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 
 		public static TupleType CreateVerticalSeperator(Unit width)
 		{
-		//	Console.WriteLine("HEWWO!!!!!");
+			//	Console.WriteLine("HEWWO!!!!!");
 			Dictionary<string, object> fields = new Dictionary<string, object>();
 			fields.Add("left", new Container()
 			{
@@ -106,7 +173,7 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 		public MethodInfo LookMethodInfoUp(FunctionSymbol symbol)
 		{
 			var index = Array.IndexOf(GlobalFunctions, symbol);
-			return typeof(LibrarySymbol).GetMethod(_globalFunctionsReflections[index]);
+			return typeof(LibrarySymbol).GetMethod(GlobalFunctionsReflectionsNames[index]);
 			//return _globalFunctionsReflections[index];
 		}
 	}

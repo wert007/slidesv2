@@ -1,15 +1,13 @@
-﻿using System.Collections.Immutable;
-
-namespace Minsk.CodeAnalysis.Syntax
+﻿namespace Minsk.CodeAnalysis.Syntax
 {
 	internal class DataBlockStatementSyntax : StatementSyntax
 	{
-		public DataBlockStatementSyntax(ImmutableArray<VariableTypeDeclarationStatement> statements)
+		public DataBlockStatementSyntax(VariableTypeDeclarationStatement[] statements)
 		{
 			Statements = statements;
 		}
 
-		public ImmutableArray<VariableTypeDeclarationStatement> Statements { get; }
+		public VariableTypeDeclarationStatement[] Statements { get; }
 
 		public override SyntaxKind Kind => SyntaxKind.DataBlockStatement;
 	}

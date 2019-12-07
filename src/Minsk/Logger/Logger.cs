@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Minsk.CodeAnalysis.Binding;
+using Minsk.CodeAnalysis.SlidesTypes;
 using Minsk.CodeAnalysis.Symbols;
 
 namespace Slides.Debug
@@ -21,7 +22,8 @@ namespace Slides.Debug
 		UnknownFilter = 64,
 		CompilerInfo = 128,
 		ConnectionProblem = 256,
-		All = 1023,
+		BoundTreeSerializer = 1024,
+		All = 2047,
 	}
 	public class LogMessage
 	{
@@ -131,6 +133,18 @@ namespace Slides.Debug
 		{
 			var message = $"Unexpected ErrorExpression in '{type}'.";
 			Log(message, LogLevel.UnexpectedBoundNodeKind);
+		}
+
+		internal static void LogUnmatchedBoundNodeToken(string token)
+		{
+			var message = $"Could not match token '{token}' from serialized BoundNode.";
+			Log(message, LogLevel.BoundTreeSerializer);
+		}
+
+		internal static void LogUnknownLibrary(string name, LibrarySymbol[] referenced)
+		{
+			var message = $"No library named '{name}' found. Only {string.Join(", ", referenced, null)} where referenced.";
+			Log(message, LogLevel.BoundTreeSerializer);
 		}
 	}
 }

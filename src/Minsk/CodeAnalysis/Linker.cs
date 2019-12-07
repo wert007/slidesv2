@@ -77,8 +77,11 @@ namespace Minsk.CodeAnalysis
 				return new LibrarySymbol(key);
 
 			IFormatter formatter = new BinaryFormatter();
-			using (var stream = new FileStream(@".\{key}.bsld", FileMode.Create, FileAccess.Write))
-				formatter.Serialize(stream, result.Value);
+			var serializableLibrary = new SerializableLibrarySymbol((LibrarySymbol)result.Value);
+
+			var fileName = Path.GetFileNameWithoutExtension(key);
+			using (var stream = new FileStream($@".\{fileName}.bsld", FileMode.Create, FileAccess.Write))
+				formatter.Serialize(stream, serializableLibrary);
 			return (LibrarySymbol)result.Value;
 		}
 
@@ -149,24 +152,27 @@ namespace Minsk.CodeAnalysis
 			}
 		}
 
-		private void AddImport(string fileName)
+		private void AddImport(string path)
 		{
-			_referencedInFile.Add(fileName);
-			if (!_loadedCompilations.ContainsKey(fileName))
+			_referencedInFile.Add(path);
+			if (!_loadedCompilations.ContainsKey(path))
 			{
 				//TODO: Check if bsld file exists
 				//If it does, just load that one
 				//Otherwise return the loaded one
 				//and save it as bsld
-				//if (File.Exists(fileName + ".bsld"))
-				//{
-				//	var bsld = Loader.LoadBSLDFile(fileName + ".bsld");
-				//	var evaluator = new Evaluator((BoundBlockStatement)bsld.Statement, new Dictionary<VariableSymbol, object>(), new LibrarySymbol[0]);
-				//	var evaluationResult = evaluator.Evaluate();
-				//	_collectedLibraries.Add(fileName, (LibrarySymbol)evaluationResult);
-				//	return;
-				//}
-				var compilation = Loader.LoadCompilationFromFile(fileName);
+				string fileName = Path.GetFileNameWithoutExtension(path);
+				if (File.Exists(fileName + ".bsld"))
+				{
+					using (var stream = new FileStream($@".\{fileName}.bsld", FileMode.Open, FileAccess.Read))
+					{
+						var formatter = new BinaryFormatter();
+						var library = (SerializableLibrarySymbol)formatter.Deserialize(stream);
+						_collectedLibraries.Add(path, library.ToLibrarySymbol());
+					}
+					return;
+				}
+				var compilation = Loader.LoadCompilationFromFile(path);
 				if (compilation == null)
 					throw new Exception();
 				_toCollectReferences.Enqueue(compilation);

@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Immutable;
+using System.Collections.Generic;
 
 namespace Minsk.CodeAnalysis.Binding
 {
@@ -23,7 +23,7 @@ namespace Minsk.CodeAnalysis.Binding
 
         protected virtual BoundStatement RewriteBlockStatement(BoundBlockStatement node)
         {
-            ImmutableArray<BoundStatement>.Builder builder = null;
+            List<BoundStatement> builder = null;
 
             for (var i = 0; i< node.Statements.Length; i++)
             {
@@ -33,7 +33,7 @@ namespace Minsk.CodeAnalysis.Binding
                 {
                     if (builder == null)
                     {
-                        builder = ImmutableArray.CreateBuilder<BoundStatement>(node.Statements.Length);
+                        builder = new List<BoundStatement>();
                         
                         for (var j = 0; j < i; j++)
                             builder.Add(node.Statements[j]);
@@ -47,7 +47,7 @@ namespace Minsk.CodeAnalysis.Binding
             if (builder == null)
                 return node;
 
-            return new BoundBlockStatement(builder.MoveToImmutable());
+            return new BoundBlockStatement(builder.ToArray());
         }
 
         protected virtual BoundStatement RewriteVariableDeclaration(BoundVariableDeclaration node)

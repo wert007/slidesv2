@@ -3,6 +3,7 @@ using System.Globalization;
 
 namespace Slides
 {
+	[Serializable]
 	public class Unit
 	{
 		public float Value { get; }
@@ -94,9 +95,9 @@ namespace Slides
 				unitResult = new Unit(0, UnitKind.Auto);
 				return true;
 			}
-			var split = text.Length - 1;
-			while (text[split] == '%' ||
-				char.IsLetter(text[split]))
+			var split = text.Length;
+			while (text[split - 1] == '%' ||
+				char.IsLetter(text[split - 1]))
 			{
 				split--;
 			}

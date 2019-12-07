@@ -241,6 +241,8 @@ namespace HTMLWriter
 			{
 				if (hasVerticalCenter)
 					writer.WriteAttribute("height", unit100Percent - padding.Vertical);
+				else if (element is Image i)
+					writer.WriteAttribute("height", "100%");
 				else
 					writer.WriteAttribute("height", "fit-content");
 			}
@@ -254,6 +256,8 @@ namespace HTMLWriter
 			{
 				if (hasHorizontalCenter)
 					writer.WriteAttribute("width", unit100Percent - padding.Horizontal);
+				else if (element is Image i)
+					writer.WriteAttribute("width", "100%");
 				else
 					writer.WriteAttribute("width", "fit-content");
 			}

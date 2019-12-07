@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -59,7 +58,7 @@ namespace Minsk.CodeAnalysis
 
 		public EvaluationResult Evaluate(Dictionary<VariableSymbol, object> variables, TimeWatcher timewatch)
 		{
-			var diagnostics = SyntaxTree.Diagnostics.Concat(GlobalScope.Diagnostics).ToImmutableArray();
+			var diagnostics = SyntaxTree.Diagnostics.Concat(GlobalScope.Diagnostics).ToArray();
 			if (diagnostics.Any(d => d.Level == DiagnosticLevel.Error))
 				return new EvaluationResult(diagnostics, null, new TimeWatcher());
 

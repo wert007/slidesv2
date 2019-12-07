@@ -1,5 +1,4 @@
 ﻿using Minsk.CodeAnalysis.Symbols;
-using System.Collections.Immutable;
 using System.Linq;
 
 namespace Minsk.CodeAnalysis.Binding
@@ -7,7 +6,7 @@ namespace Minsk.CodeAnalysis.Binding
 	internal class BoundArrayExpression : BoundExpression
 	{
 
-		public BoundArrayExpression(ImmutableArray<BoundExpression> boundExpressions)
+		public BoundArrayExpression(BoundExpression[] boundExpressions)
 		{
 			BoundExpressions = boundExpressions;
 			_type = new ArrayTypeSymbol(BoundExpressions[0].Type);
@@ -18,7 +17,7 @@ namespace Minsk.CodeAnalysis.Binding
 
 		public override BoundNodeKind Kind => BoundNodeKind.ArrayExpression;
 
-		public ImmutableArray<BoundExpression> BoundExpressions { get; }
+		public BoundExpression[] BoundExpressions { get; }
 
 	}
 }

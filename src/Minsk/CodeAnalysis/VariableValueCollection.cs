@@ -11,14 +11,15 @@ namespace Minsk.CodeAnalysis
 		{
 			get
 			{
-				if (!ContainsKey(symbol))
+				foreach (var key in base.Keys)
 				{
-					if (Parent != null)
-						return Parent[symbol];
-					else
-						return null;
+					if (key == symbol)
+						return base[key];
 				}
-				return base[symbol];
+				if (Parent != null)
+					return Parent[symbol];
+				else
+					return null;
 			}
 			set
 			{

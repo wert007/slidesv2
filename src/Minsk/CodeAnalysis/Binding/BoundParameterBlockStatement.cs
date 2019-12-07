@@ -1,16 +1,14 @@
-﻿using System.Collections.Immutable;
-
-namespace Minsk.CodeAnalysis.Binding
+﻿namespace Minsk.CodeAnalysis.Binding
 {
 	internal class BoundParameterBlockStatement : BoundStatement
 	{
 
-		public BoundParameterBlockStatement(ImmutableArray<BoundParameterStatement> statements)
+		public BoundParameterBlockStatement(BoundParameterStatement[] statements)
 		{
 			Statements = statements;
 		}
 
-		public ImmutableArray<BoundParameterStatement> Statements { get; }
+		public BoundParameterStatement[] Statements { get; }
 
 		public override BoundNodeKind Kind => BoundNodeKind.ParameterBlockStatement;
 	}

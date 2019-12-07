@@ -1,5 +1,5 @@
-﻿using System.Collections.Immutable;
-using Minsk.CodeAnalysis.Syntax;
+﻿using Minsk.CodeAnalysis.Syntax;
+using System.Collections.Generic;
 
 namespace Minsk.CodeAnalysis
 {
@@ -7,17 +7,17 @@ namespace Minsk.CodeAnalysis
 	{
 		public SyntaxTree Imports { get; }
 		BlockStatementSyntax _statement;
-		private ImmutableArray<StatementSyntax>.Builder _importStatements;
+		private List<StatementSyntax> _importStatements;
 
 
 
 		public ReferenceCollector(SyntaxTree tree)
 		{
-			_importStatements = ImmutableArray.CreateBuilder<StatementSyntax>();
+			_importStatements = new List<StatementSyntax>();
 			CollectReference(tree.Root);
 			if (_importStatements.Count > 0)
 			{
-				_statement = new BlockStatementSyntax(_importStatements.ToImmutable());
+				_statement = new BlockStatementSyntax(_importStatements.ToArray());
 				Imports = new SyntaxTree(new CompilationUnitSyntax(_statement, tree.Root.EndOfFileToken));
 			}
 			else

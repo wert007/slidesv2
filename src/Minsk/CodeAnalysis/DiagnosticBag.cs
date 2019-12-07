@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using Minsk.CodeAnalysis.Binding;
 using Minsk.CodeAnalysis.SlidesTypes;
@@ -17,7 +16,7 @@ namespace Minsk.CodeAnalysis
 
 		public string FileName { get; }
 
-		public static void OutputToConsole(ImmutableArray<Diagnostic> diagnostics, SourceText text)
+		public static void OutputToConsole(Diagnostic[] diagnostics, SourceText text)
 		{
 			foreach (var diagnostic in diagnostics)
 			{

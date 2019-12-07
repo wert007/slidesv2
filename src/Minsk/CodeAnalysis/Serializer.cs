@@ -142,11 +142,14 @@ namespace Minsk.CodeAnalysis
 			var prefix = string.Empty;
 			if (!symbol.IsVisible)
 				prefix = "~";
-			return $"{prefix}{symbol.Name}:{symbol.Type}";
+			var postfix = string.Empty;
+			if (symbol.IsReadOnly)
+				postfix = "*";
+			return $"{prefix}{symbol.Name}{postfix}:{symbol.Type}";
 		}
 
 		private static string Serialize(FunctionSymbol symbol)
-			=> $"{symbol.Name}<({string.Join(",", symbol.Parameter.Select(s => SerializeMin(s)))}):{symbol.Type}";
+			=> $"{symbol.Name}<{symbol.Index}({string.Join(",", symbol.Parameter.Select(s => SerializeMin(s)))}):{symbol.Type}";
 		private static string SerializeReference(LibrarySymbol symbol) => $"%{symbol.Name}";
 
 

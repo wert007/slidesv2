@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using Minsk.CodeAnalysis.Binding;
@@ -10,7 +9,7 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 {
 	class AnimationSymbol
 	{
-		public AnimationSymbol(VariableSymbol variable, VariableSymbol elementParameter, VariableSymbol timeParameter, ImmutableArray<CaseSymbol> cases)
+		public AnimationSymbol(VariableSymbol variable, VariableSymbol elementParameter, VariableSymbol timeParameter, CaseSymbol[] cases)
 		{
 			Variable = variable;
 			ElementParameter = elementParameter;
@@ -28,7 +27,7 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 		public VariableSymbol Variable { get; }
 		public VariableSymbol ElementParameter { get; }
 		public VariableSymbol TimeParameter { get; }
-		public ImmutableArray<CaseSymbol> Cases { get; }
+		public CaseSymbol[] Cases { get; }
 	}
 
 }

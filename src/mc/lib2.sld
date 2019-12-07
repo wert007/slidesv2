@@ -59,6 +59,9 @@ group imageBanner():
 	let night~ = image(@'city\night.jpg');
 	let imgNight = new basics.CaptionedImage(night~, '(c) pixabay');
 	imgNight.width = 100%;
+	imgNight.margin = margin(0, 50%, 0, 0);
+
+	print('loooool');
 
 	initWidth = imgOil.width;
 	initHeight = 100%;
@@ -84,7 +87,7 @@ group cityDevelopmentText(args~: cityDevelopmentParameter):
 	let list = new List(args~.contents~);
 	list.margin = margin(title.bottom, 0, 0, 0);
 
-	initWidth = 70%;
+	initWidth = 100%;
 	initHeight = 100%;
 
 	background = green;

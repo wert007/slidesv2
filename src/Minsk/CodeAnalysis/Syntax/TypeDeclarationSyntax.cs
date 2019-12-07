@@ -1,10 +1,10 @@
-﻿using System.Collections.Immutable;
+﻿using System.Collections.Generic;
 
 namespace Minsk.CodeAnalysis.Syntax
 {
 	internal class TypeDeclarationSyntax
 	{
-		public TypeDeclarationSyntax(SyntaxToken colonToken, SyntaxToken type, SyntaxToken questionMarkToken, ImmutableArray<SyntaxTokenPair>.Builder bracketPairs)
+		public TypeDeclarationSyntax(SyntaxToken colonToken, SyntaxToken type, SyntaxToken questionMarkToken, List<SyntaxTokenPair> bracketPairs)
 		{
 			ColonToken = colonToken;
 			Type = type;
@@ -15,7 +15,7 @@ namespace Minsk.CodeAnalysis.Syntax
 		public SyntaxToken ColonToken { get; }
 		public SyntaxToken Type { get; }
 		public SyntaxToken QuestionMarkToken { get; }
-		public ImmutableArray<SyntaxTokenPair>.Builder BracketPairs { get; }
+		public List<SyntaxTokenPair> BracketPairs { get; }
 		
 	}
 }

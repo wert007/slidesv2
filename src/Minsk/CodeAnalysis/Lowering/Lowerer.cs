@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using Minsk.CodeAnalysis.Binding;
 using Minsk.CodeAnalysis.Syntax;
@@ -30,7 +29,7 @@ namespace Minsk.CodeAnalysis.Lowering
 
 		private static BoundBlockStatement Flatten(BoundStatement statement)
 		{
-			var builder = ImmutableArray.CreateBuilder<BoundStatement>();
+			var builder = new List<BoundStatement>();
 			var stack = new Stack<BoundStatement>();
 			stack.Push(statement);
 
@@ -49,7 +48,7 @@ namespace Minsk.CodeAnalysis.Lowering
 				}
 			}
 
-			return new BoundBlockStatement(builder.ToImmutable());
+			return new BoundBlockStatement(builder.ToArray());
 		}
 
 		//protected override BoundStatement RewriteForStatement(BoundForStatement node)

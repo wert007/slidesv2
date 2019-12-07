@@ -6,7 +6,7 @@ using Slides;
 using Slides.Debug;
 using Slides.Filters;
 using System;
-using System.Collections.Immutable;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
@@ -17,9 +17,11 @@ namespace Minsk.CodeAnalysis
 		private int _position = 0;
 		private string _text;
 		private TypeSymbolTypeConverter _builtInTypes = TypeSymbolTypeConverter.Instance;
+		private LibrarySymbol[] _referenced;
 
-		public Deserializer(string text)
+		public Deserializer(string text, LibrarySymbol[] referenced)
 		{
+			_referenced = referenced;
 			_text = text.Replace("\n", string.Empty).Replace(" ", string.Empty);
 			_position = 0;
 		}
@@ -181,7 +183,7 @@ namespace Minsk.CodeAnalysis
 		private BoundAssignmentExpression DeserializeAssignmentExpression()
 		{
 			ConsumeStatementHeader();
-			var variables = ImmutableArray.CreateBuilder<VariableSymbol>();
+			var variables = new List<VariableSymbol>();
 			ConsumeToken(); //(
 			variables.Add(DeserializeVariableSymbol());
 			while (PeekToken() == ",")
@@ -193,7 +195,7 @@ namespace Minsk.CodeAnalysis
 			ConsumeToken(); //=
 			var expression = DeserializeExpression();
 			ConsumeStatementTail();
-			return new BoundAssignmentExpression(variables.ToImmutable(), expression);
+			return new BoundAssignmentExpression(variables.ToArray(), expression);
 		}
 
 		private BoundBinaryExpression DeserializeBinaryExpression()
@@ -276,7 +278,7 @@ namespace Minsk.CodeAnalysis
 			var function = DeserializeFunctionSymbol();
 			ConsumeToken(); //<
 			ConsumeToken(); //(
-			var arguments = ImmutableArray.CreateBuilder<BoundExpression>();
+			var arguments = new List<BoundExpression>();
 			while (PeekToken() != ")")
 			{
 				arguments.Add(DeserializeExpression());
@@ -288,13 +290,14 @@ namespace Minsk.CodeAnalysis
 			if (PeekToken() == ")")
 				ConsumeToken();
 			ConsumeStatementTail();
-			return new BoundFunctionExpression(function, arguments.ToImmutable(), source);
+			return new BoundFunctionExpression(function, arguments.ToArray(), source);
 		}
 
 		private FunctionSymbol DeserializeFunctionSymbol()
 		{
 			var identifier = ConsumeToken();
 			ConsumeToken(); //<
+			var index = uint.Parse(ConsumeToken());
 			ConsumeToken(); //(
 			var parameter = new VariableSymbolCollection();
 			while (PeekToken() != ")")
@@ -312,13 +315,19 @@ namespace Minsk.CodeAnalysis
 			ConsumeToken(); //:
 			var returnType = DeserializeTypeSymbol();
 
-			return new FunctionSymbol(identifier, parameter, returnType);
+			return new FunctionSymbol(index, identifier, parameter, returnType);
 		}
 
 		private LibrarySymbol DeserializeReference()
 		{
 			ConsumeToken(); //%
 			var name = ConsumeToken();
+			foreach (var reference in _referenced)
+			{
+				if (reference.Name == name)
+					return reference;
+			}
+			Logger.LogUnknownLibrary(name, _referenced);
 			//TODO!!!!!!!!!!!!!!!!!!!!!!!!!!
 			return new LibrarySymbol(name);
 		}
@@ -363,6 +372,7 @@ namespace Minsk.CodeAnalysis
 			{
 				return timeResult;
 			}
+			Logger.LogUnmatchedBoundNodeToken(token);
 			return token;
 		}
 
@@ -381,7 +391,7 @@ namespace Minsk.CodeAnalysis
 		private BoundStringExpression DeserializeStringExpression()
 		{
 			ConsumeStatementHeader();
-			var expressions = ImmutableArray.CreateBuilder<BoundExpression>();
+			var expressions = new List<BoundExpression>();
 			expressions.Add(DeserializeExpression());
 			while (PeekToken() == ",")
 			{
@@ -389,7 +399,7 @@ namespace Minsk.CodeAnalysis
 				expressions.Add(DeserializeExpression());
 			}
 			ConsumeStatementTail();
-			return new BoundStringExpression(expressions.ToImmutable());
+			return new BoundStringExpression(expressions.ToArray());
 		}
 
 		private BoundUnaryExpression DeserializeUnaryExpression()
@@ -433,7 +443,7 @@ namespace Minsk.CodeAnalysis
 		private BoundArrayExpression DeserializeArrayExpression()
 		{
 			ConsumeStatementHeader();
-			var expressions = ImmutableArray.CreateBuilder<BoundExpression>();
+			var expressions = new List<BoundExpression>();
 			expressions.Add(DeserializeExpression());
 			while (PeekToken() == ",")
 			{
@@ -441,7 +451,7 @@ namespace Minsk.CodeAnalysis
 				expressions.Add(DeserializeExpression());
 			}
 			ConsumeStatementTail();
-			return new BoundArrayExpression(expressions.ToImmutable());
+			return new BoundArrayExpression(expressions.ToArray());
 		}
 
 		private BoundGroupStatement DeserializeGroupStatement()
@@ -479,13 +489,13 @@ namespace Minsk.CodeAnalysis
 			var timeVariable = new VariableSymbol(timeIdentifier, true, _builtInTypes.LookSymbolUp(typeof(Time)), false);
 			var time = new BoundParameterStatement(timeVariable, null);
 			ConsumeToken(); //:
-			var body = ImmutableArray.CreateBuilder<BoundCaseStatement>();
+			var body = new List<BoundCaseStatement>();
 			while (PeekToken() != ";")
 			{
 				body.Add(DeserializeCaseStatement());
 			}
 			ConsumeStatementTail();
-			return new BoundAnimationStatement(variable, element, time, body.ToImmutable());
+			return new BoundAnimationStatement(variable, element, time, body.ToArray());
 		}
 
 		private BoundCaseStatement DeserializeCaseStatement()
@@ -587,14 +597,14 @@ namespace Minsk.CodeAnalysis
 			ConsumeStatementHeader();
 			var identifier = ConsumeToken();
 			var variable = new VariableSymbol(identifier, true, _builtInTypes.LookSymbolUp(typeof(SlideAttributes)), false);
-			var statements = ImmutableArray.CreateBuilder<BoundStepStatement>();
+			var statements = new List<BoundStepStatement>();
 			ConsumeToken(); //:
 			while (PeekToken() != ";")
 			{
 				statements.Add(DeserializeStepStatement());
 			}
 			ConsumeStatementTail();
-			return new BoundSlideStatement(variable, statements.ToImmutable());
+			return new BoundSlideStatement(variable, statements.ToArray());
 		}
 
 		private BoundStepStatement DeserializeStepStatement()
@@ -631,7 +641,7 @@ namespace Minsk.CodeAnalysis
 		{
 			ConsumeStatementHeader();
 			ConsumeToken(); //(
-			var statements = ImmutableArray.CreateBuilder<BoundStatement>();
+			var statements = new List<BoundStatement>();
 			while (PeekToken() != ")")
 			{
 				statements.Add(DeserializeStatement());
@@ -639,13 +649,13 @@ namespace Minsk.CodeAnalysis
 			}
 			ConsumeToken(); //)
 			ConsumeStatementTail();
-			return new BoundBlockStatement(statements.ToImmutable());
+			return new BoundBlockStatement(statements.ToArray());
 		}
 
 		private BoundParameterBlockStatement DeserializeParameterBlockStatement()
 		{
 			ConsumeStatementHeader();
-			var statements = ImmutableArray.CreateBuilder<BoundParameterStatement>();
+			var statements = new List<BoundParameterStatement>();
 			if (PeekToken() != ";")
 			{
 				statements.Add(DeserializeParameterStatement());
@@ -656,7 +666,7 @@ namespace Minsk.CodeAnalysis
 				}
 			}
 			ConsumeStatementTail();
-			return new BoundParameterBlockStatement(statements.ToImmutable());
+			return new BoundParameterBlockStatement(statements.ToArray());
 		}
 
 		private BoundParameterStatement DeserializeParameterStatement()
@@ -692,7 +702,7 @@ namespace Minsk.CodeAnalysis
 		{
 			ConsumeStatementHeader();
 
-			var variables = ImmutableArray.CreateBuilder<VariableSymbol>();
+			var variables = new List<VariableSymbol>();
 			BoundExpression initializer = null;
 			variables.Add(DeserializeVariableSymbol());
 			while (PeekToken() == ",")
@@ -704,7 +714,7 @@ namespace Minsk.CodeAnalysis
 			initializer = DeserializeExpression();
 
 			ConsumeStatementTail();
-			return new BoundVariableDeclaration(variables.ToImmutable(), initializer);
+			return new BoundVariableDeclaration(variables.ToArray(), initializer);
 		}
 
 		private VariableSymbol DeserializeVariableSymbol()
@@ -716,9 +726,15 @@ namespace Minsk.CodeAnalysis
 				ConsumeToken();
 			}
 			var identifier = ConsumeToken();
+			var isReadonly = false;
+			if (PeekToken() == "*")
+			{
+				isReadonly = true;
+				ConsumeToken();
+			}
 			ConsumeToken(); //:
 			var type = DeserializeTypeSymbol();
-			return new VariableSymbol(identifier, false, type, type.IsData)
+			return new VariableSymbol(identifier, isReadonly, type, type.IsData)
 			{
 				IsVisible = isVisible
 			};
@@ -731,7 +747,7 @@ namespace Minsk.CodeAnalysis
 			if (identifier == "Tuple")
 			{
 				ConsumeToken(); //(
-				var childTypes = ImmutableArray.CreateBuilder<TypeSymbol>();
+				var childTypes = new List<TypeSymbol>();
 				childTypes.Add(DeserializeTypeSymbol());
 				while (PeekToken() == ",")
 				{

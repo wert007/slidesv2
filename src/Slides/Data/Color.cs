@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace Slides
 {
+	[Serializable]
 	public class Color
 	{
 		public byte R { get; }

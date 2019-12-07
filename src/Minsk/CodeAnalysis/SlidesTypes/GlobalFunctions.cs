@@ -87,15 +87,18 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			//return new ImportExpression<LibrarySymbol>((LibrarySymbol)lib.Value);
 		}
 
-		public static ImportExpression<Font> gfont(string name)
+		public static Font gfont(string name)
+		{
+			return _gfont(name).Value;
+		}
+
+		public static ImportExpression<Font> _gfont(string name)
 		{
 			var font = new Font(name);
 
 			var tmp = Path.GetTempFileName();
 			var href = $"https://fonts.googleapis.com/css?family={name}";
-			var filename = @"c:\temp\montserrat.css";
-			//var userAgent = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36";
-
+			
 			using (var client = new WebClient())
 			{
 				client.DownloadFile(href, tmp);

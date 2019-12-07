@@ -1,7 +1,6 @@
 ﻿using Slides.Debug;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 
 namespace Minsk.CodeAnalysis.Symbols
@@ -59,6 +58,20 @@ namespace Minsk.CodeAnalysis.Symbols
 					return;
 				}
 				registeredTypes.Add(name, this);
+
+			}
+		}
+
+		public static void RegisterType(TypeSymbol type)
+		{
+			if (type.Type != TypeType.Array && type.Type != TypeType.Nullable && type.Type != TypeType.Tuple)
+			{
+				if (registeredTypes.ContainsKey(type.Name))
+				{
+					Logger.LogAlreadyRegisteredTypeSymbol(type.Name, type.Type.ToString(), registeredTypes[type.Name].Type.ToString());
+					return;
+				}
+				registeredTypes.Add(type.Name, type);
 
 			}
 		}
@@ -143,6 +156,17 @@ namespace Minsk.CodeAnalysis.Symbols
 			if (registeredTypes.ContainsKey(name))
 				return registeredTypes[name];
 			return null;
+		}
+
+		public override int GetHashCode()
+		{
+			var hashCode = 242898725;
+			hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Name);
+			//hashCode = hashCode * -1521134295 + Id.GetHashCode();
+			//hashCode = hashCode * -1521134295 + Type.GetHashCode();
+			//hashCode = hashCode * -1521134295 + IsData.GetHashCode();
+			//hashCode = hashCode * -1521134295 + AllowsNone.GetHashCode();
+			return hashCode;
 		}
 	}
 }

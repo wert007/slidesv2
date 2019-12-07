@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using Minsk.CodeAnalysis.SlidesTypes;
 using Minsk.CodeAnalysis.Text;
 using Slides;
@@ -11,7 +10,7 @@ namespace Minsk.CodeAnalysis.Syntax
 	{
 		private readonly DiagnosticBag _diagnostics;
 		private readonly SourceText _text;
-		private readonly ImmutableArray<SyntaxToken> _tokens;
+		private readonly SyntaxToken[] _tokens;
 		private int _position;
 
 		public Parser(SourceText text)
@@ -33,7 +32,7 @@ namespace Minsk.CodeAnalysis.Syntax
 			} while (token.Kind != SyntaxKind.EndOfFileToken);
 
 			_text = text;
-			_tokens = tokens.ToImmutableArray();
+			_tokens = tokens.ToArray();
 			_diagnostics = new DiagnosticBag(text.FileName);
 			_diagnostics.AddRange(lexer.Diagnostics);
 		}
@@ -124,7 +123,7 @@ namespace Minsk.CodeAnalysis.Syntax
 
 		private FileBlockStatementSyntax ParseFile()
 		{
-			var statements = ImmutableArray.CreateBuilder<StatementSyntax>();
+			var statements = new List<StatementSyntax>();
 
 
 			while (Current.Kind != SyntaxKind.EndOfFileToken)
@@ -139,7 +138,7 @@ namespace Minsk.CodeAnalysis.Syntax
 			}
 
 
-			return new FileBlockStatementSyntax(statements.ToImmutable());
+			return new FileBlockStatementSyntax(statements.ToArray());
 		}
 
 		private FunctionExpressionSyntax ParseFunctionExpression()
@@ -147,7 +146,7 @@ namespace Minsk.CodeAnalysis.Syntax
 			var identifier = MatchToken(SyntaxKind.IdentifierToken);
 			var openParenthesisToken = MatchToken(SyntaxKind.OpenParenthesisToken);
 
-			var arguments = ImmutableArray.CreateBuilder<ExpressionSyntax>();
+			var arguments = new List<ExpressionSyntax>();
 			var first = true;
 
 			while (Current.Kind != SyntaxKind.EndOfFileToken &&
@@ -168,7 +167,7 @@ namespace Minsk.CodeAnalysis.Syntax
 
 			var closeParenthesisToken = MatchToken(SyntaxKind.CloseParenthesisToken);
 
-			return new FunctionExpressionSyntax(identifier, openParenthesisToken, arguments.ToImmutable(), closeParenthesisToken);
+			return new FunctionExpressionSyntax(identifier, openParenthesisToken, arguments.ToArray(), closeParenthesisToken);
 		}
 
 		private IfStatementSyntax ParseIfStatement()
@@ -232,7 +231,7 @@ namespace Minsk.CodeAnalysis.Syntax
 			var openParenthesisToken = MatchToken(SyntaxKind.OpenParenthesisToken);
 			var parameter = ParseParameterStatement();
 			var closeParenthesisToken = MatchToken(SyntaxKind.CloseParenthesisToken);
-			return new ParameterBlockStatementSyntax(openParenthesisToken, ImmutableArray.Create(parameter), closeParenthesisToken);
+			return new ParameterBlockStatementSyntax(openParenthesisToken, new ParameterStatementSyntax[] { parameter }, closeParenthesisToken);
 		}
 
 		private VariableTypeDeclarationStatement ParseVariableTypeDeclaration()
@@ -244,7 +243,7 @@ namespace Minsk.CodeAnalysis.Syntax
 
 		private DataBlockStatementSyntax ParseDataBlockStatement()
 		{
-			var statements = ImmutableArray.CreateBuilder<VariableTypeDeclarationStatement>();
+			var statements = new List<VariableTypeDeclarationStatement>();
 
 			while (Current.Kind != SyntaxKind.EndOfFileToken &&
 				Current.Kind != SyntaxKind.EndDataKeyword)
@@ -257,7 +256,7 @@ namespace Minsk.CodeAnalysis.Syntax
 					NextToken();
 			}
 
-			return new DataBlockStatementSyntax(statements.ToImmutable());
+			return new DataBlockStatementSyntax(statements.ToArray());
 		}
 
 		private DataStatementSyntax ParseDataStatement()
@@ -372,14 +371,14 @@ namespace Minsk.CodeAnalysis.Syntax
 		}
 
 
-		private ImmutableArray<StepStatementSyntax> ParseSlideBlockStatement()
+		private StepStatementSyntax[] ParseSlideBlockStatement()
 		{
 			var statements = new List<StepStatementSyntax>();
 			if (TryInsertStepStatement(out var inserted))
 				statements.Add(inserted);
 			while (Current.Kind == SyntaxKind.StepKeyword)
 				statements.Add(ParseStepStatement());
-			return statements.ToImmutableArray();
+			return statements.ToArray();
 		}
 
 		private bool TryInsertStepStatement(out StepStatementSyntax value)
@@ -451,7 +450,7 @@ namespace Minsk.CodeAnalysis.Syntax
 			if (Current.Kind == SyntaxKind.QuestionMarkToken)
 				questionMarkToken = NextToken();
 
-			var bracketPairs = ImmutableArray.CreateBuilder<SyntaxTokenPair>();
+			var bracketPairs = new List<SyntaxTokenPair>();
 			while (Current.Kind == SyntaxKind.OpenBracketToken)
 			{
 				var first = MatchToken(SyntaxKind.OpenBracketToken);
@@ -475,7 +474,7 @@ namespace Minsk.CodeAnalysis.Syntax
 			if (Current.Kind == SyntaxKind.QuestionMarkToken)
 				questionMarkToken = NextToken();
 
-			var bracketPairs = ImmutableArray.CreateBuilder<SyntaxTokenPair>();
+			var bracketPairs = new List<SyntaxTokenPair>();
 			while (Current.Kind == SyntaxKind.OpenBracketToken)
 			{
 				var first = MatchToken(SyntaxKind.OpenBracketToken);
@@ -506,7 +505,7 @@ namespace Minsk.CodeAnalysis.Syntax
 		private ParameterBlockStatementSyntax ParseParameterBlockStatement()
 		{
 			var openParenthesis = MatchToken(SyntaxKind.OpenParenthesisToken);
-			var statements = ImmutableArray.CreateBuilder<ParameterStatementSyntax>();
+			var statements = new List<ParameterStatementSyntax>();
 
 			var first = true;
 			while (Current.Kind != SyntaxKind.EndOfFileToken &&
@@ -520,7 +519,7 @@ namespace Minsk.CodeAnalysis.Syntax
 
 			var closeParenthesis = MatchToken(SyntaxKind.CloseParenthesisToken);
 
-			return new ParameterBlockStatementSyntax(openParenthesis, statements.ToImmutable(), closeParenthesis);
+			return new ParameterBlockStatementSyntax(openParenthesis, statements.ToArray(), closeParenthesis);
 		}
 
 		private GroupStatementSyntax ParseGroupStatement()
@@ -537,7 +536,7 @@ namespace Minsk.CodeAnalysis.Syntax
 
 		private BlockStatementSyntax ParseBlockStatement(SyntaxKind starter)
 		{
-			var statements = ImmutableArray.CreateBuilder<StatementSyntax>();
+			var statements = new List<StatementSyntax>();
 
 
 			while (Current.Kind != SyntaxKind.EndOfFileToken)
@@ -570,15 +569,15 @@ namespace Minsk.CodeAnalysis.Syntax
 			}
 
 
-			return new BlockStatementSyntax(statements.ToImmutable());
+			return new BlockStatementSyntax(statements.ToArray());
 		}
 
 		private StatementSyntax ParseVariableDeclaration()
 		{
 			var keyword = MatchToken(SyntaxKind.LetKeyword);
 
-			var variables = ImmutableArray.CreateBuilder<VariableExpressionSyntax>();
-			var commas = ImmutableArray.CreateBuilder<SyntaxToken>();
+			var variables = new List<VariableExpressionSyntax>();
+			var commas = new List<SyntaxToken>();
 			variables.Add(ParseVariableExpression());
 			while (Current.Kind == SyntaxKind.CommaToken)
 			{
@@ -589,7 +588,7 @@ namespace Minsk.CodeAnalysis.Syntax
 			var equals = MatchToken(SyntaxKind.EqualsToken);
 			var initializer = ParseExpression();
 			var semicolonToken = MatchToken(SyntaxKind.SemicolonToken);
-			return new VariableDeclarationSyntax(keyword, variables.ToImmutable(), equals, initializer, semicolonToken);
+			return new VariableDeclarationSyntax(keyword, variables.ToArray(), equals, initializer, semicolonToken);
 		}
 
 
@@ -862,8 +861,8 @@ namespace Minsk.CodeAnalysis.Syntax
 			{
 				if (periodTokenCount == 0)
 				{
-					var variables = ImmutableArray.CreateBuilder<VariableExpressionSyntax>();
-					var commas = ImmutableArray.CreateBuilder<SyntaxToken>();
+					var variables = new List<VariableExpressionSyntax>();
+					var commas = new List<SyntaxToken>();
 					variables.Add(ParseVariableExpression());
 					while(Current.Kind == SyntaxKind.CommaToken)
 					{
@@ -881,7 +880,7 @@ namespace Minsk.CodeAnalysis.Syntax
 					}
 					var operatorToken = NextToken();
 					var right = ParseAssignmentExpression();
-					return new AssignmentExpressionSyntax(variables.ToImmutable(), commas.ToImmutable(), operatorToken, right);
+					return new AssignmentExpressionSyntax(variables.ToArray(), commas.ToArray(), operatorToken, right);
 				}
 				else 
 				{
@@ -941,7 +940,7 @@ namespace Minsk.CodeAnalysis.Syntax
 		{
 			var openBracketToken = MatchToken(SyntaxKind.OpenBracketToken);
 
-			var expressions = ImmutableArray.CreateBuilder<ExpressionSyntax>();
+			var expressions = new List<ExpressionSyntax>();
 			var first = true;
 			while (Current.Kind != SyntaxKind.EndOfFileToken &&
 				Current.Kind != SyntaxKind.CloseBracketToken)
@@ -955,7 +954,7 @@ namespace Minsk.CodeAnalysis.Syntax
 			}
 			var closeBracketToken = MatchToken(SyntaxKind.CloseBracketToken);
 
-			return new ArrayConstructorExpressionSyntax(openBracketToken, expressions.ToImmutable(), closeBracketToken);
+			return new ArrayConstructorExpressionSyntax(openBracketToken, expressions.ToArray(), closeBracketToken);
 		}
 
 		private ExpressionSyntax ParseParenthesizedExpression()
@@ -978,8 +977,8 @@ namespace Minsk.CodeAnalysis.Syntax
 		private ExpressionSyntax ParseStringExpression()
 		{
 			var dollarSignToken = MatchToken(SyntaxKind.DollarSignToken);
-			var literalExpressions = ImmutableArray.CreateBuilder<LiteralExpressionSyntax>();
-			var insertions = ImmutableArray.CreateBuilder<StringInsertionExpressionSyntax>();
+			var literalExpressions = new List<LiteralExpressionSyntax>();
+			var insertions = new List<StringInsertionExpressionSyntax>();
 			while (true)
 			{
 				if (Current.Kind == SyntaxKind.StringToken)
@@ -989,7 +988,7 @@ namespace Minsk.CodeAnalysis.Syntax
 				else
 					break;
 			}
-			return new StringExpressionSyntax(dollarSignToken, literalExpressions.ToImmutable(), insertions.ToImmutable());
+			return new StringExpressionSyntax(dollarSignToken, literalExpressions.ToArray(), insertions.ToArray());
 		}
 
 		private StringInsertionExpressionSyntax ParseStringInsertion()

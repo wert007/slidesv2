@@ -5,6 +5,7 @@ using System.Linq;
 
 namespace Minsk.CodeAnalysis.Symbols
 {
+	[Serializable]
 	public class FunctionSymbolCollection : ICollection<FunctionSymbol>
 	{
 		List<FunctionSymbol> symbols = new List<FunctionSymbol>();

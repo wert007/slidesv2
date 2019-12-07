@@ -1,10 +1,9 @@
-﻿using System.Collections.Immutable;
-
+﻿
 namespace Minsk.CodeAnalysis.Syntax
 {
 	internal class ArrayConstructorExpressionSyntax : ExpressionSyntax
 	{
-		public ArrayConstructorExpressionSyntax(SyntaxToken openBracketToken, ImmutableArray<ExpressionSyntax> contents, SyntaxToken closeBracketToken)
+		public ArrayConstructorExpressionSyntax(SyntaxToken openBracketToken, ExpressionSyntax[] contents, SyntaxToken closeBracketToken)
 		{
 			OpenBracketToken = openBracketToken;
 			Contents = contents;
@@ -14,7 +13,7 @@ namespace Minsk.CodeAnalysis.Syntax
 		public override SyntaxKind Kind => SyntaxKind.ArrayConstructorExpression;
 
 		public SyntaxToken OpenBracketToken { get; }
-		public ImmutableArray<ExpressionSyntax> Contents { get; }
+		public ExpressionSyntax[] Contents { get; }
 		public SyntaxToken CloseBracketToken { get; }
 	}
 }

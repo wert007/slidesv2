@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using System.Collections.Immutable;
+using System.Linq;
 using Minsk.CodeAnalysis.Text;
 
 namespace Minsk.CodeAnalysis.Syntax
@@ -12,18 +12,18 @@ namespace Minsk.CodeAnalysis.Syntax
 			var root = parser.ParseCompilationUnit();
 
 			Text = text;
-			Diagnostics = parser.Diagnostics.ToImmutableArray();
+			Diagnostics = parser.Diagnostics.ToArray();
 			Root = root;
 		}
 
 		public SourceText Text { get; }
-		public ImmutableArray<Diagnostic> Diagnostics { get; }
+		public Diagnostic[] Diagnostics { get; }
 		public CompilationUnitSyntax Root { get; }
 
 		internal SyntaxTree(CompilationUnitSyntax root)
 		{
 			Text = SourceText.From(string.Empty);
-			Diagnostics = ImmutableArray<Diagnostic>.Empty;
+			Diagnostics = new Diagnostic[0];
 			Root = root;
 		}
 

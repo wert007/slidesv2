@@ -1,4 +1,4 @@
-using System.Collections.Immutable;
+using System.Collections.Generic;
 
 namespace Minsk.CodeAnalysis.Text
 {
@@ -17,9 +17,9 @@ namespace Minsk.CodeAnalysis.Text
             return new SourceText(text);
         }
 
-        private static ImmutableArray<TextLine> ParseLines(SourceText sourceText, string text)
+        private static TextLine[] ParseLines(SourceText sourceText, string text)
         {
-            var result = ImmutableArray.CreateBuilder<TextLine>();
+            var result = new List<TextLine>();
 
             var position = 0;
             var lineStart = 0;
@@ -44,10 +44,10 @@ namespace Minsk.CodeAnalysis.Text
             if (position >= lineStart)
                 AddLine(result, sourceText, position, lineStart, 0);
 
-            return result.ToImmutable();
+            return result.ToArray();
         }
 
-        private static void AddLine(ImmutableArray<TextLine>.Builder result, SourceText sourceText, int position, int lineStart, int lineBreakWidth)
+        private static void AddLine(List<TextLine> result, SourceText sourceText, int position, int lineStart, int lineBreakWidth)
         {
             var lineLength = position - lineStart;
             var lineLengthIncludingLineBreak = lineLength + lineBreakWidth;
@@ -69,7 +69,7 @@ namespace Minsk.CodeAnalysis.Text
             return 0;
         }
 
-        public ImmutableArray<TextLine> Lines { get; }
+        public TextLine[] Lines { get; }
 
         public char this[int index] => _text[index];
 

@@ -58,6 +58,7 @@
     <Compile Include="Data\Color.cs" />
     <Compile Include="Container.cs" />
     <Compile Include="Data\CSVFile.cs" />
+    <Compile Include="Data\Vector2.cs" />
     <Compile Include="Element.cs" />
     <Compile Include="Filters\BlendFilter.cs" />
     <Compile Include="Filters\BlendMode.cs" />

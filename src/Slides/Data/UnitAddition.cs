@@ -1,5 +1,8 @@
-﻿namespace Slides
+﻿using System;
+
+namespace Slides
 {
+	[Serializable]
 	public class UnitAddition : Unit
 	{
 		public UnitAddition(Unit a, Unit b) : base(a.Value + b.Value, UnitKind.Addition)

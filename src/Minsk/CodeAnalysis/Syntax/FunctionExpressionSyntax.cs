@@ -1,10 +1,8 @@
-﻿using System.Collections.Immutable;
-
-namespace Minsk.CodeAnalysis.Syntax
+﻿namespace Minsk.CodeAnalysis.Syntax
 {
 	public class FunctionExpressionSyntax : MemberExpressionSyntax
 	{
-		public FunctionExpressionSyntax(SyntaxToken identifier, SyntaxToken openParenthesisToken, ImmutableArray<ExpressionSyntax> arguments, SyntaxToken closeParenthesisToken)
+		public FunctionExpressionSyntax(SyntaxToken identifier, SyntaxToken openParenthesisToken, ExpressionSyntax[] arguments, SyntaxToken closeParenthesisToken)
 		{
 			Identifier = identifier;
 			OpenParenthesisToken = openParenthesisToken;
@@ -16,7 +14,7 @@ namespace Minsk.CodeAnalysis.Syntax
 
 		public override SyntaxToken Identifier { get; }
 		public SyntaxToken OpenParenthesisToken { get; }
-		public ImmutableArray<ExpressionSyntax> Arguments { get; }
+		public ExpressionSyntax[] Arguments { get; }
 		public SyntaxToken CloseParenthesisToken { get; }
 	}
 }

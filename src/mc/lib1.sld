@@ -5,6 +5,8 @@ endlibrary
 
 group CaptionedImage(img~: ImageSource, caption~ : string):
 	let image = new Image(img~);
+	image.height = 100%;
+	image.width = 100%;
 	let lblCaption = new Label(caption~);
 	initWidth = 100%; 
 	initHeight = 100%; 

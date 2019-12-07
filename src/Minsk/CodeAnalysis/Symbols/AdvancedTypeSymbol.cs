@@ -2,6 +2,7 @@
 
 namespace Minsk.CodeAnalysis.Symbols
 {
+	[Serializable]
 	public class AdvancedTypeSymbol : TypeSymbol
 	{
 		public AdvancedTypeSymbol(string name, VariableSymbolCollection fields, FunctionSymbolCollection constructor)

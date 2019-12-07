@@ -97,5 +97,42 @@ namespace Minsk.CodeAnalysis.Symbols
 				Add(item);
 			}
 		}
+
+		public override bool Equals(object obj)
+		{
+			if (!(obj is VariableSymbolCollection collection))
+				return false;
+			var result = EqualityComparer<VariableSymbol[]>.Default.Equals(Symbols, collection.Symbols) &&
+					 Editable == collection.Editable &&
+					 Count == collection.Count;
+			if (Symbols.Length != collection.Symbols.Length)
+				return false;
+			for(int i = 0; i < Symbols.Length; i++)
+			{
+				if (!Symbols[i].Equals(collection.Symbols[i]))
+					return false;
+			}
+			return result;
+		}
+
+		public override int GetHashCode()
+		{
+			var hashCode = -316702989;
+			for(int i = 0; i < Symbols.Length; i++)
+				hashCode = hashCode * -1521134295 + Symbols[i].GetHashCode();
+			hashCode = hashCode * -1521134295 + Editable.GetHashCode();
+			hashCode = hashCode * -1521134295 + Count.GetHashCode();
+			return hashCode;
+		}
+
+		public static bool operator ==(VariableSymbolCollection left, VariableSymbolCollection right)
+		{
+			return EqualityComparer<VariableSymbolCollection>.Default.Equals(left, right);
+		}
+
+		public static bool operator !=(VariableSymbolCollection left, VariableSymbolCollection right)
+		{
+			return !(left == right);
+		}
 	}
 }

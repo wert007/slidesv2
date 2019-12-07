@@ -1,5 +1,9 @@
-﻿namespace Minsk.CodeAnalysis.Symbols
+﻿using System;
+
+namespace Minsk.CodeAnalysis.Symbols
 {
+	[Serializable]
+	//TODO: ArrayTypeSymbol should know how big it is!
 	public class ArrayTypeSymbol : TypeSymbol
 	{
 		public TypeSymbol Child { get; private set; }

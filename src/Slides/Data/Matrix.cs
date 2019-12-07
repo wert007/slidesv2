@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Text;
 
+
 namespace Slides
 {
+	[Serializable]
 	public class Matrix
 	{
 		public float[][] values { get; set; } 

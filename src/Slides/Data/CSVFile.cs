@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace Slides
 {
+	[Serializable]
 	public class CSVFile
 	{
 		public CSVFile(string text)

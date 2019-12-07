@@ -2,7 +2,7 @@
 
 namespace Slides
 {
-
+	[Serializable]
 	public class Brush
 	{
 		public enum BrushMode

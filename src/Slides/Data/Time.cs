@@ -3,6 +3,7 @@ using System.Globalization;
 
 namespace Slides
 {
+	[Serializable]
 	public class Time
 	{
 		public float Value { get; }

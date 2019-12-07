@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 using Minsk.CodeAnalysis.Binding;
@@ -397,7 +396,7 @@ namespace Minsk.CodeAnalysis
 				EvaluateCaseStatement(statement);
 			}
 			_variables = _variables.Pop(out var _);
-			_variables[node.Variable] = new AnimationSymbol(node.Variable, node.ElementParameter.Variable, node.TimeParameter.Variable, _animationCases.ToImmutableArray());
+			_variables[node.Variable] = new AnimationSymbol(node.Variable, node.ElementParameter.Variable, node.TimeParameter.Variable, _animationCases.ToArray());
 		}
 
 		private void EvaluateCaseStatement(BoundCaseStatement node)
@@ -408,7 +407,7 @@ namespace Minsk.CodeAnalysis
 			_animationCases.Add(new CaseSymbol(condition, node.Body));
 		}
 
-		private bool TransitionStatementNeedsEvaluation(BoundStatement statement, ImmutableArray<BoundParameterStatement> parameters, out TransitionCall from, out TransitionCall to)
+		private bool TransitionStatementNeedsEvaluation(BoundStatement statement, BoundParameterStatement[] parameters, out TransitionCall from, out TransitionCall to)
 		{
 			from = null;
 			to = null;
@@ -494,7 +493,7 @@ namespace Minsk.CodeAnalysis
 		{
 			if (!_flags.GroupsAllowed)
 				throw new Exception();
-			var parameters = ImmutableArray.CreateBuilder<VariableSymbol>();
+			var parameters = new List<VariableSymbol>();
 			foreach (var parameter in node.BoundParameters.Statements)
 			{
 				parameters.Add(parameter.Variable);
@@ -860,7 +859,7 @@ namespace Minsk.CodeAnalysis
 			return result;
 		}
 
-		private object EvaluateGroupConstructorExpression(ImmutableArray<BoundExpression> arguments, BodySymbol group)
+		private object EvaluateGroupConstructorExpression(BoundExpression[] arguments, BodySymbol group)
 		{
 			if (!(group.Symbol.Type is AdvancedTypeSymbol advanced))
 				throw new Exception();
@@ -902,6 +901,9 @@ namespace Minsk.CodeAnalysis
 			//On the other hand you could recreate your own stack using a local position
 			//variable. So it should be allowed I guess.. Sounds wrong to try silently kill all
 			//Elements inside of loops.
+
+			//But we still have the naming problem... you could make it connected to 
+			//the iterator so you have hopefully unique names...
 			var slideValues = _groupChildren.Pop().ToArray();
 
 			_variables = _variables.Pop(out cVariables);

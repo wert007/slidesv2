@@ -1,11 +1,10 @@
 ﻿using Minsk.CodeAnalysis.Symbols;
-using System.Collections.Immutable;
 
 namespace Minsk.CodeAnalysis.Binding
 {
 	internal sealed class BoundSlideStatement : BoundStatement
 	{
-		public BoundSlideStatement(VariableSymbol variable, ImmutableArray<BoundStepStatement> statements)
+		public BoundSlideStatement(VariableSymbol variable, BoundStepStatement[] statements)
 		{
 			Variable = variable;
 			Statements = statements;
@@ -13,6 +12,6 @@ namespace Minsk.CodeAnalysis.Binding
 
 		public override BoundNodeKind Kind => BoundNodeKind.SlideStatement;
 		public VariableSymbol Variable { get; }
-		public ImmutableArray<BoundStepStatement> Statements{ get; }
+		public BoundStepStatement[] Statements{ get; }
 	}
 }

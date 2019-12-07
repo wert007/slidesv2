@@ -1,5 +1,8 @@
-﻿namespace Minsk.CodeAnalysis.Symbols
+﻿using System;
+
+namespace Minsk.CodeAnalysis.Symbols
 {
+	[Serializable]
 	public class NullableTypeSymbol : TypeSymbol
 	{
 		public NullableTypeSymbol(TypeSymbol baseType) : base(baseType.Name + "?")

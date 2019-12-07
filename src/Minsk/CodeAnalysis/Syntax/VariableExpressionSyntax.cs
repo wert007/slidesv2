@@ -1,6 +1,4 @@
-﻿using System.Collections.Immutable;
-
-namespace Minsk.CodeAnalysis.Syntax
+﻿namespace Minsk.CodeAnalysis.Syntax
 {
 	public class VariableExpressionSyntax : MemberExpressionSyntax, ISettableExpression
 	{

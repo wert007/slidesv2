@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using ImageMagick;
@@ -50,12 +49,12 @@ namespace Minsk.CodeAnalysis.Binding
 			var binder = new Binder(parentScope, references, syntax.Text.FileName);
 			var expression = binder.BindStatement(syntax.Root.Statement);
 			var variables = binder._scope.GetDeclaredVariables();
-			var diagnostics = binder.Diagnostics.ToImmutableArray();
+			var diagnostics = binder.Diagnostics.ToList();
 
 			if (previous != null)
-				diagnostics = diagnostics.InsertRange(0, previous.Diagnostics);
+				diagnostics.InsertRange(0, previous.Diagnostics);
 
-			return new BoundGlobalScope(previous, diagnostics, variables, expression);
+			return new BoundGlobalScope(previous, diagnostics.ToArray(), variables, expression);
 		}
 
 		private static BoundScope CreateParentScope(BoundGlobalScope previous)
@@ -148,7 +147,7 @@ namespace Minsk.CodeAnalysis.Binding
 
 		private BoundBlockStatement BindBlockStatement(BlockStatementSyntax syntax, bool useSeperateScope = true)
 		{
-			var statements = ImmutableArray.CreateBuilder<BoundStatement>();
+			var statements = new List<BoundStatement>();
 			if (useSeperateScope)
 				_scope = new BoundScope(_scope);
 
@@ -163,7 +162,7 @@ namespace Minsk.CodeAnalysis.Binding
 				//CheckUnusedSymbols(_scope.Parent);
 				_scope = _scope.Parent;
 			}
-			return new BoundBlockStatement(statements.ToImmutable());
+			return new BoundBlockStatement(statements.ToArray());
 		}
 
 		private VariableSymbolCollection BindDataBlockStatement(DataBlockStatementSyntax syntax)
@@ -309,7 +308,7 @@ namespace Minsk.CodeAnalysis.Binding
 			var boundElementParameter = BindParameterStatement(syntax.ElementParameter, null, false);
 			var boundTimeParameter = BindParameterStatement(syntax.TimeParameter, _builtInTypes.LookSymbolUp(typeof(Time)), false);
 
-			var parameters = ImmutableArray.Create<BoundParameterStatement>(boundElementParameter, boundTimeParameter);
+			var parameters = new BoundParameterStatement[] { boundElementParameter, boundTimeParameter};
 			var result = new BoundParameterBlockStatement(parameters);
 			return result;
 		}
@@ -336,7 +335,7 @@ namespace Minsk.CodeAnalysis.Binding
 			return new BoundAnimationStatement(variable, boundParameters.Statements[0], boundParameters.Statements[1], boundBody);
 		}
 
-		private ImmutableArray<BoundCaseStatement> BindAnimationBodyStatement(BlockStatementSyntax body)
+		private BoundCaseStatement[] BindAnimationBodyStatement(BlockStatementSyntax body)
 		{
 			var result = new List<BoundCaseStatement>();
 			foreach (var statement in body.Statements)
@@ -349,7 +348,7 @@ namespace Minsk.CodeAnalysis.Binding
 				var boundStatement = BindCaseBlockStatement((CaseBlockStatementSyntax)statement);
 				result.Add(boundStatement);
 			}
-			return result.ToImmutableArray();
+			return result.ToArray();
 		}
 
 		private BoundCaseStatement BindCaseBlockStatement(CaseBlockStatementSyntax syntax)
@@ -407,7 +406,7 @@ namespace Minsk.CodeAnalysis.Binding
 			var boundFromParameter = BindParameterStatement(syntax.FromParameter, _builtInTypes.LookSymbolUp(typeof(SlideAttributes)));
 			var boundToParameter = BindParameterStatement(syntax.ToParameter, _builtInTypes.LookSymbolUp(typeof(SlideAttributes)));
 
-			var parameters = ImmutableArray.Create<BoundParameterStatement>(boundFromParameter, boundToParameter);
+			var parameters = new BoundParameterStatement[] { boundFromParameter, boundToParameter };
 			var result = new BoundParameterBlockStatement(parameters);
 			return result;
 		}
@@ -499,7 +498,7 @@ namespace Minsk.CodeAnalysis.Binding
 
 		private BoundParameterBlockStatement BindParameterBlockStatement(ParameterBlockStatementSyntax syntax)
 		{
-			var statements = ImmutableArray.CreateBuilder<BoundParameterStatement>();
+			var statements = new List<BoundParameterStatement>();
 
 			foreach (var statementSyntax in syntax.Statements)
 			{
@@ -507,7 +506,7 @@ namespace Minsk.CodeAnalysis.Binding
 				statements.Add(statement);
 			}
 
-			return new BoundParameterBlockStatement(statements.ToImmutable());
+			return new BoundParameterBlockStatement(statements.ToArray());
 		}
 
 		private BoundStatement BindGroupStatement(GroupStatementSyntax syntax)
@@ -597,7 +596,7 @@ namespace Minsk.CodeAnalysis.Binding
 			}
 			CheckUnusedSymbols(_scope);
 			_scope = _scope.Parent;
-			return new BoundSlideStatement(variable, boundStatements.ToImmutableArray());
+			return new BoundSlideStatement(variable, boundStatements.ToArray());
 		}
 
 		private BoundStepStatement BindStepStatement(StepStatementSyntax statement)
@@ -611,7 +610,7 @@ namespace Minsk.CodeAnalysis.Binding
 
 		private BoundStatement BindFileBlockStatement(FileBlockStatementSyntax syntax)
 		{
-			var statements = ImmutableArray.CreateBuilder<BoundStatement>();
+			var statements = new List<BoundStatement>();
 			_scope = new BoundScope(_scope);
 
 			foreach (var statementSyntax in syntax.Statements)
@@ -622,14 +621,14 @@ namespace Minsk.CodeAnalysis.Binding
 
 			_scope = _scope.Parent;
 
-			return new BoundBlockStatement(statements.ToImmutable());
+			return new BoundBlockStatement(statements.ToArray());
 		}
 
 		private BoundStatement BindVariableDeclaration(VariableDeclarationSyntax syntax)
 		{
 			var names = syntax.Variables.Select(v => v.Identifier.Text).ToArray();
 			var initializer = BindExpression(syntax.Initializer);
-			var variables = ImmutableArray.CreateBuilder<VariableSymbol>();
+			var variables = new List<VariableSymbol>();
 
 			var type = initializer.Type;
 			if(syntax.Variables.Length > 1)
@@ -660,7 +659,7 @@ namespace Minsk.CodeAnalysis.Binding
 					type = ((TupleTypeSymbol)initializer.Type).Children[i];
 				variables.Add(CheckGlobalVariableExpression(variable, type, true));
 			}
-			return new BoundVariableDeclaration(variables.ToImmutable(), initializer);
+			return new BoundVariableDeclaration(variables.ToArray(), initializer);
 		}
 
 		private BoundStatement BindExpressionStatement(ExpressionStatementSyntax syntax)
@@ -793,7 +792,7 @@ namespace Minsk.CodeAnalysis.Binding
 				return new BoundErrorExpression();
 			}
 			TypeSymbol targetType = null;
-			var boundExpressions = ImmutableArray.CreateBuilder<BoundExpression>();
+			var boundExpressions = new List<BoundExpression>();
 			foreach (var expressionSyntax in syntax.Contents)
 			{
 				var boundExpression = BindExpression(expressionSyntax, targetType);
@@ -802,7 +801,7 @@ namespace Minsk.CodeAnalysis.Binding
 				if (targetType == null)
 					targetType = boundExpression.Type;
 			}
-			return new BoundArrayExpression(boundExpressions.ToImmutable());
+			return new BoundArrayExpression(boundExpressions.ToArray());
 		}
 
 		private BoundArrayIndex BindArrayIndexExpression(ArrayIndexExpressionSyntax syntax, TypeSymbol type)
@@ -1131,14 +1130,14 @@ namespace Minsk.CodeAnalysis.Binding
 			}
 			if (argumentCount == 0)
 			{
-				return new BoundFunctionExpression(functions.Single(), ImmutableArray<BoundExpression>.Empty, source);
+				return new BoundFunctionExpression(functions.Single(), new BoundExpression[0], source);
 			}
 
-			var arguments = ImmutableArray.CreateBuilder<BoundExpression>();
+			var arguments = new List<BoundExpression>();
 			var parameterDiagnostics = new DiagnosticBag[functions.Count];
 			for (int i = 0; i < argumentCount; i++)
 			{
-				BoundExpression boundArgument = new BoundLiteralExpression(null, PrimitiveTypeSymbol.Undefined);
+				BoundExpression boundArgument = new BoundLiteralExpression(null, TypeSymbol.Undefined);
 				if (syntax.Arguments[i] != null)
 					boundArgument = BindExpression(syntax.Arguments[i]);
 				for (int j = functions.Count - 1; j >= 0; j--)
@@ -1169,13 +1168,13 @@ namespace Minsk.CodeAnalysis.Binding
 			switch (bestMatch.Name)
 			{
 				case "image":
-					BindImageFunction(syntax.Span, bestMatch, arguments.ToImmutable());
+					BindImageFunction(syntax.Span, bestMatch, arguments.ToArray());
 					break;
 				case "font":
-					BindFontFunction(syntax.Span, bestMatch, arguments.ToImmutable());
+					BindFontFunction(syntax.Span, bestMatch, arguments.ToArray());
 					break;
 			}
-			return new BoundFunctionExpression(bestMatch, arguments.ToImmutable(), source);
+			return new BoundFunctionExpression(bestMatch, arguments.ToArray(), source);
 		}
 
 		private BoundExpression BindConversion(BoundExpression expression, TypeSymbol targetType)
@@ -1185,12 +1184,12 @@ namespace Minsk.CodeAnalysis.Binding
 			return expression;
 		}
 
-		private void BindFontFunction(TextSpan span, FunctionSymbol function, ImmutableArray<BoundExpression> immutableArguments)
+		private void BindFontFunction(TextSpan span, FunctionSymbol function, BoundExpression[] immutableArguments)
 		{
 			//System.Drawing.Font f = new System.Drawing.Font(name, 0f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
 		}
 
-		private void BindImageFunction(TextSpan span, FunctionSymbol function, ImmutableArray<BoundExpression> expression)
+		private void BindImageFunction(TextSpan span, FunctionSymbol function, BoundExpression[] expression)
 		{
 			var pathExpression = expression[0];
 			if (pathExpression is BoundLiteralExpression l)
@@ -1230,7 +1229,7 @@ namespace Minsk.CodeAnalysis.Binding
 
 		private BoundExpression BindStringExpression(StringExpressionSyntax syntax)
 		{
-			var boundExpressions = ImmutableArray.CreateBuilder<BoundExpression>();
+			var boundExpressions = new List<BoundExpression>();
 
 			for (int i = 0; i < syntax.Literals.Length + syntax.Insertions.Length; i++)
 			{
@@ -1249,7 +1248,7 @@ namespace Minsk.CodeAnalysis.Binding
 						boundExpressions.Add(BindExpression(syntax.Insertions[i / 2].Expression));
 				}
 			}
-			return new BoundStringExpression(boundExpressions.ToImmutable());
+			return new BoundStringExpression(boundExpressions.ToArray());
 		}
 
 		private BoundExpression BindLiteralExpression(LiteralExpressionSyntax syntax, TypeSymbol targetType = null)
@@ -1271,7 +1270,7 @@ namespace Minsk.CodeAnalysis.Binding
 
 		private BoundExpression BindAssignmentExpression(AssignmentExpressionSyntax syntax)
 		{
-			var boundVariables = ImmutableArray.CreateBuilder<VariableSymbol>();
+			var boundVariables = new List<VariableSymbol>();
 			foreach (var variable in syntax.Variables)
 			{
 				boundVariables.Add(BindGlobalVariableExpression(variable).Variable);
@@ -1332,7 +1331,7 @@ namespace Minsk.CodeAnalysis.Binding
 				}
 			}
 
-			return new BoundAssignmentExpression(boundVariables.ToImmutable(), boundExpression);
+			return new BoundAssignmentExpression(boundVariables.ToArray(), boundExpression);
 		}
 
 		private BoundExpression BindFieldAssignmentExpression(FieldAssignmentExpressionSyntax syntax)

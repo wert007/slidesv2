@@ -2,6 +2,7 @@
 
 namespace Minsk.CodeAnalysis.Symbols
 {
+	[Serializable]
 	public class PrimitiveTypeSymbol : TypeSymbol
 	{
 		public PrimitiveType PrimitiveType { get; private set; }

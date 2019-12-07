@@ -4,7 +4,6 @@ using Minsk.CodeAnalysis.Syntax;
 using Minsk.CodeAnalysis.Text;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 
@@ -17,7 +16,7 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 		{
 			var diagnostics = new DiagnosticBag(path);
 			diagnostics.ReportPresentationDoesNotExist(path);
-			return new EvaluationResult(diagnostics.ToImmutableArray(), null, new TimeWatcher());
+			return new EvaluationResult(diagnostics.ToArray(), null, new TimeWatcher());
 		}
 
 		public static Compilation LoadCompilationFromFile(string path)
@@ -49,9 +48,9 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			{
 				fileContent = reader.ReadToEnd();
 			}
-			var deserializer = new Deserializer(fileContent);
+			var deserializer = new Deserializer(fileContent, new LibrarySymbol[0]);
 			var root = deserializer.Deserialize();
-			var boundGlobalScope = new BoundGlobalScope(null, ImmutableArray.Create<Diagnostic>(), ImmutableArray.Create<VariableSymbol>(), root);
+			var boundGlobalScope = new BoundGlobalScope(null, new Diagnostic[0], new VariableSymbol[0], root);
 
 			return boundGlobalScope;
 		}

@@ -1,5 +1,8 @@
-﻿namespace Slides
+﻿using System;
+
+namespace Slides
 {
+	[Serializable]
 	public class ImageSource
 	{
 		public ImageSource(string path)

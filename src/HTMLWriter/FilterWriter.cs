@@ -11,7 +11,7 @@ namespace HTMLWriter
 	{
 		public static void Write(HTMLWriter writer, CustomFilter[] filters)
 		{
-			writer.StartTag("svg");
+			writer.StartTag("svg", id: "custom-filters");
 			writer.StartTag("defs");
 			foreach (var filter in filters)
 			{
