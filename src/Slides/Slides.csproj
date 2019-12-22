@@ -49,6 +49,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Code\CodeBlock.cs" />
+    <Compile Include="Code\GitRepository.cs" />
     <Compile Include="Data\Alignment.cs" />
     <Compile Include="AnimationCall.cs" />
     <Compile Include="Data\BorderStyle.cs" />
@@ -58,6 +60,7 @@
     <Compile Include="Data\Color.cs" />
     <Compile Include="Container.cs" />
     <Compile Include="Data\CSVFile.cs" />
+    <Compile Include="Data\Range.cs" />
     <Compile Include="Data\Vector2.cs" />
     <Compile Include="Element.cs" />
     <Compile Include="Filters\BlendFilter.cs" />
@@ -116,6 +119,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Github\Github.csproj">
+      <Project>{48471C54-50FA-4FA6-9406-140A55690B8E}</Project>
+      <Name>Github</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

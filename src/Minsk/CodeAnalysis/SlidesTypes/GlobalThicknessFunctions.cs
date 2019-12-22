@@ -13,13 +13,11 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 		{
 			return new Thickness(value, value, value, value);
 		}
-		//TODO: See how the css order is.
-		public static Thickness padding(Unit horizontal, Unit vertical)
+		public static Thickness padding(Unit vertical, Unit horizontal)
 		{
 			return new Thickness(horizontal, vertical, horizontal, vertical);
 		}
-		//TODO: See how the css order is.
-		public static Thickness margin(Unit horizontal, Unit vertical)
+		public static Thickness margin(Unit vertical, Unit horizontal)
 		{
 			return new Thickness(horizontal, vertical, horizontal, vertical);
 		}

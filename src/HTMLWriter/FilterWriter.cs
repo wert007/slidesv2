@@ -391,7 +391,9 @@ namespace HTMLWriter
 
 		private static string ToString(Matrix matrix)
 		{
-			//TODO: Change that in the future..
+			//TODO(Minor): Change that in the future..
+			//To what? a very own method? hmm.
+			//Maybe. Would be a little bit nicer..
 			return matrix.ToString();
 		}
 

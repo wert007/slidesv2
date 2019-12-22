@@ -164,6 +164,11 @@ namespace Minsk.CodeAnalysis.Syntax
 				case '.':
 					_kind = SyntaxKind.PeriodToken;
 					_position++;
+					if(Current == '.')
+					{
+						_kind = SyntaxKind.PeriodPeriodToken;
+						_position++;
+					}
 					break;
 				case '?':
 					_kind = SyntaxKind.QuestionMarkToken;
@@ -329,7 +334,7 @@ namespace Minsk.CodeAnalysis.Syntax
 
 			var isFloat = false;
 			var hasSuffix = false;
-			if(Current == '.')
+			if(Current == '.' && Peek(1) != '.')
 			{
 				isFloat = true;
 				_position++;

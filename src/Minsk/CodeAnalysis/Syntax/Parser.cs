@@ -196,7 +196,14 @@ namespace Minsk.CodeAnalysis.Syntax
 		private ForStatementSyntax ParseForStatement()
 		{
 			var forKeyword = MatchToken(SyntaxKind.ForKeyword);
-			var variable = ParseVariableExpression(); //TODO: No indexing in the for-loop..
+			var variable = ParseVariableExpression();
+			//TODO(Major): Implement a [0..10] element.
+			//[0..10]		Normal
+			//[0..10:2]		Step 2
+			//[2:0..10]		Step 2
+			//[0..10>3]		Step 2
+			//[0..10->3]	Step 2
+			//(old todo) No indexing in the for-loop..
 			var inKeyword = MatchToken(SyntaxKind.InKeyword);
 			var collection = ParseExpression();
 			var colonToken = MatchToken(SyntaxKind.ColonToken);
@@ -908,7 +915,7 @@ namespace Minsk.CodeAnalysis.Syntax
 						Current.Kind != SyntaxKind.StarEqualsToken &&
 						Current.Kind != SyntaxKind.SlashEqualsToken)
 					{
-						//TODO: More or less
+						//TODO(Minor): Not all possible operators. Maybe we should report them too!
 						_diagnostics.ReportUnexpectedToken(Current.Span, Current.Kind, SyntaxKind.EqualsToken);
 					}
 					var operatorToken = NextToken();
@@ -924,15 +931,13 @@ namespace Minsk.CodeAnalysis.Syntax
 						Current.Kind != SyntaxKind.StarEqualsToken &&
 						Current.Kind != SyntaxKind.SlashEqualsToken)
 					{
-						//TODO: More or less
+						//TODO(Minor): Not all possible operators. Maybe we should report them too!
 						_diagnostics.ReportUnexpectedToken(Current.Span, Current.Kind, SyntaxKind.EqualsToken);
 					}
 					var operatorToken = NextToken();
 					var right = ParseAssignmentExpression();
 					return new FieldAssignmentExpressionSyntax(left, operatorToken, right);
 				}
-				//else
-				//	throw new NotImplementedException();
 			}
 			return ParseBinaryExpression();
 		}

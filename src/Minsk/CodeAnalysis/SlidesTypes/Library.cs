@@ -7,7 +7,6 @@ using Slides;
 
 namespace Minsk.CodeAnalysis.SlidesTypes
 {
-
 	public class LibrarySymbol
 	{
 		public string Name { get; }
@@ -19,7 +18,8 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 		public string[] GlobalFunctionsReflectionsNames { get; }
 		public string[] Imports { get; }
 		public static LibrarySymbol Seperator => GetSeperator();
-
+		public static LibrarySymbol Code => CodeLibrary.GetLibrary();
+		public Type SourceType { get; set; }
 
 		public LibrarySymbol(string name, LibrarySymbol[] libraries, BodySymbol[] customTypes, Style[] styles, VariableValueCollection globalVariables, string[] imports)
 			: this(name, libraries, customTypes, styles, globalVariables, new FunctionSymbol[0], new string[0], imports)
@@ -36,6 +36,7 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 				throw new ArgumentOutOfRangeException();
 			GlobalFunctions = globalFunctions;
 			GlobalFunctionsReflectionsNames = globalFunctionsReflections;
+			SourceType = typeof(LibrarySymbol);
 		}
 
 		public LibrarySymbol(string name)
@@ -88,16 +89,17 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			return result;
 		}
 
-		public bool TryLookUpFunction(string name, out FunctionSymbol function)
+		
+		public bool TryLookUpFunction(string name, out FunctionSymbol[] functions)
 		{
-			function = GlobalFunctions.FirstOrDefault(f => f.Name == name);
-			return function != null;
+			functions = GlobalFunctions.Where(f => f.Name == name).ToArray();
+			return GlobalFunctions.Any(f => f.Name == name);
 		}
 
 		public MethodInfo LookMethodInfoUp(FunctionSymbol symbol)
 		{
 			var index = Array.IndexOf(GlobalFunctions, symbol);
-			return typeof(LibrarySymbol).GetMethod(GlobalFunctionsReflectionsNames[index]);
+			return SourceType.GetMethod(GlobalFunctionsReflectionsNames[index]);
 			//return _globalFunctionsReflections[index];
 		}
 	}

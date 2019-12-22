@@ -136,5 +136,7 @@ namespace Minsk.CodeAnalysis.Syntax
 		TemplateKeyword,
 		EndTemplateKeyword,
 		TemplateStatement,
+		PeriodPeriodToken,
+		RangeToken,
 	}
 }

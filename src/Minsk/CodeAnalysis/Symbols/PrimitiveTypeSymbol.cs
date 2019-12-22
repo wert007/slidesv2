@@ -31,9 +31,7 @@ namespace Minsk.CodeAnalysis.Symbols
 
 		public readonly static TypeSymbol Object = new PrimitiveTypeSymbol(PrimitiveType.Object, "object");
 
-		//public static readonly TypeSymbol Slide = new PrimitiveTypeSymbol(PrimitiveType.Slide);
-
-		public override bool IsData => DetermineData();
+		public override bool IsData => true;
 		public override bool AllowsNone => PrimitiveType == PrimitiveType.Void;
 
 		public override bool InnerCanBeConvertedTo(TypeSymbol to)
@@ -50,25 +48,6 @@ namespace Minsk.CodeAnalysis.Symbols
 			if (PrimitiveType == PrimitiveType.Object)
 				return true;
 			return false;
-		}
-
-		private bool DetermineData()
-		{
-			return true;
-			switch (PrimitiveType)
-			{
-				case PrimitiveType.String:
-				case PrimitiveType.Integer:
-				case PrimitiveType.Bool:
-				case PrimitiveType.Float:
-				case PrimitiveType.Object:
-				case PrimitiveType.Unit:
-					return true;
-				case PrimitiveType.Error:
-					return true;
-				default:
-					throw new NotImplementedException();
-			}
 		}
 	}
 }

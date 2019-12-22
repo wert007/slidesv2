@@ -25,12 +25,16 @@ namespace Minsk.CodeAnalysis.Symbols
 
 		public override TypeType Type => TypeType.Tuple;
 
-		//TODO: Huh?!
+		//TODO(Debate): Huh?!
 		//I mean it's kinda data type. 
 		//On the other hand, if you have two container
 		//in it, then those will be added to the slide
 		//No questions asked.
-		public override bool IsData => false;
+
+		//Actually completely depends on the fact, if
+		//you can store a tuple into a variable.
+		//As of now you can't. So it doesn't matter..
+		public override bool IsData => true;
 
 		public override bool AllowsNone => false;
 

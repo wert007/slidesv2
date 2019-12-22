@@ -146,5 +146,11 @@ namespace Slides.Debug
 			var message = $"No library named '{name}' found. Only {string.Join(", ", referenced, null)} where referenced.";
 			Log(message, LogLevel.BoundTreeSerializer);
 		}
+
+		internal static void LogUnexpectedSyntaxKind(BoundNodeKind kind, string origin)
+		{
+			var message = $"Unexpected SyntaxKind '{kind}' in '{origin}'.";
+			Log(message, LogLevel.UnexpectedBoundNodeKind);
+		}
 	}
 }

@@ -8,7 +8,9 @@
 			SemicolonToken = semicolonToken;
 		}
 
-		public override SyntaxKind Kind => SyntaxKind.ParameterStatement; //TODO: Does this make any sense?
+		public override SyntaxKind Kind => SyntaxKind.ParameterStatement; 
+		//TODO(idk): Does this make any sense?
+		//Good Question. Why are we doing this?
 
 		public ParameterStatementSyntax Parameter { get; }
 		public SyntaxToken SemicolonToken { get; }

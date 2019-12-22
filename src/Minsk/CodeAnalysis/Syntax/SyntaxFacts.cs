@@ -23,6 +23,9 @@ namespace Minsk.CodeAnalysis.Syntax
 		{
 			switch (kind)
 			{
+				case SyntaxKind.PeriodPeriodToken:
+					return 6;
+
 				case SyntaxKind.StarToken:
 				case SyntaxKind.SlashToken:
 					return 5;

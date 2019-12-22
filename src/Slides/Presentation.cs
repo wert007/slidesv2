@@ -25,7 +25,8 @@ namespace Slides
 		}
 	}
 
-	//TODO: Why do we need this?!
+	//Why do we need this?!
+	//I think because it can be a value sometimes..
 	[Serializable]
 	public class Library
 	{
@@ -33,6 +34,7 @@ namespace Slides
 		public Library[] Libraries { get; }
 		public Style[] Styles { get; }
 		public static Library Seperator => new Library("seperator", new Library[0], new Style[0]);
+		public static Library Code => new Library("code", new Library[0], new Style[0]);
 
 		public Library(string name, Library[] libraries, Style[] styles)
 		{

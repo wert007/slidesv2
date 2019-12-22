@@ -185,7 +185,8 @@ namespace Minsk.CodeAnalysis
 			return $"{Serialize(statement.BoundCondition)}>{Serialize(statement.BoundBody)}{elseClause}";
 		}
 
-		//TODO: Maybe use something special here. just maybe
+		//Maybe use something special here. just maybe
+		//Well.. I don't think so. it seems to be working just fine
 		private static string SerializeLibraryStatement(BoundLibraryStatement statement)
 			=> $"{statement.Variable.Name}:{Serialize(statement.BoundBody)}";
 		private static string SerializeParameterBlockStatement(BoundParameterBlockStatement statement)
@@ -207,8 +208,8 @@ namespace Minsk.CodeAnalysis
 		private static string SerializeStepStatement(BoundStepStatement statement)
 		{
 			var name = "step";
-			if (statement.Name != null)
-				name = statement.Name;
+			if (statement.Variable != null)
+				name = statement.Variable.Name;
 			return $"{name}:{Serialize(statement.Body)}";
 		}
 

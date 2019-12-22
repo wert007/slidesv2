@@ -5,6 +5,7 @@ using System.Reflection;
 using Minsk.CodeAnalysis.SlidesTypes;
 using Minsk.CodeAnalysis.Symbols;
 using Slides;
+using Slides.Code;
 using Slides.Filters;
 
 namespace Minsk.CodeAnalysis
@@ -51,9 +52,11 @@ namespace Minsk.CodeAnalysis
 			Add(typeof(Unit), PrimitiveTypeSymbol.Unit);
 			Add(typeof(Unit.UnitKind));
 			Add(typeof(UnitAddition));
+			Add(typeof(Range), isData:true);
 
 			Add(typeof(Style), CreateEmptySymbol("Style"));
 			Add(typeof(ElementType), CreateEmptySymbol("ElementType"));
+			Add(typeof(ChartType));
 			Add(typeof(LibrarySymbol), CreateEmptySymbol("Library"));
 
 			Add(typeof(BorderStyle));
@@ -117,15 +120,22 @@ namespace Minsk.CodeAnalysis
 			Add(typeof(Container));
 			Add(typeof(List));
 
+			Add(typeof(CodeBlock));
+
 			Add(typeof(TransitionCall), CreateEmptySymbol("TransitionCall"));
 			Add(typeof(Transition), isData: false);
 
 			Add(typeof(Chart));
 			Add(typeof(LineChart));
 
+			Add(typeof(Step), CreateEmptySymbol(nameof(Step)));
 			Add(typeof(Template));
 			Add(typeof(AnimationSymbol), CreateAnimationSymbol("Animation"));
 			Add(typeof(SlideAttributes), name: "Slide");
+
+			Add(typeof(Github.File), CreateEmptySymbol("GithubFile"));
+			Add(typeof(GitFile), isData:true);
+			Add(typeof(GitRepository), isData:true);
 		}
 
 		public bool ContainsSymbol(TypeSymbol type)

@@ -35,7 +35,14 @@ namespace HTMLWriter
 					return typeof(Thickness);
 				case "margin.Top":
 					return typeof(Unit);
-				//TODO: Background could be a image as well..
+				//TODO(Major): Background could be a image as well..
+				//We actually would need the value of background
+				//to check this.
+
+				//On the other hand. We can't really animate images
+				//There is no lerp function for images. So let's just
+				//assume it is a color? And maybe make sure while Binding
+				//That thats the case.
 				case "background":
 					return typeof(Color);
 				default:
@@ -47,21 +54,20 @@ namespace HTMLWriter
 			_animations.Add(new AnimationJS(stepId, elementId, animation.Name, animation.Time.ToMilliseconds()));
 
 			writer.StartFunction(animation.Name, "progress", "element");
-			writer.WriteVariableDeclaration("computedStyle", "getComputedStyle(element)", true);
-			writer.WriteVariableDeclaration("cases", GetInitializer(writer.Indent, animation.Cases));
+			writer.WriteVariableDeclarationInline("computedStyle", "getComputedStyle(element)", true);
+			writer.WriteVariableDeclarationInline("cases", GetInitializer(writer.Indent, animation.Cases));
 			writer.StartForLoop("i", "cases.length - 1");
-			writer.WriteVariableDeclaration("prev", "cases[i]", true);
-			writer.WriteVariableDeclaration("next", "cases[i + 1]", true);
+			writer.WriteVariableDeclarationInline("prev", "cases[i]", true);
+			writer.WriteVariableDeclarationInline("next", "cases[i + 1]", true);
 			writer.StartIfStatement("progress > prev.condition && progress < next.condition");
-			writer.WriteVariableDeclaration("caseprogress", "(progress - prev.condition) / (next.condition - prev.condition)");
+			writer.WriteVariableDeclarationInline("caseprogress", "(progress - prev.condition) / (next.condition - prev.condition)");
 			foreach (var field in animation.ChangedFields)
 			{
 				var cssField = StyleWriter.ToCssAttribute(field);
 
-				//TODO: Check every case for the first value this field gets set to. 
+				//Check every case for the first value this field gets set to. 
 				//So you can determine the actual type of the field.
 				var fieldType = animation.Cases.FirstOrDefault(c => c.ChangedFields.ContainsKey(field)).ChangedFields.FirstOrDefault(cf => cf.Key == field).Value.GetType();
-				//var fieldType = GetTypeForField(field);
 				if (animation.Cases.All(c => c.ChangedFields.ContainsKey(field)))
 					writer.WriteAssignment($"element.style.{cssField}", GetLerp(fieldType, $"prev.{cssField}_value", $"next.{cssField}_value", "caseprogress"));
 				else
@@ -157,7 +163,7 @@ namespace HTMLWriter
 			}
 			else if(fieldType == typeof(Filter))
 			{
-				//TODO;
+				//TODO(Major): Implement js parser for filters.
 				throw new Exception();
 				return $"undefined";
 			}
@@ -175,7 +181,7 @@ namespace HTMLWriter
 				case Unit unit:
 					return $"new StyleUnit({unit.Value}, \"{Unit.ToString(unit.Kind)}\", {GetJSValue(GetIsVertical(field))})";
 				case Thickness thickness:
-					return "undefined"; //TODO
+					return "undefined"; //TODO(Minor): Implement Thickness class in datatypes.js
 				case Color color:
 					return $"new Color('{CSSWriter.GetValue(color)}')";
 					throw new NotImplementedException();
@@ -219,7 +225,7 @@ namespace HTMLWriter
 }
 			 * */
 			writer.StartFunction("getAnimations");
-			writer.WriteVariableDeclaration("animations", GetAnimationInitializer(writer.Indent, _animations.ToArray()), true);
+			writer.WriteVariableDeclarationInline("animations", GetAnimationInitializer(writer.Indent, _animations.ToArray()), true);
 			writer.WriteReturnStatement("animations");
 			writer.EndFunction();
 			_animations.Clear();

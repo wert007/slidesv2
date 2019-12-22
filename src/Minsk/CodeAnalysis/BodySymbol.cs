@@ -32,7 +32,7 @@ namespace Minsk.CodeAnalysis
 	}
 	public class BodySymbol
 	{
-		//TODO: Maybe use TypeSymbol instead of VariableSymbol
+		//TODO(Minor): Maybe use TypeSymbol instead of VariableSymbol
 		internal BodySymbol(VariableSymbol symbol, BoundBlockStatement body)
 		{
 			Symbol = symbol;

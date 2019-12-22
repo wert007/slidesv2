@@ -20,5 +20,6 @@ namespace Minsk.CodeAnalysis.Binding
 		Concatination,
 		EnumAddition,
 		FilterAddition,
+		Range,
 	}
 }

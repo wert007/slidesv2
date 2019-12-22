@@ -328,7 +328,6 @@ namespace Minsk.CodeAnalysis
 					return reference;
 			}
 			Logger.LogUnknownLibrary(name, _referenced);
-			//TODO!!!!!!!!!!!!!!!!!!!!!!!!!!
 			return new LibrarySymbol(name);
 		}
 
@@ -625,10 +624,13 @@ namespace Minsk.CodeAnalysis
 			var name = ConsumeToken();
 			if (name == "step")
 				name = null;
+			VariableSymbol variable = null;
+			if (name != null)
+				variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(Step)), false);
 			ConsumeToken(); //:
 			var body = DeserializeStatement();
 			ConsumeStatementTail();
-			return new BoundStepStatement(name, body);
+			return new BoundStepStatement(variable, body);
 		}
 
 		private BoundStyleStatement DeserializeStyleStatement()

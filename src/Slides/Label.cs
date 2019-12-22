@@ -33,6 +33,7 @@ namespace Slides
 				}
 			}
 			//TODO: std stylemb.,jhjbmbgqwertzuiopü+asdfghjklöäyxcvbm,
+			//Sorry?
 			return stdFont;
 		}
 

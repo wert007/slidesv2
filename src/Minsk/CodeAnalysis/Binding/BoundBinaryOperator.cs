@@ -42,6 +42,7 @@ namespace Minsk.CodeAnalysis.Binding
 
 		private static TypeSymbol Filter = TypeSymbolTypeConverter.Instance.LookSymbolUp(typeof(Filter));
 		private static TypeSymbol Unit = TypeSymbolTypeConverter.Instance.LookSymbolUp(typeof(Unit));
+		private static TypeSymbol Range = TypeSymbolTypeConverter.Instance.LookSymbolUp(typeof(Range));
 		private static BoundBinaryOperator[] _operators =
 		  {
 				new BoundBinaryOperator(SyntaxKind.PlusToken, BoundBinaryOperatorKind.Addition, PrimitiveTypeSymbol.Integer),
@@ -53,6 +54,8 @@ namespace Minsk.CodeAnalysis.Binding
 				new BoundBinaryOperator(SyntaxKind.MinusToken, BoundBinaryOperatorKind.Subtraction, PrimitiveTypeSymbol.Float),
 				new BoundBinaryOperator(SyntaxKind.StarToken, BoundBinaryOperatorKind.Multiplication, PrimitiveTypeSymbol.Float),
 				new BoundBinaryOperator(SyntaxKind.SlashToken, BoundBinaryOperatorKind.Division, PrimitiveTypeSymbol.Float),
+
+				new BoundBinaryOperator(SyntaxKind.PeriodPeriodToken, BoundBinaryOperatorKind.Range, PrimitiveTypeSymbol.Integer, Range),
 
 				new BoundBinaryOperator(SyntaxKind.PlusToken, BoundBinaryOperatorKind.Concatination, PrimitiveTypeSymbol.String),
 

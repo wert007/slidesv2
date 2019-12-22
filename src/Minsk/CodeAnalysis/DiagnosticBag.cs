@@ -67,7 +67,7 @@ namespace Minsk.CodeAnalysis
 
 		public void ReportBadTopLevelStatement(SyntaxToken token)
 		{
-			//TODO: Maybe say, which Tokens (Keywords) are expected/allowed..
+			//TODO(Improvement): Maybe say, which Tokens (Keywords) are expected/allowed..
 			var message = $"Bad top level token: '{token}'";
 			Report(token.Span, message, DiagnosticLevel.Error);
 		}
@@ -133,11 +133,19 @@ namespace Minsk.CodeAnalysis
 			Report(span, message, DiagnosticLevel.Error);
 		}
 
-		internal void ReportUndefinedFunction(TextSpan span, string name, TypeSymbol parent)
+		public void ReportUndefinedFunction(TextSpan span, string name, TypeSymbol parent)
 		{
 			if (parent == PrimitiveTypeSymbol.Error)
 				return;
+			//TODO(Improvement): Find similiar functions. Maybe you can call one of those.
 			var message = $"Function '{parent}.{name}' doesn't exist.";
+			Report(span, message, DiagnosticLevel.Error);
+		}
+
+		public void ReportUndefinedFunction(TextSpan span, string name, LibrarySymbol library)
+		{
+			//TODO(Improvement): Find similiar functions. Maybe you can call one of those.
+			var message = $"Function '{library.Name}.{name} doesn't exist in '{library.Name}'.";
 			Report(span, message, DiagnosticLevel.Error);
 		}
 
@@ -157,7 +165,9 @@ namespace Minsk.CodeAnalysis
 
 		public void ReportCannotConvert(TextSpan span, TypeSymbol fromType, TypeSymbol[] toTypes)
 		{
-			//TODO: What to do if toTypes contains an ErrorTypeSymbol?
+			//TODO(Time): What to do if toTypes contains an ErrorTypeSymbol?
+			//As of right now toTypes is constant. So i don't know where
+			//the ErrorSymbol should come from..
 			if (fromType == PrimitiveTypeSymbol.Error)
 				return;
 			if (toTypes.Contains(PrimitiveTypeSymbol.Error))
@@ -192,7 +202,7 @@ namespace Minsk.CodeAnalysis
 
 		public void ReportOnlyCaseStatementsAllowed(TextSpan span, SyntaxKind kind)
 		{
-			//TODO: Better message
+			//TODO(Improvement): Better message
 			var message = $"Expected a 'CaseStatement' but actual statement was '{kind}'.";
 			Report(span, message, DiagnosticLevel.Error);
 		}
@@ -264,7 +274,7 @@ namespace Minsk.CodeAnalysis
 				message += $"Try '{minParameterCount}'";
 			if (maxParameterCount != null && minParameterCount != null)
 				message += $" or '{maxParameterCount}'";
-			else
+			else if(maxParameterCount != null)
 				message += $"Try '{maxParameterCount}'";
 			message += ".";
 			Report(span, message, DiagnosticLevel.Error);
@@ -321,5 +331,12 @@ namespace Minsk.CodeAnalysis
 			var message = $"Could not check file. {kind} will only be evaluate during runtime.";
 			Report(span, message, DiagnosticLevel.Warning);
 		}
+
+		public void ReportUnexpectedMemberKind(TextSpan span, SyntaxKind memberKind, TypeSymbol enumType)
+		{
+			var message = $"Unexpected MemberKind '{memberKind}' on type '{enumType}'.";
+			Report(span, message, DiagnosticLevel.Error);
+		}
+
 	}
 }

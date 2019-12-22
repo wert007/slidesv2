@@ -2,13 +2,20 @@
 
 namespace Slides
 {
+	public enum ChartType
+	{
+		LineChart,
+	}
 	public abstract class Chart : Element
 	{
 		public bool showXAxis { get; set; } = true;
 		public bool showYAxis { get; set; } = true;
+		public bool showLegend { get; set; } = true;
+		public abstract ChartType chartType { get; }	
 	}
 	public class LineChart : Chart
 	{
+
 		public LineChart(CSVFile data)
 		{
 			Data = data;
@@ -53,7 +60,7 @@ namespace Slides
 		public string yName { get; set; }
 
 		public override ElementType type => ElementType.LineChart;
-
+		public override ChartType chartType => ChartType.LineChart;
 		protected override Unit get_InitialHeight() => new Unit(100, Unit.UnitKind.Pixel);
 
 		protected override Unit get_InitialWidth() => new Unit(100, Unit.UnitKind.Pixel);

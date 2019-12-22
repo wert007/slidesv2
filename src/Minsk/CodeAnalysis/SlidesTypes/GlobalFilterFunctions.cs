@@ -5,7 +5,7 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 {
 	public static class GlobalFilterFunctions
 	{
-		//TODO: Add all SVGFilters
+		//TODO(Improvement): Add all SVGFilters
 		public static SVGFilter flood(Color color, float opacity) => new FloodFilter(color, opacity);
 		public static SVGFilter turbulence(float baseFrequency, int numOctaves) => new TurbulenceFilter(baseFrequency, numOctaves);
 		public static Light pointLight(float x, float y, float z) => new PointLight(x, y, z);

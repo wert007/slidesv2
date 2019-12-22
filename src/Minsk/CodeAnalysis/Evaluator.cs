@@ -46,8 +46,8 @@ namespace Minsk.CodeAnalysis
 		private readonly Dictionary<VariableSymbol, Style> _styles = new Dictionary<VariableSymbol, Style>();
 		private readonly Dictionary<Element, AnimationCall> _animations = new Dictionary<Element, AnimationCall>();
 		private readonly Dictionary<VariableSymbol, BoundTemplateStatement> _templates = new Dictionary<VariableSymbol, BoundTemplateStatement>();
-
 		private readonly List<string> _imports = new List<string>();
+		private int slideCount = 0;
 
 		private PresentationFlags _flags = new PresentationFlags();
 
@@ -61,10 +61,17 @@ namespace Minsk.CodeAnalysis
 			_root = root;
 			_referenced = referenced;
 			_declarations = declarations;
+			foreach (var declaration in _declarations)
+			{
+				if (declaration.Key.Type == _typeConverter.LookSymbolUp(typeof(SlideAttributes)))
+					slideCount++;
+			}
 			_variables = new VariableValueCollection(variables);
+			_variables.Add(new VariableSymbol("slideCount", true, PrimitiveTypeSymbol.Integer, false), slideCount);
 			if (!variables.Any())
 			{
 				_variables.Add(new VariableSymbol("seperator", true, _typeConverter.LookSymbolUp(typeof(LibrarySymbol)), false), Library.Seperator);
+				_variables.Add(new VariableSymbol("code", true, _typeConverter.LookSymbolUp(typeof(LibrarySymbol)), false), Library.Code);
 				_variables.Add(new VariableSymbol("auto", true, _typeConverter.LookSymbolUp(typeof(Unit)), false), new Unit(0, Unit.UnitKind.Auto));
 				foreach (var color in Color.GetStaticColors())
 				{
@@ -105,7 +112,7 @@ namespace Minsk.CodeAnalysis
 				var libraries = new Library[_referenced.Length];
 				for (int i = 0; i < libraries.Length; i++)
 				{
-					//TODO: Recursion
+					//TODO(Major): Recursion
 					libraries[i] = new Library(_referenced[i].Name, _referenced[i].Libraries?.Select(l => new Library(l.Name, null, l.Styles)).ToArray(), _referenced[i].Styles);
 					_imports.AddRange(_referenced[i].Imports);
 				}
@@ -254,12 +261,11 @@ namespace Minsk.CodeAnalysis
 			};
 		}
 
-		//TODO: hacky
 		private Slides.Attribute[] CollectAnimationFields(BoundFunctionAccessExpression expression, Type animatedObject)
 		{
-			//TODO: hacky
-			var field = expression.Function.Function.Name; //.Field.Variable.Name;
-																		  //TODO: hacky
+			//TODO(Time): hacky
+			//without setPadding() Idk when we use this actually...
+			var field = expression.Function.Function.Name;
 			var value = EvaluateExpression(expression.Function.Arguments[0]);
 			var parent = expression.Parent;
 
@@ -296,7 +302,10 @@ namespace Minsk.CodeAnalysis
 			{
 				foreach (var field in CollectStyleFields(s, styleName))
 				{
-					result.Add(field.Key, field.Value);
+					if (!result.ContainsKey(field.Key))
+						result.Add(field.Key, field.Value);
+					else
+						result[field.Key] = field.Value;
 				}
 			}
 			return result;
@@ -308,7 +317,15 @@ namespace Minsk.CodeAnalysis
 			{
 				case BoundNodeKind.ExpressionStatement:
 					return CollectStyleFields((BoundExpressionStatement)statement, styleName);
+				case BoundNodeKind.IfStatement:
+					return CollectStyleFields((BoundIfStatement)statement, styleName);
+				case BoundNodeKind.BlockStatement:
+					return CollectStyleFields((BoundBlockStatement)statement, styleName);
+				case BoundNodeKind.VariableDeclaration:
+					Evaluate(statement);
+					return new Dictionary<string, object>();
 				default:
+					Logger.LogUnexpectedSyntaxKind(statement.Kind, "CollectStyleFields");
 					return new Dictionary<string, object>();
 			}
 		}
@@ -316,6 +333,20 @@ namespace Minsk.CodeAnalysis
 		private Dictionary<string, object> CollectStyleFields(BoundExpressionStatement statement, string styleName)
 		{
 			return CollectStyleFields(statement.Expression, styleName);
+		}
+
+		private Dictionary<string, object> CollectStyleFields(BoundIfStatement statement, string styleName)
+		{
+			var condition = (bool)EvaluateExpression(statement.BoundCondition);
+			if(condition)
+			{
+				return CollectStyleFields(statement.BoundBody, styleName);
+			}
+			if(statement.BoundElse != null)
+			{
+				return CollectStyleFields(statement.BoundElse, styleName);
+			}
+			return new Dictionary<string, object>();
 		}
 
 		private Dictionary<string, object> CollectStyleFields(BoundExpression expression, string styleName)
@@ -329,12 +360,14 @@ namespace Minsk.CodeAnalysis
 				case BoundNodeKind.FunctionAccessExpression:
 					return CollectStyleFields((BoundFunctionAccessExpression)expression, styleName);
 				default:
+					Logger.LogUnexpectedSyntaxKind(expression.Kind, "CollectStyleFields");
 					return new Dictionary<string, object>();
 			}
 		}
 
 		private Dictionary<string, object> CollectStyleFields(BoundFieldAssignmentExpression expression)
 		{
+			//TODO(Major): Std-Style needs a very own class for ModifiedFields. There could be subtypes and everything!
 			var field = expression.Field.Field.Variable.Name;
 			var value = EvaluateExpression(expression.Initializer);
 			var result = new Dictionary<string, object>();
@@ -344,7 +377,7 @@ namespace Minsk.CodeAnalysis
 
 		private Dictionary<string, object> CollectStyleFields(BoundAssignmentExpression expression)
 		{
-			//TODO Maybe hacky
+			//TODO(Time): Maybe hacky
 			var field = expression.Variables[0].Name;
 			var value = EvaluateExpression(expression.Expression);
 			var result = new Dictionary<string, object>();
@@ -359,12 +392,12 @@ namespace Minsk.CodeAnalysis
 				case "applyStyle":
 					var style = (Style)EvaluateExpression(expression.Function.Arguments[0]);
 					return style.ModifiedFields;
-				case "setPadding":
-				case "setMargin":
-					var value = EvaluateExpression(expression.Function.Arguments[0]);
-					var result = new Dictionary<string, object>();
-					result.Add(expression.Function.Function.Name, value);
-					return result;
+				//case "setPadding":
+				//case "setMargin":
+				//	var value = EvaluateExpression(expression.Function.Arguments[0]);
+				//	var result = new Dictionary<string, object>();
+				//	result.Add(expression.Function.Function.Name, value);
+				//	return result;
 				default:
 					Logger.LogUnmatchedStyleFunction(expression.Function.Function.Name, styleName);
 
@@ -375,12 +408,13 @@ namespace Minsk.CodeAnalysis
 
 		private void EvaluateStyleStatement(BoundStyleStatement node)
 		{
-			//TODO: I dont know. Can we EVER compute the same style twice?????
+			//TODO(Time): I dont know. Can we EVER compute the same style twice?????
+			//aka do we need to store styles in _declarations?
 			if(node.Variable != null)
 				_declarations.Remove(node.Variable);
 			if (!_flags.StyleAllowed)
 				throw new Exception();
-
+			_variables = _variables.Push();
 			if (node.Variable != null)
 			{
 				var modifiedFields = CollectStyleFields(node.BoundBody, node.Variable.Name);
@@ -395,6 +429,7 @@ namespace Minsk.CodeAnalysis
 				var style = new Style("std", modifiedFields);
 				_styles.Add(new VariableSymbol("std", true, _typeConverter.LookSymbolUp(typeof(Style)), false), style);
 			}
+			_variables = _variables.Pop(out var _);
 		}
 
 		private void EvaluateAnimationStatement(BoundAnimationStatement node)
@@ -506,7 +541,7 @@ namespace Minsk.CodeAnalysis
 				throw new Exception();
 			var data = new BodySymbol(node.Type, null);
 			_customTypes.Add(node.Type, data);
-			//TODO: Maybe we don't need to collect data statements because they declare a type
+			//TODO(Minor): Maybe we don't need to collect data statements because they declare a type
 			//and not a variable.
 			_declarations.Remove(new VariableSymbol(node.Type.Name, true, node.Type, false));
 		}
@@ -526,7 +561,7 @@ namespace Minsk.CodeAnalysis
 			_declarations.Remove(new VariableSymbol(node.Type.Name, true, node.Type, false));
 		}
 
-		//TODO: galore! Everythings missing. It's a wonder it's working!
+		//TODO(Major): galore! Everythings missing. It's a wonder it's working!
 		private void EvaluateTemplateStatement(BoundTemplateStatement node)
 		{
 			if (!_declarations.ContainsKey(node.Variable))
@@ -564,7 +599,6 @@ namespace Minsk.CodeAnalysis
 				_variables = _variables.Push();
 				var currentTemplate = _templates[node.Template];
 				_variables[currentTemplate.SlideParameter.Variable] = _currentSlide;
-				_variables[new VariableSymbol("slideCount", true, PrimitiveTypeSymbol.Integer, false)] = _slides.Count; //TODO: Where do we get our actual slideCount?
 				_variables = _variables.Push();
 				Evaluate(_templates[node.Template].Body);
 				_variables = _variables.Pop(out var children);
@@ -641,7 +675,7 @@ namespace Minsk.CodeAnalysis
 							break;
 					}
 			}
-			var step = new Step(node.Name, _currentSlide, animationCalls, visualChildren.ToArray(), dataChildren.ToArray());
+			var step = new Step(node.Variable?.Name, _currentSlide, animationCalls, visualChildren.ToArray(), dataChildren.ToArray());
 			return step;
 		}
 
@@ -673,15 +707,32 @@ namespace Minsk.CodeAnalysis
 		{
 			_variables = _variables.Push();
 			var collection = EvaluateExpression(node.Collection);
-			if (!(collection is IEnumerable<object> e))
-				throw new Exception();
-
-			foreach (var item in e)
+			if (collection is Range r)
 			{
-				_variables[node.Variable] = item;
-				Evaluate(node.Body);
+				if(r.Step >= 0)
+					for (int i = r.From; i < r.To; i += r.Step)
+					{
+						_variables[node.Variable] = i;
+						Evaluate(node.Body);
+					}
+				else
+					for(int i = r.From; i > r.To; i += r.Step)
+					{
+						_variables[node.Variable] = i;
+						Evaluate(node.Body);
+					}
 			}
+			else
+			{
+				if (!(collection is IEnumerable<object> e))
+					throw new Exception();
 
+				foreach (var item in e)
+				{
+					_variables[node.Variable] = item;
+					Evaluate(node.Body);
+				}
+			}
 			_variables = _variables.Pop(out var _);
 		}
 
@@ -780,7 +831,7 @@ namespace Minsk.CodeAnalysis
 			if (node.Type == PrimitiveTypeSymbol.Unit)
 				switch (value)
 				{
-					//TODO: Maybe don't differntiate between int and float. It's confusing
+					//TODO(Improvement): Maybe don't differntiate between int and float. It's confusing
 					case float f:
 						return new Unit(f * 100, Unit.UnitKind.Percent);
 					case int i:
@@ -841,7 +892,8 @@ namespace Minsk.CodeAnalysis
 
 		private object EvaluateAnimationCall(AnimationSymbol animation, BoundFunctionExpression function, object[] args)
 		{
-			//TODO: use function parameter
+			//																												 ^
+			//TODO: use function parameter	----------------------------------------------------|
 			var cases = new CaseCall[animation.Cases.Length];
 			var element = (Element)args[0];
 			var time = (Time)args[1];
@@ -940,7 +992,7 @@ namespace Minsk.CodeAnalysis
 			for (int i = 0; i < constructor.Parameter.Count; i++)
 			{
 				args[i] = EvaluateExpression(arguments[i]);
-				//TODO: Maybe allow multiple Constructors for custom groups.
+				//TODO(BigDecision): Maybe allow multiple Constructors for custom groups.
 				//For example:
 				//group a(i : int):
 				//	print(i);
@@ -963,7 +1015,7 @@ namespace Minsk.CodeAnalysis
 				Evaluate(group.Body);
 
 			_currentReferenced = oldReferenced;
-			//TODO: Maybe these values are wrong. If you use for example a for loop
+			//TODO(Major): Maybe these values are wrong. If you use for example a for loop
 			//where you create a new Label in, then you would have a lot of unnamed
 			//children. And all these unnamed children don't have any information
 			//about there position. In the end we have Stacks and such for these things
@@ -974,6 +1026,9 @@ namespace Minsk.CodeAnalysis
 
 			//But we still have the naming problem... you could make it connected to 
 			//the iterator so you have hopefully unique names...
+
+			//As of now they are included in the _groupChildren. You just need to give them
+			//a better name!
 			var slideValues = _groupChildren.Pop().ToArray();
 
 			_variables = _variables.Pop(out cVariables);
@@ -1087,9 +1142,7 @@ namespace Minsk.CodeAnalysis
 					else
 						_groupAppliedStyles.Peek().Add(style);
 					return null;
-				case "lib":
-					//TODO: Maybe Refactor here.
-					return null;
+				case "lib": return null;
 			}
 			MethodInfo method = null;
 			if (expression.Source != null)
@@ -1216,7 +1269,9 @@ namespace Minsk.CodeAnalysis
 			{
 				if (_styles.ContainsKey(v.Variable))
 					return _styles[v.Variable];
-				//TODO: if your style is in a different library, tell us which one it is!
+				//TODO(Minor): if your style is in a different library, tell us which one it is!
+				//I mean you probably already do, because otherwise the Binder might cry,
+				//but the evaluator doesn't use this piece of information..
 				foreach (var lib in _referenced)
 				{
 					var style = lib.Styles.FirstOrDefault(s => s.Name == v.Variable.Name);
@@ -1405,6 +1460,12 @@ namespace Minsk.CodeAnalysis
 					return AddEnum(horizontal, vertical);
 				case BoundBinaryOperatorKind.FilterAddition:
 					return new FilterAddition((Filter)left, (Filter)right);
+				case BoundBinaryOperatorKind.Range:
+					int il = (int)left;
+					int ir = (int)right;
+					if (il <= ir)
+						return new Range(il, ir, 1);
+					return new Range(il, ir, -1);
 				default:
 					throw new Exception($"Unexpected binary operator {b.Op}");
 			}

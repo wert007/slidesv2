@@ -23,6 +23,11 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			return new CSVFile(fileContents);
 		}
 
+		public static Range stepBy(Range r, int step)
+		{
+			return new Range(r.From, r.To, step);
+		}
+
 		public static ImageSource image(string path)
 		{
 			var result = new ImageSource(path);
@@ -83,14 +88,7 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 		public static Unit pct(float value) => new Unit(value, Unit.UnitKind.Percent);
 		public static float @float(Unit value) => value.Value;
 
-		public static ImportExpression<LibrarySymbol> lib(string path)
-		{
-			throw new NotSupportedException();
-			//var lib = Loader.LoadFromFile(path, false, false);
-			//if (lib == null)
-			//	return null;
-			//return new ImportExpression<LibrarySymbol>((LibrarySymbol)lib.Value);
-		}
+		public static ImportExpression<LibrarySymbol> lib(string path) => throw new NotSupportedException();
 
 		//public static Font gfont(string name)
 		//{

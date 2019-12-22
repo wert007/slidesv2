@@ -1,4 +1,5 @@
 ﻿using Slides;
+using Slides.Code;
 using System;
 using System.IO;
 using System.Linq;
@@ -43,6 +44,7 @@ namespace HTMLWriter
 			CopyFile("core.css", targetDirectory, alwaysCopyEverything);
 			CopyFile("core.js", targetDirectory, alwaysCopyEverything);
 			CopyFile("datatypes.js", targetDirectory, alwaysCopyEverything);
+			CopyFile("prism.js", targetDirectory, alwaysCopyEverything);
 
 			using (FileStream stream = new FileStream(Path.Combine(targetDirectory, "index.html"), FileMode.Create))
 			using (_htmlWriter = new HTMLWriter(stream))
@@ -68,6 +70,9 @@ namespace HTMLWriter
 						_htmlWriter.UseCSS("core.css");
 						_htmlWriter.UseJS("core.js");
 						_htmlWriter.UseJS("datatypes.js");
+						_htmlWriter.UseJS("https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js");
+						_htmlWriter.UseCSS("https://cdnjs.cloudflare.com/ajax/libs/prism/1.17.1/themes/prism-tomorrow.min.css");
+						_htmlWriter.UseCSS("https://cdnjs.cloudflare.com/ajax/libs/prism/1.17.1/plugins/line-numbers/prism-line-numbers.min.css");
 						foreach (var library in presentation.Libraries)
 						{
 							_htmlWriter.UseCSS($"{library.Name}.css");
@@ -80,6 +85,10 @@ namespace HTMLWriter
 						_htmlWriter.PushAttribute("onload", "load()");
 						_htmlWriter.PushAttribute("onkeydown", "keyDown(event);");
 						_htmlWriter.StartBody();
+						_htmlWriter.UseJS("prism.js");
+						//_htmlWriter.UseJS("https://cdnjs.cloudflare.com/ajax/libs/prism/1.17.1/components/prism-core.min.js");
+					//	_htmlWriter.UseJS("https://cdnjs.cloudflare.com/ajax/libs/prism/1.17.1/plugins/autoloader/prism-autoloader.js");
+						//_htmlWriter.UseJS("https://cdnjs.cloudflare.com/ajax/libs/prism/1.17.1/plugins/line-numbers/prism-line-numbers.min.js");
 
 						FilterWriter.Write(_htmlWriter, presentation.CustomFilter);
 
@@ -200,6 +209,9 @@ namespace HTMLWriter
 				case ElementType.List:
 					WriteList(parentName, (List)element);
 					break;
+				case ElementType.CodeBlock:
+					WriteCodeBlock(parentName, (CodeBlock)element);
+					break;
 				default:
 					throw new Exception($"ElementType unknown: {element.type}");
 			}
@@ -231,6 +243,21 @@ namespace HTMLWriter
 			_htmlWriter.EndTag();
 		}
 
+		private static void WriteCodeBlock(string parentName, CodeBlock element)
+		{
+			_htmlWriter.StartTag("div");
+			_htmlWriter.PushAttribute("data-start", element.lineStart.ToString());
+			_htmlWriter.StartTag("pre", id: parentName + "-" + element.name, classes: "codeblock line-numbers" + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)), useNewLine: false);
+			_htmlWriter.StartTag("code", classes: $"language-clike", useNewLine: false);
+			_htmlWriter.Write(element.code);
+			_htmlWriter.EndTag(false);
+			_htmlWriter.EndTag(false);
+			_htmlWriter.StartTag("div", classes: "codeblock-caption");
+			_htmlWriter.Write(element.caption);
+			_htmlWriter.EndTag();
+			_htmlWriter.EndTag();
+		}
+
 		private static void WriteContainer(string parentName, Container element)
 		{
 			_htmlWriter.StartTag("div", id: parentName + "-" + element.name, classes: "container " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
@@ -243,7 +270,9 @@ namespace HTMLWriter
 			_htmlWriter.StartTag("div", id: parentName + "-" + stack.name, classes: "stack " + string.Join(" ", stack.get_AppliedStyles().Select(s => s.Name)));
 			foreach (var element in stack.children)
 			{
-				//TODO: They don't have an id.
+				//TODO(Debate): They don't have an id.
+				//So we need to set a name
+				//e.g. stackChild0, stackChild1, stackChild2...
 				WriteElement(parentName, element, stack);
 			}
 			_htmlWriter.EndTag();
@@ -257,7 +286,11 @@ namespace HTMLWriter
 
 		private static void WriteLineChart(string parentName, LineChart element)
 		{
+			_htmlWriter.PushAttribute("height", element.height.ToString());
+			_htmlWriter.StartTag("div");
 			_htmlWriter.StartTag("canvas", id: parentName + "-" + element.name, classes: "lineChart " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
+			ChartWriter.WriteChart(_jsWriter, parentName, element);
+			_htmlWriter.EndTag();
 			_htmlWriter.EndTag();
 		}
 
@@ -332,6 +365,20 @@ namespace HTMLWriter
 						else
 							span.Append(character);
 						break;
+					case '\\':
+						i++;
+						switch (next)
+						{
+							case 'n':
+								span.Append("<br>");
+								break;
+							case '\\':
+								span.Append('\\');
+								break;
+							default:
+								throw new Exception();
+						}
+						break;
 					default:
 						span.Append(character);
 						break;
@@ -348,7 +395,10 @@ namespace HTMLWriter
 			_htmlWriter.StartTag("div", id: parentName + "-" + element.name, classes: element.TypeName + " " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
 			foreach (var child in element.Children)
 			{
-				//TODO: See Stack.
+				//TODO(Debate): They don't have an id.
+				//So we need to set a name
+				//e.g. groupChild0, groupChild1, groupChild2...
+				//Or maybe try to get the name from the group-body..
 				WriteElement(parentName, child, element);
 			}
 			_htmlWriter.EndTag();

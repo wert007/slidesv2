@@ -34,7 +34,7 @@ group introductingQuote(quote~: string, author~: string):
 	padding = padding(5%);
 endgroup
 
-group map(w~: Unit):
+group map():
 	let map~ = image(@'city\map.png');
 	let imgMap = new Image(map~);
 	imgMap.width = 100%;
@@ -43,9 +43,7 @@ group map(w~: Unit):
 	imgMap.position = 'relative';
 	//imgMap.#position = 'relative';
 	//imgMap.position! = 'relative';
-	//imgMap.*position = 'relative';
-	//imgMap.position* = 'relative';
-	//imgMap.css += 'position = relative';
+	//imgMap._position = 'relative';
 	let lblMap = new Label('(c) wikimedia');
 	lblMap.orientation = Horizontal.Right | Vertical.Bottom;
 
@@ -85,6 +83,10 @@ group cityDevelopmentText(args~: cityDevelopmentParameter):
 	let chart = new LineChart(populationData~);
 	chart.color = rgb(0, 0, 153);
 	chart.orientation = Orientation.Stretch;
+	chart.showXAxis = false;
+	chart.showYAxis = false;
+	chart.showLegend = false;
+	chart.height = auto;
 	let lblSource = new Label($'(c) {args~.populationSource~}');
 	lblSource.orientation = Horizontal.Right | Vertical.Bottom;
 	lblSource.applyStyle(imgLabel);
@@ -95,6 +97,4 @@ group cityDevelopmentText(args~: cityDevelopmentParameter):
 
 	initWidth = 100%;
 	initHeight = 100%;
-
-	background = green;
 endgroup

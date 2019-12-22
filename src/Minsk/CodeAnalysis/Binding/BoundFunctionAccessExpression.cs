@@ -14,7 +14,7 @@ namespace Minsk.CodeAnalysis.Binding
 		public override BoundNodeKind Kind => BoundNodeKind.FunctionAccessExpression;
 
 		public BoundExpression Parent { get; }
-		//TODO: Maybe we will introduce something like this again. But right now a BoundExpression is well fitted.
+		//Maybe we will introduce something like this again. But right now a BoundExpression is well fitted.
 		//This extra safety measure SHOULDN'T be that important.
 		//public Member Member { get; }
 		public BoundFunctionExpression Function { get; }

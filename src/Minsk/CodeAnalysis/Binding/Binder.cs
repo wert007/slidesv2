@@ -33,12 +33,16 @@ namespace Minsk.CodeAnalysis.Binding
 			_references = references.Concat(new LibrarySymbol[]
 				{
 					LibrarySymbol.Seperator,
+					LibrarySymbol.Code,
 				}).ToArray();
 			_diagnostics = new DiagnosticBag(fileName);
 
 			_builtInTypes = TypeSymbolTypeConverter.Instance;
 			_builtInConstants = new Dictionary<string, VariableSymbol>();
+
 			_builtInConstants.Add("seperator", new VariableSymbol("seperator", true, _builtInTypes.LookSymbolUp(typeof(LibrarySymbol)), false));
+			_builtInConstants.Add("code", new VariableSymbol("code", true, _builtInTypes.LookSymbolUp(typeof(LibrarySymbol)), false));
+
 			_builtInConstants.Add("auto", new VariableSymbol("auto", true, _builtInTypes.LookSymbolUp(typeof(Unit)), false));
 			foreach (var color in Color.GetStaticColors())
 			{
@@ -301,13 +305,22 @@ namespace Minsk.CodeAnalysis.Binding
 			_scope = new BoundScope(_scope);
 			var name = syntax.Variable.Identifier.Text;
 			var boundCollection = BindExpression(syntax.Collection);
-			if (boundCollection.Type.Type != TypeType.Array)
+			var isRange = boundCollection.Type == _builtInTypes.LookSymbolUp(typeof(Range));
+			if (boundCollection.Type.Type != TypeType.Array && !isRange)
 			{
 				_diagnostics.ReportCannotConvert(syntax.Collection.Span, boundCollection.Type, new ArrayTypeSymbol(boundCollection.Type));
 				return new BoundExpressionStatement(new BoundErrorExpression());
 			}
-			var type = boundCollection.Type as ArrayTypeSymbol;
-			var variable = CheckGlobalVariableExpression(syntax.Variable, type.Child, true);
+			VariableSymbol variable = null;
+			if (isRange)
+			{
+				variable = CheckGlobalVariableExpression(syntax.Variable, PrimitiveTypeSymbol.Integer, true);
+			}
+			else
+			{
+				var type = boundCollection.Type as ArrayTypeSymbol;
+				variable = CheckGlobalVariableExpression(syntax.Variable, type.Child, true);
+			}
 			var boundBody = BindBlockStatement(syntax.Body);
 			CheckUnusedSymbols(_scope);
 			_scope = _scope.Parent;
@@ -354,7 +367,7 @@ namespace Minsk.CodeAnalysis.Binding
 		{
 			var name = syntax.Identifier.Text;
 			var initializer = BindExpression(syntax.Initializer);
-			//TODO: Make sure referenced libraries actually work!
+			//Make sure referenced libraries actually work!
 			//EDIT: I don't know if we do. But i think we do..
 			var libraryType = _builtInTypes.LookSymbolUp(typeof(LibrarySymbol));
 			if (initializer.Type != _builtInTypes.LookSymbolUp(typeof(Font)) && initializer.Type != libraryType)
@@ -413,7 +426,9 @@ namespace Minsk.CodeAnalysis.Binding
 			{
 				case BoundNodeKind.AssignmentExpression:
 					var ae = (BoundAssignmentExpression)boundCondition;
-					//TODO: Maybe hacky?
+					//Maybe hacky?
+					//Right now we only call this function, when we only CAN have one 
+					//variable (the if-extraction, and the library-accessor).
 					variableSymbol = ae.Variables[0];
 
 					break;
@@ -431,7 +446,9 @@ namespace Minsk.CodeAnalysis.Binding
 					break;
 				default:
 					Logger.LogUnmatchedIfConditionVariableExtractment(boundCondition);
-					//TODO: Add diagnostics for this case. Maybe. Let time decide.
+					//TODO(Time): Add diagnostics for this case. Maybe. Let time decide.
+					//If we will never run into this, then we should add a diagnostics
+					//here.
 					return null;
 			}
 
@@ -567,6 +584,7 @@ namespace Minsk.CodeAnalysis.Binding
 		{
 
 			_scope = new BoundScope(_scope);
+
 			BoundParameterStatement boundParameter = null;
 			if (syntax.Parameter != null)
 				boundParameter = BindParameterStatement(syntax.Parameter.ParameterStatement);
@@ -576,6 +594,7 @@ namespace Minsk.CodeAnalysis.Binding
 				{
 					_scope.TryDeclare(field, null);
 				}
+				_scope.TryDeclare(new VariableSymbol("Slide", false, _builtInTypes.LookSymbolUp(typeof(SlideAttributes)), false));
 			}
 			var boundBody = BindBlockStatement(syntax.Body);
 			CheckUnusedSymbols(_scope);
@@ -585,7 +604,7 @@ namespace Minsk.CodeAnalysis.Binding
 			if (syntax.Identifier.Kind != SyntaxKind.StdKeyword)
 				_scope.TryLookup(name, out variable);
 			var result = new BoundStyleStatement(variable, boundParameter, boundBody);
-			if(variable != null)
+			if (variable != null)
 				_declarations[variable] = result;
 			return result;
 		}
@@ -661,9 +680,10 @@ namespace Minsk.CodeAnalysis.Binding
 			_scope = new BoundScope(_scope);
 			foreach (var field in ((AdvancedTypeSymbol)_builtInTypes.LookSymbolUp(typeof(Element))).Fields)
 			{
-				//TODO: Throw no warnings
+				//Throw no warnings
+				//Erm.. i think we don't?
+
 				_scope.Declare(field, true);
-				//			_scope.TryDeclare(field, null);
 			}
 			_scope.TryDeclare(new VariableSymbol("fontsize", false, _builtInTypes.LookSymbolUp(typeof(Unit)), false), null);
 			foreach (var function in ((AdvancedTypeSymbol)_builtInTypes.LookSymbolUp(typeof(Element))).Functions)
@@ -761,10 +781,18 @@ namespace Minsk.CodeAnalysis.Binding
 		private BoundStepStatement BindStepStatement(StepStatementSyntax statement)
 		{
 			var boundBody = BindBlockStatement(statement.Body, useSeperateScope: false);
-			//TODO: Maybe check if name is already used somewhere..
-			//		  aka use VariableSymbol.
+
 			var name = statement.OptionalIdentifier?.Text;
-			return new BoundStepStatement(name, boundBody);
+			VariableSymbol variable = null;
+			if (name != null)
+			{
+				variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(Step)), false);
+				if (!_scope.TryDeclare(variable))
+				{
+					_diagnostics.ReportVariableAlreadyDeclared(TextSpan.FromBounds(statement.StepKeyword.Span.Start, statement.ColonToken.Span.End), name);
+				}
+			}
+			return new BoundStepStatement(variable, boundBody);
 		}
 
 		private BoundStatement BindFileBlockStatement(FileBlockStatementSyntax syntax)
@@ -893,10 +921,15 @@ namespace Minsk.CodeAnalysis.Binding
 
 				if (m.Member is FunctionExpressionSyntax mf)
 					functionCall = mf;
-				else throw new Exception(); //TODO Add Diagnostics
+				else throw new Exception();
+				//TODO(Time): Add Diagnostics
+				//Hasn't caused an issue as of today.
+				//But let's wait and see what time is having
 			}
 			else
-				throw new Exception(); //TODO: MAybe add diagnostics.
+				throw new Exception();
+			//TODO(Time): Maybe add diagnostics.
+			//Same as above.
 			var name = functionCall.Identifier.Text;
 
 			AdvancedTypeSymbol type = null;
@@ -1025,8 +1058,8 @@ namespace Minsk.CodeAnalysis.Binding
 			var enumType = (EnumTypeSymbol)type;
 			if (syntax.Member.Kind != SyntaxKind.VariableExpression)
 			{
-				//TODO: Add a diagnostics and return BoundErrorExpression
 				expression = new BoundErrorExpression();
+				_diagnostics.ReportUnexpectedMemberKind(syntax.Span, syntax.Member.Kind, enumType);
 				return true;
 			}
 			var member = (VariableExpressionSyntax)syntax.Member;
@@ -1082,8 +1115,8 @@ namespace Minsk.CodeAnalysis.Binding
 			var advancedType = (AdvancedTypeSymbol)type;
 			if (syntax.Member.Kind != SyntaxKind.VariableExpression)
 			{
-				//TODO: Add a diagnostics and return BoundErrorExpression
 				expression = new BoundErrorExpression();
+				_diagnostics.ReportUnexpectedMemberKind(syntax.Span, syntax.Member.Kind, advancedType);
 				return true;
 			}
 			var member = (VariableExpressionSyntax)syntax.Member;
@@ -1229,13 +1262,12 @@ namespace Minsk.CodeAnalysis.Binding
 		private BoundExpression BindLibraryFunctionExpression(FunctionExpressionSyntax syntax, LibrarySymbol library)
 		{
 			var name = syntax.Identifier.Text;
-			if (!library.TryLookUpFunction(name, out var function))
+			if (!library.TryLookUpFunction(name, out var functions))
 			{
-				//TODO: Report Library as well.
-				_diagnostics.ReportUndefinedFunction(syntax.Span, name);
+				_diagnostics.ReportUndefinedFunction(syntax.Span, name, library);
 				return new BoundErrorExpression();
 			}
-			return BindFunctionExpression(syntax, new FunctionSymbol[] { function }, library);
+			return BindFunctionExpression(syntax, functions, library);
 		}
 
 		private BoundExpression BindMemberFunctionExpression(FunctionExpressionSyntax syntax, TypeSymbol parent)
@@ -1501,7 +1533,10 @@ namespace Minsk.CodeAnalysis.Binding
 			if (!boundExpression.Type.CanBeConvertedTo(boundField.Type))
 			{
 				_diagnostics.ReportCannotConvert(syntax.Right.Span, boundExpression.Type, boundField.Type);
-				//TODO: Maybe return BoundErrorExpression();
+				//Maybe return BoundErrorExpression();
+				//I mean, we probably never use this feature. But yeah. Just do it 
+				//So we dont have cascading errors;
+				return new BoundErrorExpression();
 			}
 
 			return new BoundFieldAssignmentExpression(boundField, boundExpression);
@@ -1530,7 +1565,7 @@ namespace Minsk.CodeAnalysis.Binding
 
 		private BoundExpression BindBinaryExpression(BinaryExpressionSyntax syntax)
 		{
-			//TODO: what to do if you have int + float or something like that???
+			//TODO(Major): what to do if you have int + float or something like that???
 			var boundLeft = BindExpression(syntax.Left);
 			var boundRight = BindExpression(syntax.Right);
 			var boundOperator = BoundBinaryOperator.Bind(syntax.OperatorToken.Kind, boundLeft.Type, boundRight.Type);

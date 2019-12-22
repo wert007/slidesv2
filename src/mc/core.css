@@ -1,58 +1,73 @@
 body {
 	margin: 0;
-  padding: 0;
-  margin-block-start: 0;
-  margin-block-end: 0;
-  margin-inline-start: 0;
-  margin-inline-end: 0;
+	padding: 0;
+	margin-block-start: 0;
+	margin-block-end: 0;
+	margin-inline-start: 0;
+	margin-inline-end: 0;
 }
 
 p {
 	margin: 0;
-  padding: 0;
-  margin-block-start: 0;
-  margin-block-end: 0;
-  margin-inline-start: 0;
-  margin-inline-end: 0;
+	padding: 0;
+	margin-block-start: 0;
+	margin-block-end: 0;
+	margin-inline-start: 0;
+	margin-inline-end: 0;
+}
+
+span {
+	font-family: inherit;
+	font-size: inherit;
+}
+
+/*TODO Make it more specific*/
+svg {
+	display: none;
 }
 
 .vertical-center-parent {
-  position: absolute;
-  height: 100%;
-  width: 100%;
+	position: absolute;
+	height: 100%;
+	width: 100%;
 }
 
 .ui {
 	z-index: 9;
 }
 
-.absoluteContent *{
-  position: absolute;
+.absoluteContent * {
+	position: absolute;
 }
 
-.slide{
-  height: 100vh;
-  width: 100vw; 
+.slide {
+	height: 100vh;
+	width: 100vw;
 }
 
 .step {
-  height: -webkit-fill-available;
-  position: absolute;
-  width: -webkit-fill-available;
+	height: -webkit-fill-available;
+	position: absolute;
+	width: -webkit-fill-available;
 }
 
 .transition {
-  height: 100%;
-  position: absolute;
-  z-index: 8;
-  top: 0px;
-  width: 100%;
+	height: 100%;
+	position: absolute;
+	z-index: 8;
+	top: 0px;
+	width: 100%;
 }
 
 
 @keyframes fadeOut {
-  from { opacity: 1;}
-  to {opacity: 0;}
+	from {
+		opacity: 1;
+	}
+
+	to {
+		opacity: 0;
+	}
 }
 
 section.invisible {
@@ -60,5 +75,5 @@ section.invisible {
 }
 
 div.invisible {
-  display: none;
+	display: none;
 }

@@ -3,6 +3,7 @@ using System.Globalization;
 
 namespace Slides
 {
+
 	[Serializable]
 	public class Unit
 	{

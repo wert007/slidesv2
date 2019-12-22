@@ -1,4 +1,5 @@
 ﻿using Slides;
+using Slides.Code;
 using Slides.Debug;
 using System;
 
@@ -9,7 +10,7 @@ namespace HTMLWriter
 		public static void Write(CSSWriter writer, Style style, out string stdTransition)
 		{
 			stdTransition = null;
-			if(style.ModifiedFields.Count == 0)
+			if (style.ModifiedFields.Count == 0)
 			{
 				Logger.LogEmptyStyle(style.Name);
 				return;
@@ -34,7 +35,7 @@ namespace HTMLWriter
 			}
 			writer.EndSelector();
 
-			if(toWrite != null)
+			if (toWrite != null)
 			{
 				if (style.Name == "std")
 					stdTransition = toWrite.name;
@@ -42,7 +43,7 @@ namespace HTMLWriter
 			}
 		}
 
-			private static void WriteStdTransition(CSSWriter writer, string transitionName, TransitionCall from, TransitionCall to)
+		private static void WriteStdTransition(CSSWriter writer, string transitionName, TransitionCall from, TransitionCall to)
 		{
 			writer.StartSelector($"section.slide.{transitionName}-from");
 			writer.WriteAttribute("animation-name", from.Name);
@@ -94,16 +95,12 @@ namespace HTMLWriter
 				writer.WriteAttribute("font", transition.font);
 			writer.EndId();
 
-			/*
-			 * 
-    animation-name: fadeOut;
-    animation-duration: 10s;
-    animation-iteration-count: 1;
-    animation-fill-mode: forwards;
-			 */
-
+			//TODO(Debate): That was the old way. Do we still need it?
+				//animation-name: fadeOut;
+				//animation-duration: 10s;
+				//animation-iteration-count: 1;
+				//animation-fill-mode: forwards;
 			//writer.StartSelector($"#{transition.name}.active");
-			//TODO idk difficult...
 			//writer.EndSelector();
 		}
 
@@ -111,8 +108,8 @@ namespace HTMLWriter
 		{
 			writer.StartId(slide.Name);
 			WriteBrush(writer, slide.Attributes.background);
-				writer.WriteAttributeIfValue("color", slide.Attributes.color);
-				writer.WriteAttributeIfValue("font", slide.Attributes.font);
+			writer.WriteAttributeIfValue("color", slide.Attributes.color);
+			writer.WriteAttributeIfValue("font", slide.Attributes.font);
 			writer.WriteAttributeIfValue("filter", slide.Attributes.filter);
 			writer.EndId();
 		}
@@ -173,8 +170,13 @@ namespace HTMLWriter
 					break;
 				case BoxElement b:
 					writer.WriteAttributeIfValue("font-size", b.fontsize);
-					if(b.fontsize != null)
+					if (b.fontsize != null)
 						writer.WriteAttribute("line-height", b.fontsize + new Unit(6, Unit.UnitKind.Point));
+					break;
+				case CodeBlock cb:
+					writer.WriteAttribute("font-family", cb.font);
+					writer.WriteAttributeIfValue("font-size", cb.fontsize);
+
 					break;
 				default:
 					break;
@@ -191,7 +193,7 @@ namespace HTMLWriter
 			}
 			writer.EndSelector();
 		}
-		
+
 		private static void WriteOrientation(CSSWriter writer, Element element, Element parent = null)
 		{
 			var hasExactSize = false;

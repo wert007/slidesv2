@@ -12,8 +12,5 @@
 
 		Unit,
 		Object,
-
-		//TODO: No lo se. idk
-		Slide
 	}
 }

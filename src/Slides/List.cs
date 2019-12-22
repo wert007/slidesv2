@@ -66,10 +66,7 @@ namespace Slides
 			for (int i = 1; i < _children.Count; i++)
 			{
 				var current = _children[i].width;
-				if (current.Value > max.Value) //TODO: Add a comparison for units
-														 //TODO: Add a comparison for units
-														 //TODO: Add a comparison for units
-														 //TODO: Add a comparison for units
+				if (current.Value > max.Value) //TODO(Essential): Add a comparison for units
 				{
 					max = current;
 				}

@@ -3,7 +3,9 @@
 namespace Minsk.CodeAnalysis.Symbols
 {
 	[Serializable]
-	//TODO: ArrayTypeSymbol should know how big it is!
+	//TODO(Debate): ArrayTypeSymbol should know how big it is!
+	//Maybe. Maybe not. I am not to sure actually. But we
+	//shal see.
 	public class ArrayTypeSymbol : TypeSymbol
 	{
 		public TypeSymbol Child { get; private set; }

@@ -1,14 +1,17 @@
-﻿namespace Minsk.CodeAnalysis.Binding
+﻿using Minsk.CodeAnalysis.Symbols;
+
+namespace Minsk.CodeAnalysis.Binding
 {
 	internal class BoundStepStatement : BoundStatement
 	{
-		public BoundStepStatement(string name, BoundStatement body)
+
+		public BoundStepStatement(VariableSymbol variable, BoundStatement body)
 		{
-			Name = name;
+			Variable = variable;
 			Body = body;
 		}
 
-		public string Name { get; }
+		public VariableSymbol Variable { get; }
 		public BoundStatement Body { get; }
 
 		public override BoundNodeKind Kind => BoundNodeKind.StepStatement;

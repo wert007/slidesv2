@@ -48,7 +48,7 @@ namespace Minsk.CodeAnalysis.Symbols
 		public static bool operator ==(VariableSymbol symbol1, VariableSymbol symbol2)
 		{
 			if (symbol1 is null)
-				//TODO: But really?
+				//TODO(idk): But really?
 				return symbol2 is null;
 			return symbol1.Equals(symbol2);
 		}

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26124.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29503.13
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "mc", "mc\mc.csproj", "{9C7AFA59-BB65-46AB-A14B-30F601CBDC8C}"
 EndProject
@@ -12,6 +12,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Slides", "Slides\Slides.csproj", "{297FD628-5222-45A4-BE79-B23C740442AD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HTMLWriter", "HTMLWriter\HTMLWriter.csproj", "{47D4D4FC-6241-4E8A-8108-B89CF90651EB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Github", "Github\Github.csproj", "{48471C54-50FA-4FA6-9406-140A55690B8E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -83,6 +85,18 @@ Global
 		{47D4D4FC-6241-4E8A-8108-B89CF90651EB}.Release|x64.Build.0 = Release|Any CPU
 		{47D4D4FC-6241-4E8A-8108-B89CF90651EB}.Release|x86.ActiveCfg = Release|Any CPU
 		{47D4D4FC-6241-4E8A-8108-B89CF90651EB}.Release|x86.Build.0 = Release|Any CPU
+		{48471C54-50FA-4FA6-9406-140A55690B8E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{48471C54-50FA-4FA6-9406-140A55690B8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{48471C54-50FA-4FA6-9406-140A55690B8E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{48471C54-50FA-4FA6-9406-140A55690B8E}.Debug|x64.Build.0 = Debug|Any CPU
+		{48471C54-50FA-4FA6-9406-140A55690B8E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{48471C54-50FA-4FA6-9406-140A55690B8E}.Debug|x86.Build.0 = Debug|Any CPU
+		{48471C54-50FA-4FA6-9406-140A55690B8E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{48471C54-50FA-4FA6-9406-140A55690B8E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{48471C54-50FA-4FA6-9406-140A55690B8E}.Release|x64.ActiveCfg = Release|Any CPU
+		{48471C54-50FA-4FA6-9406-140A55690B8E}.Release|x64.Build.0 = Release|Any CPU
+		{48471C54-50FA-4FA6-9406-140A55690B8E}.Release|x86.ActiveCfg = Release|Any CPU
+		{48471C54-50FA-4FA6-9406-140A55690B8E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

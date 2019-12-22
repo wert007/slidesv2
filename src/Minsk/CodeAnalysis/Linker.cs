@@ -14,7 +14,7 @@ namespace Minsk.CodeAnalysis
 {
 	public sealed class Linker
 	{
-		//TODO: sort fields
+		//TODO(Improvement): sort fields
 		//I dont know what that (^) means. but make clear when you use what!
 		private string _presentationName = null;
 		private readonly Dictionary<string, string[]> _references = new Dictionary<string, string[]>();
@@ -165,10 +165,7 @@ namespace Minsk.CodeAnalysis
 			_referencedInFile.Add(path);
 			if (!_loadedCompilations.ContainsKey(path))
 			{
-				//TODO: Check if bsld file exists
-				//If it does, just load that one
-				//Otherwise return the loaded one
-				//and save it as bsld
+				//TODO(Major): Find out when we need to rebuild our bsld-file
 				string fileName = Path.GetFileNameWithoutExtension(path);
 				if (!_completeRebuild && File.Exists(fileName + ".bsld"))
 				{
