@@ -47,6 +47,16 @@ namespace HTMLWriter
 			_startedFunctions = new Stack<string>();
 		}
 
+		internal void Write(string s)
+		{
+			_writer.Write(s);
+		}
+
+		internal void WriteLine(string s)
+		{
+			_writer.WriteLine(s);
+		}
+
 		public void Dispose()
 		{
 			WriteOnLoad();

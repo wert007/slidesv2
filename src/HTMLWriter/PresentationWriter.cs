@@ -71,7 +71,7 @@ namespace HTMLWriter
 						_htmlWriter.UseCSS("core.css");
 						_htmlWriter.UseJS("core.js");
 						_htmlWriter.UseJS("datatypes.js");
-						_htmlWriter.UseJS("https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js");
+						_htmlWriter.UseJS("https://cdn.jsdelivr.net/npm/apexcharts");
 						if (presentation.CodeHighlighter != CodeHighlighter.None)
 						{
 							switch (presentation.CodeHighlighter)
@@ -119,10 +119,7 @@ namespace HTMLWriter
 						_htmlWriter.StartBody();
 						if (presentation.CodeHighlighter != CodeHighlighter.None)
 							_htmlWriter.UseJS("prism.js");
-						//_htmlWriter.UseJS("https://cdnjs.cloudflare.com/ajax/libs/prism/1.17.1/components/prism-core.min.js");
-						//	_htmlWriter.UseJS("https://cdnjs.cloudflare.com/ajax/libs/prism/1.17.1/plugins/autoloader/prism-autoloader.js");
-						//_htmlWriter.UseJS("https://cdnjs.cloudflare.com/ajax/libs/prism/1.17.1/plugins/line-numbers/prism-line-numbers.min.js");
-
+						
 						FilterWriter.Write(_htmlWriter, presentation.CustomFilter);
 
 						foreach (var transition in presentation.Transitions)
@@ -322,11 +319,11 @@ namespace HTMLWriter
 
 		private static void WriteLineChart(string parentName, LineChart element)
 		{
-			_htmlWriter.PushAttribute("height", element.height.ToString());
-			_htmlWriter.StartTag("div");
-			_htmlWriter.StartTag("canvas", id: parentName + "-" + element.name, classes: "lineChart " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
+		//	_htmlWriter.PushAttribute("height", element.height.ToString());
+			_htmlWriter.StartTag("div", id: parentName + "-" + element.name, classes: "lineChart " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
+			//_htmlWriter.StartTag("canvas", id: parentName + "-" + element.name, classes: "lineChart " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
 			ChartWriter.WriteChart(_jsWriter, parentName, element);
-			_htmlWriter.EndTag();
+			//_htmlWriter.EndTag();
 			_htmlWriter.EndTag();
 		}
 
