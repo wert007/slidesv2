@@ -52,6 +52,8 @@ namespace Slides
 
 		public Vector2 Measure(string text, Unit fontsize)
 		{
+			if (!exists)
+				return new Vector2();
 			var size = fontsize.Value;
 			if (fontsize.Kind == Unit.UnitKind.Point)
 				size *= 1.5f;

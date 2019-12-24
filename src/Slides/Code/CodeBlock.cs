@@ -9,7 +9,7 @@
 		public string code { get; set; }
 		public string language { get; set; }
 		public string caption { get; set; }
-		public Font font { get; set; } = new Font("monospace");
+		public Font font { get; set; } = new Font("Courier");
 		public Unit fontsize { get; set; }
 
 		public CodeBlock(string code, string language, string caption)

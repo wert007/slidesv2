@@ -68,8 +68,6 @@ namespace HTMLWriter
 		{
 			switch (field)
 			{
-				case "margin.Top":
-					return "top"; //sure??????
 				case "font":
 					return "font-family";
 				case "fontsize":
@@ -78,6 +76,7 @@ namespace HTMLWriter
 				case "color":
 				case "background":
 				case "filter":
+				case "margin":
 					return field;
 				default:
 					Logger.LogUnmatchedCSSField(field);

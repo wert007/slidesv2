@@ -33,8 +33,6 @@ namespace HTMLWriter
 			{
 				case "margin":
 					return typeof(Thickness);
-				case "margin.Top":
-					return typeof(Unit);
 				//TODO(Major): Background could be a image as well..
 				//We actually would need the value of background
 				//to check this.
@@ -100,9 +98,13 @@ namespace HTMLWriter
 			{
 				return $"StyleUnit.lerp({value1}, {value2}, {t}).toString()";
 			}
+			else if(type == typeof(Thickness))
+			{
+				return $"Thickness.lerp({value1}, {value2}, {t}).toString()";
+			}
 			else if(type == typeof(Color))
 			{
-				return $"Color.lerp({value1}, {value2}, {t}).toString()";
+				return $"Color_t.lerp({value1}, {value2}, {t}).toString()";
 			}
 			else if (type == typeof(ProcentalFilter))
 			{
@@ -157,9 +159,13 @@ namespace HTMLWriter
 			{
 				return $"StyleUnit.parse(computedStyle.{cssField}, {GetJSValue(GetIsVertical(field))})";
 			}
+			else if(fieldType == typeof(Thickness))
+			{
+				return $"Thickness.parse(computedStyle.{cssField})";
+			}
 			else if(fieldType == typeof(Color))
 			{
-				return $"new Color(computedStyle.{cssField})";
+				return $"new Color_t(computedStyle.{cssField})";
 			}
 			else if(fieldType == typeof(Filter))
 			{
@@ -181,10 +187,9 @@ namespace HTMLWriter
 				case Unit unit:
 					return $"new StyleUnit({unit.Value}, \"{Unit.ToString(unit.Kind)}\", {GetJSValue(GetIsVertical(field))})";
 				case Thickness thickness:
-					return "undefined"; //TODO(Minor): Implement Thickness class in datatypes.js
+					return $"new Thickness({GetJSValue(thickness.Top)}, {GetJSValue(thickness.Right)}, {GetJSValue(thickness.Bottom)}, {GetJSValue(thickness.Left)})";
 				case Color color:
-					return $"new Color('{CSSWriter.GetValue(color)}')";
-					throw new NotImplementedException();
+					return $"new Color_t('{CSSWriter.GetValue(color)}')";
 				case null:
 					return "undefined";
 				case bool b:

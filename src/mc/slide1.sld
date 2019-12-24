@@ -70,7 +70,7 @@ animation quoteGoesUp(element: any, duration~: Time):
 	case done:
 	//TODO: Make more attributes animateable
 	//Like margin or padding for example
-	//	element.margin = margin(-element.height, 0, 0, 0);
+		element.margin = margin(-100%, 0, 0, 0);
 	//	element.margin.Top = -element.height;
 		element.background = red;
 endanimation
@@ -94,6 +94,8 @@ slide github < pagenumber:
 		let codeBlockB = code.codeblock(repository~, 'main.c', 3..14);
 		codeBlockB.fontsize = 10pt;
 		codeBlockB.orientation = Horizontal.Center | Vertical.Center;
+		step:
+			quoteGoesUp.play(codeBlockB, 1.5s);
 endslide
 
 slide cityDevelopment < pagenumber:
