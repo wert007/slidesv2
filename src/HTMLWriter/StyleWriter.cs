@@ -246,7 +246,7 @@ namespace HTMLWriter
 				writer.WriteAttribute("height", unit100Percent - padding.Vertical);
 			else if (element.get_StyleHeight().Kind == Unit.UnitKind.Auto)
 			{
-				if (hasVerticalCenter)
+				if(!(element is CodeBlock codeBlock) && hasVerticalCenter)
 					writer.WriteAttribute("height", unit100Percent - padding.Vertical);
 				else if (element is Image i)
 					writer.WriteAttribute("height", "auto");
@@ -261,7 +261,7 @@ namespace HTMLWriter
 				writer.WriteAttribute("width", unit100Percent - padding.Horizontal);
 			else if (element.get_StyleWidth().Kind == Unit.UnitKind.Auto)
 			{
-				if (hasHorizontalCenter)
+				if (!(element is CodeBlock codeBlock) && hasHorizontalCenter)
 					writer.WriteAttribute("width", unit100Percent - padding.Horizontal);
 				else if (element is Image i)
 					writer.WriteAttribute("width", "auto");

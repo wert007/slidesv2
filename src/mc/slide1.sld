@@ -4,13 +4,7 @@ import gfont('Quicksand') as quicksand;
 
 //Possible Features:
 // - Support sliders, so that you can change graphes for example.
-// - support github code
-//		let repository~ = code.github('wert007/GTIProject');
-//		let file~ = repository.file('main.c');
-//		let extract~ = file.extract(23..54);
-//		let codeBlock = code.codeblock(file~, 23..54)
-//		let codeBlock = code.codeblock(repository~, 'main.c', 23..54)
-//		let codeBlock = new code.CodeBlock(extract~, repository~.language);
+// - support github code in javascript!
 
 
 template pagenumber(child: Slide):
@@ -93,11 +87,13 @@ animation unblur(element: any, duration~: Time):
 endanimation
 
 slide github < pagenumber:
+		code.setStyle(CodeHighlighter.Funky);
 		let repository~ = code.github('wert007/GTIProject');
 		let file~ = repository~.file('main.c');
-		let codeBlockA = code.codeblock(file~, 3..14);
-		codeBlockA.fontsize = 10pt;
-		let codeBlockB = code.codeblock(repository~, 'main.c', 23..54);
+		//let codeBlockA = code.codeblock(file~, 3..14);
+		let codeBlockB = code.codeblock(repository~, 'main.c', 3..14);
+		codeBlockB.fontsize = 10pt;
+		codeBlockB.orientation = Horizontal.Center | Vertical.Center;
 endslide
 
 slide cityDevelopment < pagenumber:

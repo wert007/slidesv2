@@ -6,6 +6,7 @@ using Minsk.CodeAnalysis.Binding;
 using Minsk.CodeAnalysis.SlidesTypes;
 using Minsk.CodeAnalysis.Symbols;
 using Slides;
+using Slides.Code;
 using Slides.Debug;
 using Slides.Filters;
 
@@ -18,7 +19,8 @@ namespace Minsk.CodeAnalysis
 		public bool AnimationsAllowed { get; set; }
 		public bool GroupsAllowed { get; set; }
 		public bool DatasAllowed { get; set; }
-		public bool TemplatesAllowed { get; internal set; }
+		public bool TemplatesAllowed { get; set; }
+		public CodeHighlighter CodeHighlighter { get; set; }
 	}
 
 	internal sealed class Evaluator
@@ -33,6 +35,8 @@ namespace Minsk.CodeAnalysis
 		private LibrarySymbol _currentReferenced = null;
 
 		private readonly Dictionary<VariableSymbol, BoundStatement> _declarations;
+
+		private readonly Dictionary<string, bool> _libraryUsed = new Dictionary<string, bool>();
 
 		private List<CaseSymbol> _animationCases = null;
 		private List<string> _referencedFiles = new List<string>();
@@ -49,7 +53,7 @@ namespace Minsk.CodeAnalysis
 		private readonly List<string> _imports = new List<string>();
 		private int slideCount = 0;
 
-		private PresentationFlags _flags = new PresentationFlags();
+		public static PresentationFlags Flags = new PresentationFlags();
 
 		private object _lastValue;
 		private Stack<List<Element>> _groupChildren = new Stack<List<Element>>();
@@ -58,6 +62,7 @@ namespace Minsk.CodeAnalysis
 
 		public Evaluator(BoundBlockStatement root, Dictionary<VariableSymbol, object> variables, LibrarySymbol[] referenced, Dictionary<VariableSymbol, BoundStatement> declarations)
 		{
+			Flags = new PresentationFlags();
 			_root = root;
 			_referenced = referenced;
 			_declarations = declarations;
@@ -85,11 +90,12 @@ namespace Minsk.CodeAnalysis
 
 			var index = 0;
 
-			_flags.AnimationsAllowed = true;
-			_flags.DatasAllowed = true;
-			_flags.GroupsAllowed = true;
-			_flags.StyleAllowed = true;
-			_flags.TemplatesAllowed = true;
+			Flags.AnimationsAllowed = true;
+			Flags.DatasAllowed = true;
+			Flags.GroupsAllowed = true;
+			Flags.StyleAllowed = true;
+			Flags.TemplatesAllowed = true;
+			Flags.CodeHighlighter = CodeHighlighter.None;
 			while (index < _root.Statements.Length)
 			{
 				var s = _root.Statements[index];
@@ -98,7 +104,7 @@ namespace Minsk.CodeAnalysis
 
 			}
 
-			if (_flags.IsLibrarySymbol)
+			if (Flags.IsLibrarySymbol)
 			{
 				library = new LibrarySymbol(library.Name, _referenced, _customTypes.Values.ToArray(), _styles.Values.ToArray(), _variables, _imports.ToArray());
 				foreach (var customType in library.CustomTypes)
@@ -116,8 +122,7 @@ namespace Minsk.CodeAnalysis
 					libraries[i] = new Library(_referenced[i].Name, _referenced[i].Libraries?.Select(l => new Library(l.Name, null, l.Styles)).ToArray(), _referenced[i].Styles);
 					_imports.AddRange(_referenced[i].Imports);
 				}
-
-				presentation = new Presentation(_slides.Values.ToArray(), _styles.Values.ToArray(), _filters.ToArray(), _transitions.ToArray(), libraries, _imports.ToArray(), _referencedFiles.ToArray());
+				presentation = new Presentation(_slides.Values.ToArray(), _styles.Values.ToArray(), _filters.ToArray(), _transitions.ToArray(), libraries, _imports.ToArray(), _referencedFiles.ToArray(), Flags.CodeHighlighter);
 				_lastValue = presentation;
 			}
 
@@ -202,11 +207,11 @@ namespace Minsk.CodeAnalysis
 
 		private void EvaluateLibrarySymbolStatement(BoundLibraryStatement node)
 		{
-			_flags.IsLibrarySymbol = true;
-			_flags.AnimationsAllowed = false;
-			_flags.DatasAllowed = false;
-			_flags.GroupsAllowed = false;
-			_flags.StyleAllowed = false;
+			Flags.IsLibrarySymbol = true;
+			Flags.AnimationsAllowed = false;
+			Flags.DatasAllowed = false;
+			Flags.GroupsAllowed = false;
+			Flags.StyleAllowed = false;
 			Evaluate(node.BoundBody);
 			library = new LibrarySymbol(node.Variable.Name);
 		}
@@ -412,7 +417,7 @@ namespace Minsk.CodeAnalysis
 			//aka do we need to store styles in _declarations?
 			if(node.Variable != null)
 				_declarations.Remove(node.Variable);
-			if (!_flags.StyleAllowed)
+			if (!Flags.StyleAllowed)
 				throw new Exception();
 			_variables = _variables.Push();
 			if (node.Variable != null)
@@ -537,7 +542,7 @@ namespace Minsk.CodeAnalysis
 
 		private void EvaluateDataStatement(BoundDataStatement node)
 		{
-			if (!_flags.DatasAllowed)
+			if (!Flags.DatasAllowed)
 				throw new Exception();
 			var data = new BodySymbol(node.Type, null);
 			_customTypes.Add(node.Type, data);
@@ -548,7 +553,7 @@ namespace Minsk.CodeAnalysis
 
 		private void EvaluateGroupStatement(BoundGroupStatement node)
 		{
-			if (!_flags.GroupsAllowed)
+			if (!Flags.GroupsAllowed)
 				throw new Exception();
 			var parameters = new List<VariableSymbol>();
 			foreach (var parameter in node.BoundParameters.Statements)
@@ -566,7 +571,7 @@ namespace Minsk.CodeAnalysis
 		{
 			if (!_declarations.ContainsKey(node.Variable))
 				return;
-			if (!_flags.TemplatesAllowed)
+			if (!Flags.TemplatesAllowed)
 				throw new Exception();
 
 			var template = new BodySymbol(node.Variable, node.Body);
@@ -583,7 +588,7 @@ namespace Minsk.CodeAnalysis
 			//we already evaluated it.
 			if (!_declarations.ContainsKey(node.Variable))
 				return;
-			if (_flags.IsLibrarySymbol)
+			if (Flags.IsLibrarySymbol)
 				throw new Exception();
 			_variables = _variables.Push();
 			_currentSlide = new SlideAttributes(node.Variable.Name, _slides.Count);
@@ -743,6 +748,7 @@ namespace Minsk.CodeAnalysis
 			if (value is ImportExpression<LibrarySymbol> importLibrary)
 			{
 				value = importLibrary.Value;
+				_libraryUsed[importLibrary.Value.Name] = true;
 			}
 			else if (value is ImportExpression<Font> importFont)
 			{
@@ -1008,6 +1014,7 @@ namespace Minsk.CodeAnalysis
 			_variables = _variables.Push();
 			var oldReferenced = _currentReferenced;
 			_currentReferenced = group.Source;
+			_libraryUsed[_currentReferenced.Name] = true;
 
 			_groupChildren.Push(new List<Element>());
 			_groupAppliedStyles.Push(new List<Style>());
@@ -1015,6 +1022,7 @@ namespace Minsk.CodeAnalysis
 				Evaluate(group.Body);
 
 			_currentReferenced = oldReferenced;
+
 			//TODO(Major): Maybe these values are wrong. If you use for example a for loop
 			//where you create a new Label in, then you would have a lot of unnamed
 			//children. And all these unnamed children don't have any information
@@ -1124,16 +1132,16 @@ namespace Minsk.CodeAnalysis
 			switch (expression.Function.Name)
 			{
 				case "useStyle":
-					_flags.StyleAllowed = true;
+					Flags.StyleAllowed = true;
 					return null;
 				case "useGroup":
-					_flags.GroupsAllowed = true;
+					Flags.GroupsAllowed = true;
 					return null;
 				case "useData":
-					_flags.DatasAllowed = true;
+					Flags.DatasAllowed = true;
 					return null;
 				case "useAnimation":
-					_flags.AnimationsAllowed = true;
+					Flags.AnimationsAllowed = true;
 					return null;
 				case "applyStyle":
 					var style = (Style)args[0];
@@ -1146,7 +1154,10 @@ namespace Minsk.CodeAnalysis
 			}
 			MethodInfo method = null;
 			if (expression.Source != null)
+			{
 				method = expression.Source.LookMethodInfoUp(expression.Function);
+				_libraryUsed[expression.Source.Name] = true;
+			}
 			else
 				method = GlobalFunctionsConverter.Instance.LookMethodInfoUp(expression.Function);
 			if (expression.Function.Name == "image")
@@ -1277,6 +1288,7 @@ namespace Minsk.CodeAnalysis
 					var style = lib.Styles.FirstOrDefault(s => s.Name == v.Variable.Name);
 					if (style == null)
 						continue;
+					_libraryUsed[lib.Name] = true;
 					return style;
 				}
 			}

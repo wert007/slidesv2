@@ -44,7 +44,8 @@ namespace HTMLWriter
 			CopyFile("core.css", targetDirectory, alwaysCopyEverything);
 			CopyFile("core.js", targetDirectory, alwaysCopyEverything);
 			CopyFile("datatypes.js", targetDirectory, alwaysCopyEverything);
-			CopyFile("prism.js", targetDirectory, alwaysCopyEverything);
+			if (presentation.CodeHighlighter != CodeHighlighter.None)
+				CopyFile("prism.js", targetDirectory, alwaysCopyEverything);
 
 			using (FileStream stream = new FileStream(Path.Combine(targetDirectory, "index.html"), FileMode.Create))
 			using (_htmlWriter = new HTMLWriter(stream))
@@ -71,8 +72,39 @@ namespace HTMLWriter
 						_htmlWriter.UseJS("core.js");
 						_htmlWriter.UseJS("datatypes.js");
 						_htmlWriter.UseJS("https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js");
-						_htmlWriter.UseCSS("https://cdnjs.cloudflare.com/ajax/libs/prism/1.17.1/themes/prism-tomorrow.min.css");
-						_htmlWriter.UseCSS("https://cdnjs.cloudflare.com/ajax/libs/prism/1.17.1/plugins/line-numbers/prism-line-numbers.min.css");
+						if (presentation.CodeHighlighter != CodeHighlighter.None)
+						{
+							switch (presentation.CodeHighlighter)
+							{
+								case CodeHighlighter.Coy:
+									_htmlWriter.UseCSS("https://cdnjs.cloudflare.com/ajax/libs/prism/1.17.1/themes/prism-coy.min.css");
+									break;
+								case CodeHighlighter.Dark:
+									_htmlWriter.UseCSS("https://cdnjs.cloudflare.com/ajax/libs/prism/1.17.1/themes/prism-dark.min.css");
+									break;
+								case CodeHighlighter.Funky:
+									_htmlWriter.UseCSS("https://cdnjs.cloudflare.com/ajax/libs/prism/1.17.1/themes/prism-funky.min.css");
+									break;
+								case CodeHighlighter.Okaidia:
+									_htmlWriter.UseCSS("https://cdnjs.cloudflare.com/ajax/libs/prism/1.17.1/themes/prism-okaidia.min.css");
+									break;
+								case CodeHighlighter.SolarizedLight:
+									_htmlWriter.UseCSS("https://cdnjs.cloudflare.com/ajax/libs/prism/1.17.1/themes/prism-solarizedlight.min.css");
+									break;
+								case CodeHighlighter.Tomorrow:
+									_htmlWriter.UseCSS("https://cdnjs.cloudflare.com/ajax/libs/prism/1.17.1/themes/prism-tomorrow.min.css");
+									break;
+								case CodeHighlighter.Twilight:
+									_htmlWriter.UseCSS("https://cdnjs.cloudflare.com/ajax/libs/prism/1.17.1/themes/prism-twilight.min.css");
+									break;
+								case CodeHighlighter.Default:
+									_htmlWriter.UseCSS("https://cdnjs.cloudflare.com/ajax/libs/prism/1.17.1/themes/prism.min.css");
+									break;
+								default:
+									throw new Exception();
+							}
+							_htmlWriter.UseCSS("https://cdnjs.cloudflare.com/ajax/libs/prism/1.17.1/plugins/line-numbers/prism-line-numbers.min.css");
+						}
 						foreach (var library in presentation.Libraries)
 						{
 							_htmlWriter.UseCSS($"{library.Name}.css");
@@ -85,9 +117,10 @@ namespace HTMLWriter
 						_htmlWriter.PushAttribute("onload", "load()");
 						_htmlWriter.PushAttribute("onkeydown", "keyDown(event);");
 						_htmlWriter.StartBody();
-						_htmlWriter.UseJS("prism.js");
+						if (presentation.CodeHighlighter != CodeHighlighter.None)
+							_htmlWriter.UseJS("prism.js");
 						//_htmlWriter.UseJS("https://cdnjs.cloudflare.com/ajax/libs/prism/1.17.1/components/prism-core.min.js");
-					//	_htmlWriter.UseJS("https://cdnjs.cloudflare.com/ajax/libs/prism/1.17.1/plugins/autoloader/prism-autoloader.js");
+						//	_htmlWriter.UseJS("https://cdnjs.cloudflare.com/ajax/libs/prism/1.17.1/plugins/autoloader/prism-autoloader.js");
 						//_htmlWriter.UseJS("https://cdnjs.cloudflare.com/ajax/libs/prism/1.17.1/plugins/line-numbers/prism-line-numbers.min.js");
 
 						FilterWriter.Write(_htmlWriter, presentation.CustomFilter);
@@ -140,7 +173,7 @@ namespace HTMLWriter
 			{
 				WriteStep(slide, step);
 			}
-			if(slide.Parent != null)
+			if (slide.Parent != null)
 				Write(slide, slide.Parent);
 			_htmlWriter.EndTag();
 		}
@@ -245,9 +278,12 @@ namespace HTMLWriter
 
 		private static void WriteCodeBlock(string parentName, CodeBlock element)
 		{
-			_htmlWriter.StartTag("div");
+			_htmlWriter.StartTag("div", id: parentName + "-" + element.name, classes: "codeblock");
 			_htmlWriter.PushAttribute("data-start", element.lineStart.ToString());
-			_htmlWriter.StartTag("pre", id: parentName + "-" + element.name, classes: "codeblock line-numbers" + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)), useNewLine: false);
+			var lineNumbersClass = "";
+			if (element.useLineNumbers)
+				lineNumbersClass = "line-numbers ";
+			_htmlWriter.StartTag("pre", classes: lineNumbersClass + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)), useNewLine: false);
 			_htmlWriter.StartTag("code", classes: $"language-clike", useNewLine: false);
 			_htmlWriter.Write(element.code);
 			_htmlWriter.EndTag(false);

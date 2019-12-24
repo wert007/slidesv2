@@ -18,12 +18,15 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			var globalVariables = new VariableValueCollection(null);
 			var globalFunctions = new FunctionSymbol[]
 			{
+				new FunctionSymbol("setStyle", new VariableSymbol("style", false, TypeSymbolTypeConverter.Instance.LookSymbolUp(typeof(CodeHighlighter)), true), PrimitiveTypeSymbol.Void),
 				new FunctionSymbol("github", new VariableSymbol("path", false, PrimitiveTypeSymbol.String, true), TypeSymbolTypeConverter.Instance.LookSymbolUp(typeof(GitRepository))),
+
 				new FunctionSymbol("codeblock", new VariableSymbolCollection(new VariableSymbol[]
 				{
 					new VariableSymbol("file", false, TypeSymbolTypeConverter.Instance.LookSymbolUp(typeof(GitFile)), true),
 					new VariableSymbol("lines", false, TypeSymbolTypeConverter.Instance.LookSymbolUp(typeof(Range)), true)
 				}), TypeSymbolTypeConverter.Instance.LookSymbolUp(typeof(CodeBlock))),
+
 				new FunctionSymbol("codeblock", new VariableSymbolCollection(new VariableSymbol[]
 				{
 					new VariableSymbol("repository", false, TypeSymbolTypeConverter.Instance.LookSymbolUp(typeof(GitRepository)), true),
@@ -33,6 +36,7 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			};
 			var globalFunctionsReflections = new string[]
 			{
+				nameof(SetStyle),
 				nameof(GetGitRepository),
 				nameof(CreateCodeBlockFromFile),
 				nameof(CreateCodeBlockFromRep),
@@ -41,6 +45,11 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			var result = new LibrarySymbol(name, libraries, customTypes, styles, globalVariables, globalFunctions, globalFunctionsReflections, imports);
 			result.SourceType = typeof(CodeLibrary);
 			return result;
+		}
+
+		public static void SetStyle(CodeHighlighter codeHighlighter)
+		{
+			Evaluator.Flags.CodeHighlighter = codeHighlighter;
 		}
 
 		public static GitRepository GetGitRepository(string path)

@@ -1,4 +1,5 @@
-﻿using Slides.Filters;
+﻿using Slides.Code;
+using Slides.Filters;
 using System;
 
 namespace Slides
@@ -12,8 +13,9 @@ namespace Slides
 		public Library[] Libraries { get; }
 		public string[] Imports { get; }
 		public string[] ReferencedFiles { get; }
+		public CodeHighlighter CodeHighlighter { get; }
 
-		public Presentation(Slide[] slides, Style[] styles, CustomFilter[] customFilter, Transition[] transitions, Library[] libraries, string[] imports, string[] referencedFiles)
+		public Presentation(Slide[] slides, Style[] styles, CustomFilter[] customFilter, Transition[] transitions, Library[] libraries, string[] imports, string[] referencedFiles, CodeHighlighter codeHighlighter)
 		{
 			Slides = slides;
 			Styles = styles;
@@ -22,6 +24,7 @@ namespace Slides
 			Libraries = libraries;
 			Imports = imports;
 			ReferencedFiles = referencedFiles;
+			CodeHighlighter = codeHighlighter;
 		}
 	}
 

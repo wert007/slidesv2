@@ -5,6 +5,7 @@ body {
 	margin-block-end: 0;
 	margin-inline-start: 0;
 	margin-inline-end: 0;
+	overflow: hidden;
 }
 
 p {
@@ -19,6 +20,12 @@ p {
 span {
 	font-family: inherit;
 	font-size: inherit;
+}
+
+.codeblock-caption {
+	position: absolute;
+	top: 2%;
+	right: 2%;
 }
 
 /*TODO Make it more specific*/

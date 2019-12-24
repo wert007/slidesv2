@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Code\CodeBlock.cs" />
+    <Compile Include="Code\CodeHighlighter.cs" />
     <Compile Include="Code\GitRepository.cs" />
     <Compile Include="Data\Alignment.cs" />
     <Compile Include="AnimationCall.cs" />

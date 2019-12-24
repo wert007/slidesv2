@@ -133,6 +133,7 @@ namespace Minsk.CodeAnalysis
 			Add(typeof(AnimationSymbol), CreateAnimationSymbol("Animation"));
 			Add(typeof(SlideAttributes), name: "Slide");
 
+			Add(typeof(CodeHighlighter));
 			Add(typeof(Github.File), CreateEmptySymbol("GithubFile"));
 			Add(typeof(GitFile), isData:true);
 			Add(typeof(GitRepository), isData:true);
