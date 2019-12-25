@@ -209,14 +209,19 @@ namespace Minsk.CodeAnalysis.Syntax
 					break;
 				case '=':
 					_position++;
-					if (Current != '=')
+					if(Current == '>')
 					{
-						_kind = SyntaxKind.EqualsToken;
+						_kind = SyntaxKind.EqualsGreaterToken;
+						_position++;
 					}
-					else
+					else if(Current == '=')
 					{
 						_kind = SyntaxKind.EqualsEqualsToken;
 						_position++;
+					}
+					else
+					{
+						_kind = SyntaxKind.EqualsToken;
 					}
 					break;
 				case '!':

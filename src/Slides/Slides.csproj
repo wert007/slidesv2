@@ -61,6 +61,7 @@
     <Compile Include="Data\Color.cs" />
     <Compile Include="Container.cs" />
     <Compile Include="Data\CSVFile.cs" />
+    <Compile Include="Data\Function.cs" />
     <Compile Include="Data\Range.cs" />
     <Compile Include="Data\Vector2.cs" />
     <Compile Include="Element.cs" />

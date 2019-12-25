@@ -901,6 +901,8 @@ namespace Minsk.CodeAnalysis.Binding
 					return BindMemberAccessExpression((MemberAccessExpressionSyntax)syntax);
 				case SyntaxKind.FieldAccessExpression:
 					return BindFieldAccessExpression((FieldAccessExpressionSyntax)syntax);
+				case SyntaxKind.LambdaExpression:
+					return BindLambdaExpression((LambdaExpressionSyntax)syntax);
 				case SyntaxKind.NameExpression:
 					return new BoundErrorExpression(); //Let's hope somebody informed the diagnostics!
 				default:
@@ -1547,6 +1549,21 @@ namespace Minsk.CodeAnalysis.Binding
 			var boundParent = BindExpression(syntax.Parent);
 			var boundVariable = BindMemberVariableExpression(syntax.Variable, boundParent.Type);
 			return new BoundFieldAccesExpression(boundParent, boundVariable);
+		}
+
+		private BoundExpression BindLambdaExpression(LambdaExpressionSyntax syntax)
+		{
+			_scope = new BoundScope(_scope);
+			var name = syntax.Variable.Identifier.Text;
+			var variable = new VariableSymbol(name, true, PrimitiveTypeSymbol.Float, true);
+			if (!_scope.TryDeclare(variable, syntax.Variable.Span))
+			{
+				_diagnostics.ReportVariableAlreadyDeclared(syntax.Variable.Span, name);
+				return new BoundErrorExpression();
+			}
+			var expression = BindExpression(syntax.Expression);
+			_scope = _scope.Parent;
+			return new BoundLambdaExpression(variable, expression);
 		}
 
 		private BoundExpression BindUnaryExpression(UnaryExpressionSyntax syntax)

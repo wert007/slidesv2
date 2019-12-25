@@ -3,24 +3,24 @@ using System.Collections.Generic;
 
 namespace Slides
 {
-	public class Function
+	public class Formula
 	{
-		public Function(string formula)
+		public Formula(string formula)
 		{
-			Formula = formula;
+			F = formula;
 		}
 
-		public string Formula { get; }
+		public string F { get; }
 
 		public string Insert(string variable)
 		{
-			return Formula.Replace("x", variable);
+			return F.Replace("x", variable);
 		}
 	}
 
-	public class Dependency
+	public class FieldDependency
 	{
-		public Dependency(Element element, string field, Function value)
+		public FieldDependency(Element element, string field, Formula value)
 		{
 			Element = element;
 			Field = field;
@@ -29,17 +29,17 @@ namespace Slides
 
 		public Element Element { get; }
 		public string Field { get; }
-		public Function Value { get; }
+		public Formula Value { get; }
 	}
 	public class Slider : Element
 	{
 		public Range range { get; }
 		public int value { get; }
 
-		private List<Dependency> _dependencies = new List<Dependency>();
-		public List<Dependency> get_Dependencies() => _dependencies;
+		private List<FieldDependency> _dependencies = new List<FieldDependency>();
+		public List<FieldDependency> get_Dependencies() => _dependencies;
 
-		public void add_Dependency(Dependency d)
+		public void add_Dependency(FieldDependency d)
 		{
 			_dependencies.Add(d);
 		}

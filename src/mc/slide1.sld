@@ -88,6 +88,17 @@ animation unblur(element: any, duration~: Time):
 		element.filter = blur(0);
 endanimation
 
+slide moarSliders < pagenumber:
+	//print($'{y~}'); //TODO: Support " as well!
+	let f~ = x~ => -1f * x~ + 3f - 1f * x~^2;
+	//let f~ = x~ => 2f * 3f * x~ - 4f * x~^2;
+//	let fTwo~ = x~, y~ => 2 * y~ * x~ - 4 * x~^2 - y~;
+	let plot = new LineChart(f~, -5..5);
+	//plot.showXAxis = false;
+	plot.color = red;
+	plot.orientation = Orientation.Stretch;
+endslide
+
 slide github < pagenumber:
 	code.setStyle(CodeHighlighter.Funky);
 	let repository~ = code.github('wert007/GTIProject');
@@ -95,7 +106,8 @@ slide github < pagenumber:
 	codeBlockB.fontsize = 10pt;
 	codeBlockB.orientation = Horizontal.Center | Vertical.Center;
 	codeBlockB.margin = margin(0, 50%, 0, 0);
-	let slider = new Slider(0..100);
+	let slider = new Slider(0..1000);
+	slider.orientation = Horizontal.Stretch | Vertical.Top;
 	let l = new Label('value not found');
 	l.margin = margin(25px, 0, 0, 0);
 	l.text = $'value: {slider.value}';

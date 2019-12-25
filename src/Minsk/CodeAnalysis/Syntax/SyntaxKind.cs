@@ -138,5 +138,7 @@ namespace Minsk.CodeAnalysis.Syntax
 		TemplateStatement,
 		PeriodPeriodToken,
 		RangeToken,
+		EqualsGreaterToken,
+		LambdaExpression,
 	}
 }

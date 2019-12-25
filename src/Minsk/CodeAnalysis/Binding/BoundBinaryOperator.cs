@@ -49,11 +49,14 @@ namespace Minsk.CodeAnalysis.Binding
 				new BoundBinaryOperator(SyntaxKind.MinusToken, BoundBinaryOperatorKind.Subtraction, PrimitiveTypeSymbol.Integer),
 				new BoundBinaryOperator(SyntaxKind.StarToken, BoundBinaryOperatorKind.Multiplication, PrimitiveTypeSymbol.Integer),
 				new BoundBinaryOperator(SyntaxKind.SlashToken, BoundBinaryOperatorKind.Division, PrimitiveTypeSymbol.Integer),
+				new BoundBinaryOperator(SyntaxKind.HatToken, BoundBinaryOperatorKind.Exponentiation, PrimitiveTypeSymbol.Integer),
 
 				new BoundBinaryOperator(SyntaxKind.PlusToken, BoundBinaryOperatorKind.Addition, PrimitiveTypeSymbol.Float),
 				new BoundBinaryOperator(SyntaxKind.MinusToken, BoundBinaryOperatorKind.Subtraction, PrimitiveTypeSymbol.Float),
 				new BoundBinaryOperator(SyntaxKind.StarToken, BoundBinaryOperatorKind.Multiplication, PrimitiveTypeSymbol.Float),
 				new BoundBinaryOperator(SyntaxKind.SlashToken, BoundBinaryOperatorKind.Division, PrimitiveTypeSymbol.Float),
+				new BoundBinaryOperator(SyntaxKind.HatToken, BoundBinaryOperatorKind.Exponentiation, PrimitiveTypeSymbol.Float),
+				new BoundBinaryOperator(SyntaxKind.HatToken, BoundBinaryOperatorKind.Exponentiation, PrimitiveTypeSymbol.Float, PrimitiveTypeSymbol.Integer, PrimitiveTypeSymbol.Float),
 
 				new BoundBinaryOperator(SyntaxKind.PeriodPeriodToken, BoundBinaryOperatorKind.Range, PrimitiveTypeSymbol.Integer, Range),
 

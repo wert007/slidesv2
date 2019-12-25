@@ -31,6 +31,9 @@ namespace Minsk.CodeAnalysis.Binding
 				new BoundUnaryOperator(SyntaxKind.PlusToken, BoundUnaryOperatorKind.Identity, PrimitiveTypeSymbol.Integer),
 				new BoundUnaryOperator(SyntaxKind.MinusToken, BoundUnaryOperatorKind.Negation, PrimitiveTypeSymbol.Integer),
 
+				new BoundUnaryOperator(SyntaxKind.PlusToken, BoundUnaryOperatorKind.Identity, PrimitiveTypeSymbol.Float),
+				new BoundUnaryOperator(SyntaxKind.MinusToken, BoundUnaryOperatorKind.Negation, PrimitiveTypeSymbol.Float),
+
 				new BoundUnaryOperator(SyntaxKind.PlusToken, BoundUnaryOperatorKind.Identity, TypeSymbol.FromString("Unit")),
 				new BoundUnaryOperator(SyntaxKind.MinusToken, BoundUnaryOperatorKind.Negation, TypeSymbol.FromString("Unit")),
 			//	new BoundUnaryOperator(SyntaxKind.TildeToken, BoundUnaryOperatorKind.OnesComplement, PrimitiveTypeSymbol.Integer),

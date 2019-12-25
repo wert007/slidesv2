@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Slides.MathTypes;
+using System;
 
 namespace Slides
 {
@@ -10,11 +11,11 @@ namespace Slides
 	{
 		public bool showXAxis { get; set; } = true;
 		public bool showYAxis { get; set; } = true;
-		public bool showLegend { get; set; } = true;
+		public bool showLegend { get; set; } = false;
 		public bool showDownload { get; set; } = false;
 		public bool showGrid { get; set; } = true;
 		public bool showTooltip { get; set; } = false;
-		
+
 		//TODO: Better name.
 		// bare()?
 		// essential()?
@@ -43,13 +44,13 @@ namespace Slides
 			yName = Data.GetValue(0, 0);
 			xName = Data.GetValue(1, 0);
 
-			values = new int[Data.Width][];
+			values = new float[Data.Width][];
 			for (int x = 0; x < Data.Width; x++)
 			{
-				values[x] = new int[Data.Height - 1];
+				values[x] = new float[Data.Height - 1];
 				for (int y = 1; y < Data.Height; y++)
 				{
-					var value = int.Parse(Data.GetValue(x, y));
+					var value = float.Parse(Data.GetValue(x, y));
 					values[x][y - 1] = value;
 					if (x == 0)
 					{
@@ -65,13 +66,38 @@ namespace Slides
 			}
 		}
 
-		public CSVFile Data { get; }
-		public int maxValueX { get; set; }
-		public int maxValueY { get; set; }
-		public int minValueX { get; set; }
-		public int minValueY { get; set; }
+		public LineChart(LambdaFunction f, Range range)
+		{
+			minValueX = range.From;
+			maxValueX = range.To;
+			maxValueY = float.MinValue;
+			minValueY = float.MaxValue;
+			int l = range.To - range.From;
+			values = new float[2][];
+			values[0] = new float[l];
+			values[1] = new float[l];
+			int i = 0;
+			while(i < l)
+			{
+				float x = minValueX + (maxValueX - minValueX) * i / l;
+				values[0][i] = x;
+				values[1][i] = f.Compute(x);
+				maxValueY = Math.Max(maxValueY, f.Compute(x));
+				minValueY = Math.Min(minValueY, f.Compute(x));
+				i += range.Step;
+			}
+			xName = "x";
+			yName = "y";
+			Data = null;
+		}
 
-		public int[][] values { get; }
+		public CSVFile Data { get; }
+		public float maxValueX { get; set; }
+		public float maxValueY { get; set; }
+		public float minValueX { get; set; }
+		public float minValueY { get; set; }
+
+		public float[][] values { get; }
 
 		public string xName { get; set; }
 		public string yName { get; set; }

@@ -1,24 +1,27 @@
 ﻿using System;
+using System.Globalization;
+using System.Linq;
 using Slides;
 
 namespace HTMLWriter
 {
 	internal class ChartWriter
 	{
+		private static CultureInfo _usCulture = CultureInfo.CreateSpecificCulture("US-us");
+
 		public static void WriteChart(JavaScriptWriter writer, string id, Chart chart)
 		{
+			writer.ToggleOnload();
 			WriteOptions(writer, chart);
 
 			WriteApexChart(writer, id, chart);
+			writer.ToggleOnload();
 		}
 
 		private static void WriteApexChart(JavaScriptWriter writer, string id, Chart chart)
 		{
-			writer.ToggleOnload();
-			writer.WriteVariableDeclarationInline($"chart_{chart.name}", $"new ApexCharts(document.getElementById('{id}'), options)");
+			writer.WriteVariableDeclarationInline($"chart_{chart.name}", $"new ApexCharts(document.getElementById('{id}'), options_{chart.name})");
 			writer.WriteFunctionCall($"chart_{chart.name}.render");
-			writer.ToggleOnload();
-
 		}
 
 		private static void WriteOptions(JavaScriptWriter writer, Chart chart)
@@ -27,7 +30,7 @@ namespace HTMLWriter
 			var showYAxis = chart.showYAxis.ToString().ToLower();
 			LineChart c = (LineChart)chart;
 			var a = $@"
-let options = {{
+let options_{chart.name} = {{
 		chart: {{
 			type: '{ToString(chart.chartType)}',
 			toolbar: {{
@@ -38,12 +41,12 @@ let options = {{
 		series: [{{
 			name: '{c.xName}',
 			data: [
-				{string.Join(", ", c.values[1])}
+				{string.Join(", ", c.values[1].Select(f => f.ToString("0.00", _usCulture)))}
 			],
 		}}],
 
 		xaxis: {{
-			categories: [{string.Join(", ", c.values[0])}],
+			categories: [{string.Join(", ", c.values[0].Select(f => f.ToString("0.00", _usCulture)))}],
 			labels: {{
 				show: {showXAxis},
 			}},

@@ -12,7 +12,7 @@ namespace Minsk.CodeAnalysis.Syntax
 				case SyntaxKind.PlusToken:
 				case SyntaxKind.MinusToken:
 				case SyntaxKind.BangToken:
-					return 6;
+					return 8;
 
 				default:
 					return 0;
@@ -24,6 +24,9 @@ namespace Minsk.CodeAnalysis.Syntax
 			switch (kind)
 			{
 				case SyntaxKind.PeriodPeriodToken:
+					return 7;
+
+				case SyntaxKind.HatToken:
 					return 6;
 
 				case SyntaxKind.StarToken:
@@ -47,7 +50,6 @@ namespace Minsk.CodeAnalysis.Syntax
 
 				case SyntaxKind.PipeToken:
 				case SyntaxKind.PipePipeToken:
-				case SyntaxKind.HatToken:
 					return 1;
 
 				default:

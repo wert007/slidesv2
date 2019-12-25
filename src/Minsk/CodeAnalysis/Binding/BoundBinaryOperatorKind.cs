@@ -21,5 +21,6 @@ namespace Minsk.CodeAnalysis.Binding
 		EnumAddition,
 		FilterAddition,
 		Range,
+		Exponentiation,
 	}
 }

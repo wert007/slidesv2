@@ -3,7 +3,6 @@ using System.Globalization;
 
 namespace Slides
 {
-
 	[Serializable]
 	public class Unit
 	{
@@ -125,14 +124,14 @@ namespace Slides
 			{
 				case "pt":
 					return UnitKind.Point;
-					case "%":
+				case "%":
 					return UnitKind.Percent;
 				case "px":
 					return UnitKind.Pixel;
 				case "auto":
 					return UnitKind.Auto;
 
-					case "ch":
+				case "ch":
 					return UnitKind.CharacterWidth;
 				default:
 					return null;

@@ -352,7 +352,6 @@ namespace HTMLWriter
 				_jsWriter.WriteVariableDeclarationInline(d.Element.name, $"document.getElementById('{parentName}-{d.Element.name}')");
 				_jsWriter.WriteAssignment($"{d.Element.name}.{StyleWriter.ToCssAttribute(d.Field)}", d.Value.Insert("slider.value"));
 			}
-			_jsWriter.WriteFunctionCall("console.log", new JSObj("slider.value"));
 			_jsWriter.EndFunction();
 		}
 

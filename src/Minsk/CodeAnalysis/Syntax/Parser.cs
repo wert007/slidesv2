@@ -904,12 +904,12 @@ namespace Minsk.CodeAnalysis.Syntax
 					var variables = new List<VariableExpressionSyntax>();
 					var commas = new List<SyntaxToken>();
 					variables.Add(ParseVariableExpression());
-					while(Current.Kind == SyntaxKind.CommaToken)
+					while (Current.Kind == SyntaxKind.CommaToken)
 					{
 						commas.Add(NextToken());
 						variables.Add(ParseVariableExpression());
 					}
-					if(Current.Kind != SyntaxKind.EqualsToken &&
+					if (Current.Kind != SyntaxKind.EqualsToken &&
 						Current.Kind != SyntaxKind.PlusEqualsToken &&
 						Current.Kind != SyntaxKind.MinusEqualsToken &&
 						Current.Kind != SyntaxKind.StarEqualsToken &&
@@ -922,7 +922,7 @@ namespace Minsk.CodeAnalysis.Syntax
 					var right = ParseAssignmentExpression();
 					return new AssignmentExpressionSyntax(variables.ToArray(), commas.ToArray(), operatorToken, right);
 				}
-				else 
+				else
 				{
 					var left = ParseFieldAccessExpression();
 					if (Current.Kind != SyntaxKind.EqualsToken &&
@@ -938,6 +938,13 @@ namespace Minsk.CodeAnalysis.Syntax
 					var right = ParseAssignmentExpression();
 					return new FieldAssignmentExpressionSyntax(left, operatorToken, right);
 				}
+			}
+			else if (Peek(2).Kind == SyntaxKind.EqualsGreaterToken)
+			{
+				var variable = ParseVariableExpression();
+				var arrowToken = MatchToken(SyntaxKind.EqualsGreaterToken);
+				var expression = ParseBinaryExpression();
+				return new LambdaExpressionSyntax(variable, arrowToken, expression);
 			}
 			return ParseBinaryExpression();
 		}

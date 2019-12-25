@@ -7,6 +7,7 @@ using Minsk.CodeAnalysis.Symbols;
 using Slides;
 using Slides.Code;
 using Slides.Filters;
+using Slides.MathTypes;
 
 namespace Minsk.CodeAnalysis
 {
@@ -53,6 +54,7 @@ namespace Minsk.CodeAnalysis
 			Add(typeof(Unit.UnitKind));
 			Add(typeof(UnitAddition));
 			Add(typeof(Range), isData:true);
+			Add(typeof(LambdaFunction), isData: true);
 
 			Add(typeof(Style), CreateEmptySymbol("Style"));
 			Add(typeof(ElementType), CreateEmptySymbol("ElementType"));
