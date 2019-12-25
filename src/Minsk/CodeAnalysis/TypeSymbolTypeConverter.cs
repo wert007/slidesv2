@@ -119,6 +119,8 @@ namespace Minsk.CodeAnalysis
 			Add(typeof(Label));
 			Add(typeof(Container));
 			Add(typeof(List));
+			Add(typeof(IFrame));
+			Add(typeof(Slider));
 
 			Add(typeof(CodeBlock));
 
@@ -288,7 +290,7 @@ namespace Minsk.CodeAnalysis
 					mname == "GetHashCode" ||
 					mname == "GetType")
 					continue;
-				if (mname.StartsWith("get_") || mname.StartsWith("set_"))
+				if (mname.StartsWith("get_") || mname.StartsWith("set_") || mname.StartsWith("add_"))
 					continue;
 				if (mname.StartsWith("op_"))
 					continue;

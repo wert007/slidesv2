@@ -11,7 +11,24 @@ namespace Slides
 		public bool showXAxis { get; set; } = true;
 		public bool showYAxis { get; set; } = true;
 		public bool showLegend { get; set; } = true;
-		public abstract ChartType chartType { get; }	
+		public bool showDownload { get; set; } = false;
+		public bool showGrid { get; set; } = true;
+		public bool showTooltip { get; set; } = false;
+		
+		//TODO: Better name.
+		// bare()?
+		// essential()?
+		// plotOnly()
+		public void bare()
+		{
+			showXAxis = false;
+			showYAxis = false;
+			showLegend = false;
+			showDownload = false;
+			showGrid = false;
+			showTooltip = false;
+		}
+		public abstract ChartType chartType { get; }
 	}
 	public class LineChart : Chart
 	{
@@ -34,7 +51,7 @@ namespace Slides
 				{
 					var value = int.Parse(Data.GetValue(x, y));
 					values[x][y - 1] = value;
-					if(x == 0)
+					if (x == 0)
 					{
 						maxValueY = Math.Max(maxValueY, value);
 						minValueY = Math.Min(minValueY, value);
@@ -55,7 +72,7 @@ namespace Slides
 		public int minValueY { get; set; }
 
 		public int[][] values { get; }
-		
+
 		public string xName { get; set; }
 		public string yName { get; set; }
 

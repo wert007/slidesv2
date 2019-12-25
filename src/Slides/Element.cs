@@ -15,7 +15,9 @@ namespace Slides
 		Slide,
 		Container,
 		List,
-		CodeBlock
+		CodeBlock,
+		IFrame,
+		Slider
 	}
 
 	public abstract class Element : IFilterInput

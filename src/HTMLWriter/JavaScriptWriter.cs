@@ -6,6 +6,17 @@ using Slides;
 
 namespace HTMLWriter
 {
+	public class JSObj
+	{
+		public JSObj(string name)
+		{
+			Name = name;
+		}
+
+		public override string ToString() => Name;
+
+		public string Name { get; }
+	}
 	public class JavaScriptWriter : IDisposable
 	{
 		private IndentedTextWriter _writer;

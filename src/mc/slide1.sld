@@ -4,6 +4,7 @@ import gfont('Quicksand') as quicksand;
 
 //Possible Features:
 // - Support sliders, so that you can change graphes for example.
+//   or maybe textboxes as well.
 // - support github code in javascript!
 
 
@@ -16,7 +17,7 @@ template pagenumber(child: Slide):
 endtemplate
 
 style std:
-	color = rgb(226, 226, 226);
+	color = rgb(23, 23, 23);
 	//Slide.background = black;
 	//TODO: support std-styles for classes
 	//e.g. 
@@ -27,10 +28,6 @@ style std:
 	font = quicksand~;
 	fontsize = 14pt;
 	transition = stdTransition;
-	//Kinda working, but not really
-	//has something todo with overflow hidden.
-	//But i dont know what?!
-	//filter = grayscale(0.5f);
 endstyle
 
 transition stdTransition(from: Slide, to: Slide):
@@ -68,10 +65,8 @@ animation quoteGoesUp(element: any, duration~: Time):
 	case init:
 		interpolation = Interpolation.Linear;
 	case done:
-	//TODO: Make more attributes animateable
-	//Like margin or padding for example
 		element.margin = margin(-100%, 0, 0, 0);
-	//	element.margin.Top = -element.height;
+		//TODO(bug): Doesn't work. Turns black instead.
 		element.background = red;
 endanimation
 
@@ -82,24 +77,36 @@ animation unblur(element: any, duration~: Time):
 	case done:
 		//Because of the cases progress always has a specific value and you cant use it
 		//for calculations. You would need a special case for this...
-		
+		//Something like:
+		//
+		//		case compute:
+		//			blur(exp(progress));
+		//
+		//But do we need this? We can set the interpolation and say what value we want when.
+		//idk.
+
 		element.filter = blur(0);
 endanimation
 
 slide github < pagenumber:
-		code.setStyle(CodeHighlighter.Funky);
-		let repository~ = code.github('wert007/GTIProject');
-		let file~ = repository~.file('main.c');
-		//let codeBlockA = code.codeblock(file~, 3..14);
-		let codeBlockB = code.codeblock(repository~, 'main.c', 3..14);
-		codeBlockB.fontsize = 10pt;
-		codeBlockB.orientation = Horizontal.Center | Vertical.Center;
-		step:
-			quoteGoesUp.play(codeBlockB, 1.5s);
+	code.setStyle(CodeHighlighter.Funky);
+	let repository~ = code.github('wert007/GTIProject');
+	let codeBlockB = code.codeblock(repository~, 'main.c', 3..14);
+	codeBlockB.fontsize = 10pt;
+	codeBlockB.orientation = Horizontal.Center | Vertical.Center;
+	codeBlockB.margin = margin(0, 50%, 0, 0);
+	let slider = new Slider(0..100);
+	let l = new Label('value not found');
+	l.margin = margin(25px, 0, 0, 0);
+	l.text = $'value: {slider.value}';
+//	step lol:
+//		let vid = youtube('VB4CCHHYOqY', true);
+//		vid.orientation = Orientation.Stretch;
+//		vid.filter = discrete~;
+//		vid.margin = margin(0, 0, 0, 50%);
 endslide
 
 slide cityDevelopment < pagenumber:
-	background = black;
 	let titleText~ = 'Geschichte der Stadtentwicklung';
 	let contents~ = [
 		['1850 erhielt L.A. das US-Stadtrecht'],
@@ -177,7 +184,7 @@ slide introduction:
 	let quote~ = 'Los Angeles is **72 suburbs** in search of a city';
 	let author~ = 'Dorothy Parker';
 	let quoteBox = new custom.introductingQuote(quote~, author~);
-	quoteBox.background = alpha(black, 0.7f);
+	//quoteBox.background = alpha(black, 0.7f);
 
 	//filter = myFilter~;
 
@@ -197,7 +204,7 @@ slide title:
 endslide
 
 slide traits < pagenumber:
-	background = black;
+	//background = black;
 	let titleText~ = 'Merkmale einer anglo-amerikanischen Stadt';
 	let contents~ = [
 		$'Schachbrettmuster des Straßenverlaufs',
@@ -217,7 +224,7 @@ slide traits < pagenumber:
 endslide
 
 slide city < pagenumber:
-	background = black;
+	//background = black;
 	let titleText~ = 'Allgemeines zu Los Angeles';
 	let title = new basics.Title(titleText~);
 

@@ -38,6 +38,20 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			}
 			return result;
 		}
+
+		public static IFrame youtube(string video)
+		{
+			return youtube(video, false);
+		}
+		//TODO: Use a js construct for playing YT vids.
+		public static IFrame youtube(string video, bool autoplay)
+		{
+			var src = $"https://www.youtube.com/embed/{video}";
+			if (autoplay)
+				src = src + "?autoplay=1&mute=1";
+			return new IFrame(src, "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture", "allowfullscreen");
+		}
+
 		public static void print(string message)
 		{
 			Console.WriteLine(message);

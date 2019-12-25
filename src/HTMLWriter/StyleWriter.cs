@@ -72,6 +72,8 @@ namespace HTMLWriter
 					return "font-family";
 				case "fontsize":
 					return "font-size";
+				case "text":
+					return "innerHTML"; //TODO: Hacky
 				case "padding":
 				case "color":
 				case "background":
@@ -130,20 +132,17 @@ namespace HTMLWriter
 			writer.EndSelector();
 		}
 
-		public static void WriteElement(CSSWriter writer, string parentName, Element element, Element parent = null)
+		public static void WriteElement(CSSWriter writer, string id, Element element, Element parent = null)
 		{
 			if (element.name == null)
 				return;
-			writer.StartId(parentName + "-" + element.name);
+			writer.StartId(id);
 			WriteBrush(writer, element.background);
 			writer.WriteAttributeIfValue("border-color", element.borderColor);
 			writer.WriteAttribute("border-style", element.borderStyle);
 			writer.WriteAttributeIfValue("border-thickness", element.borderThickness);
 			writer.WriteAttributeIfValue("color", element.color);
 			writer.WriteAttributeIfValue("filter", element.filter);
-			var padding = new Thickness();
-			if (element.padding != null)
-				padding = element.padding;
 
 			WriteOrientation(writer, element, parent);
 
@@ -185,7 +184,7 @@ namespace HTMLWriter
 			if (element.hover == null)
 				return;
 
-			writer.StartId(parentName + "-" + element.name, pseudoClass: "hover");
+			writer.StartId(id, pseudoClass: "hover");
 			foreach (var modifiedField in element.hover.ModifiedFields)
 			{
 				writer.WriteAttribute(ToCssAttribute(modifiedField.Key), modifiedField.Value);

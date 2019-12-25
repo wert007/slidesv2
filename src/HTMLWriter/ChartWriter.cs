@@ -5,17 +5,17 @@ namespace HTMLWriter
 {
 	internal class ChartWriter
 	{
-		public static void WriteChart(JavaScriptWriter writer, string parentName, Chart chart)
+		public static void WriteChart(JavaScriptWriter writer, string id, Chart chart)
 		{
 			WriteOptions(writer, chart);
 
-			WriteApexChart(writer, parentName, chart);
+			WriteApexChart(writer, id, chart);
 		}
 
-		private static void WriteApexChart(JavaScriptWriter writer, string parentName, Chart chart)
+		private static void WriteApexChart(JavaScriptWriter writer, string id, Chart chart)
 		{
 			writer.ToggleOnload();
-			writer.WriteVariableDeclarationInline($"chart_{chart.name}", $"new ApexCharts(document.getElementById('{parentName}-{chart.name}'), options)");
+			writer.WriteVariableDeclarationInline($"chart_{chart.name}", $"new ApexCharts(document.getElementById('{id}'), options)");
 			writer.WriteFunctionCall($"chart_{chart.name}.render");
 			writer.ToggleOnload();
 
@@ -31,7 +31,7 @@ let options = {{
 		chart: {{
 			type: '{ToString(chart.chartType)}',
 			toolbar: {{
-				show: false,
+				show: {ToString(chart.showDownload)},
 			}},
 		}},
 		colors: ['{CSSWriter.GetValue(c.color)}'],
@@ -57,7 +57,7 @@ let options = {{
 				show: false,
 			}},
 			tooltip: {{
-				enabled: false,
+				enabled: {ToString(chart.showTooltip)},
 			}},
 		}},
 		yaxis: {{
@@ -74,19 +74,24 @@ let options = {{
 				show: false,
 			}},
 			tooltip: {{
-				enabled: false,
+				enabled: {ToString(chart.showTooltip)},
 			}},
 		}},
 		grid: {{
-			show: false,
+			show: {ToString(chart.showGrid)},
 		}},
 		tooltip: {{
-			enabled: false,
+			enabled: {ToString(chart.showTooltip)},
 		}},
 	}}
 ";
 
 			writer.WriteLine(a);
+		}
+
+		private static string ToString(bool b)
+		{
+			return b.ToString().ToLower();
 		}
 
 		private static string ToString(ChartType type)

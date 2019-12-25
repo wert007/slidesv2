@@ -83,10 +83,7 @@ group cityDevelopmentText(args~: cityDevelopmentParameter):
 	let chart = new LineChart(populationData~);
 	chart.color = rgb(0, 0, 153);
 	chart.orientation = Orientation.Stretch;
-	chart.showXAxis = false;
-	chart.showYAxis = false;
-	chart.showLegend = false;
-	chart.height = auto;
+	chart.bare();
 	let lblSource = new Label($'(c) {args~.populationSource~}');
 	lblSource.orientation = Horizontal.Right | Vertical.Bottom;
 	lblSource.applyStyle(imgLabel);

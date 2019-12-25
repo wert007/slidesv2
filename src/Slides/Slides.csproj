@@ -93,6 +93,7 @@
     <Compile Include="Filters\TurbulenceType.cs" />
     <Compile Include="Data\Font.cs" />
     <Compile Include="Data\Horizontal.cs" />
+    <Compile Include="IFrame.cs" />
     <Compile Include="Image.cs" />
     <Compile Include="Data\ImageSource.cs" />
     <Compile Include="ImportExpression.cs" />
@@ -107,6 +108,7 @@
     <Compile Include="Rectangle.cs" />
     <Compile Include="Slide.cs" />
     <Compile Include="SlideAttributes.cs" />
+    <Compile Include="Slider.cs" />
     <Compile Include="Stack.cs" />
     <Compile Include="Filters\SVGFilter.cs" />
     <Compile Include="Data\Thickness.cs" />
