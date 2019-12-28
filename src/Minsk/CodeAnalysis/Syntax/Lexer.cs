@@ -381,6 +381,9 @@ namespace Minsk.CodeAnalysis.Syntax
 			bool trimEnd = false;
 			bool replaceBackSlash = false;
 
+			//TODO! This might be Errorprone.
+			//exp: $@'lol\n{43}\'
+			//                 ^ Current wouldnt be @
 			if (Current == '@')
 				replaceBackSlash = true;
 
@@ -397,7 +400,7 @@ namespace Minsk.CodeAnalysis.Syntax
 			var length = _position - _start;
 			var start = _start + trimStart;
 			var strLength = length - trimStart - (trimEnd ? 1 : 0);
-			if (length > 1)
+			if (strLength > 0)
 				_value = _text.ToString(start, strLength);
 			else
 				_value = string.Empty;

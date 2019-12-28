@@ -6,10 +6,10 @@ import gfont('Quicksand') as quicksand;
 // - Support sliders, so that you can change graphes for example.
 //   or maybe textboxes as well.
 // - support github code in javascript!
-
+// - offline compile flag (--offline). With warnings when using youtube() or such!
 
 template pagenumber(child: Slide):
-	let text~ = $'{child.index + 1}/ {slideCount}';
+	let text~ = $'{child.index + 1}/{slideCount}';
 	let label = new Label(text~);
 	label.orientation = Horizontal.Right | Vertical.Top;
 	label.fontsize = 12pt;
@@ -88,35 +88,43 @@ animation unblur(element: any, duration~: Time):
 		element.filter = blur(0);
 endanimation
 
-slide moarSliders < pagenumber:
-	//print($'{y~}'); //TODO: Support " as well!
-	let f~ = x~ => -1f * x~ + 3f - 1f * x~^2;
-	//let f~ = x~ => 2f * 3f * x~ - 4f * x~^2;
-//	let fTwo~ = x~, y~ => 2 * y~ * x~ - 4 * x~^2 - y~;
-	let plot = new LineChart(f~, -5..5);
-	//plot.showXAxis = false;
-	plot.color = red;
-	plot.orientation = Orientation.Stretch;
-endslide
-
-slide github < pagenumber:
-	code.setStyle(CodeHighlighter.Funky);
-	let repository~ = code.github('wert007/GTIProject');
-	let codeBlockB = code.codeblock(repository~, 'main.c', 3..14);
-	codeBlockB.fontsize = 10pt;
-	codeBlockB.orientation = Horizontal.Center | Vertical.Center;
-	codeBlockB.margin = margin(0, 50%, 0, 0);
-	let slider = new Slider(0..1000);
-	slider.orientation = Horizontal.Stretch | Vertical.Top;
-	let l = new Label('value not found');
-	l.margin = margin(25px, 0, 0, 0);
-	l.text = $'value: {slider.value}';
-//	step lol:
-//		let vid = youtube('VB4CCHHYOqY', true);
-//		vid.orientation = Orientation.Stretch;
-//		vid.filter = discrete~;
-//		vid.margin = margin(0, 0, 0, 50%);
-endslide
+//Doesn't work. I don't know..
+//slide moarSliders < pagenumber:
+//	//print($'{y~}'); //TODO: Support " as well!
+//	let f~ = x~ => -1f * x~ + 3f - 1f * x~^2;
+//	//let f~ = x~ => 2f * 3f * x~ - 4f * x~^2;
+////	let fTwo~ = x~, y~ => 2 * y~ * x~ - 4 * x~^2 - y~;
+//	let plot = new LineChart(f~, -5..5);
+//	//plot.showXAxis = false;
+//	plot.color = red;
+//	plot.orientation = Orientation.Stretch;
+//endslide
+//
+//slide github < pagenumber:
+//	let sldEnd = new Slider(5..50);
+//	let sldStart = new Slider(1..5);
+//	sldStart.margin = margin(50px, 0, 0, 0);
+//	sldStart.max = sldEnd.value;
+//	sldEnd.min = sldStart.value;
+//
+//	code.setStyle(CodeHighlighter.Funky);
+//	let repository~ = code.github('wert007/GTIProject');
+//	let codeBlockB = code.codeblock(repository~, 'main.c', 3..14);
+//	codeBlockB.fontsize = 10pt;
+//	codeBlockB.orientation = Horizontal.Center | Vertical.Center;
+//	codeBlockB.margin = margin(0, 50%, 0, 0);
+//	codeBlockB.range = sldStart.value..sldEnd.value;
+//	let slider = new Slider(0..1000);
+//	slider.orientation = Horizontal.Stretch | Vertical.Top;
+//	let l = new Label('value not found');
+//	l.margin = margin(25px, 0, 0, 0);
+//	l.text = $'value: {slider.value}';
+////	step lol:
+////		let vid = youtube('VB4CCHHYOqY', true);
+////		vid.orientation = Orientation.Stretch;
+////		vid.filter = discrete~;
+////		vid.margin = margin(0, 0, 0, 50%);
+//endslide
 
 slide cityDevelopment < pagenumber:
 	let titleText~ = 'Geschichte der Stadtentwicklung';
@@ -219,13 +227,13 @@ slide traits < pagenumber:
 	//background = black;
 	let titleText~ = 'Merkmale einer anglo-amerikanischen Stadt';
 	let contents~ = [
-		$'Schachbrettmuster des Straßenverlaufs',
-		$'Wolkenkratzer im Geschäftszentrum',
-		$'klassische Strukturierung der Stadt in __CBD__, __Übergangszone__ und __Außenbereich__',
-		$'__Commercial Strips__ entlang von Verkehrsachsen',
-		$'allgemeine Wohnform der gehobeneren Schichten in Vororten',
-		$'zunehmende Entstehung von __Gated Communties__', 
-		$'verfallende Kernstädte und Ghettobildung'
+		'Schachbrettmuster des Straßenverlaufs',
+		'Wolkenkratzer im Geschäftszentrum',
+		'klassische Strukturierung der Stadt in __CBD__, __Übergangszone__ und __Außenbereich__',
+		'__Commercial Strips__ entlang von Verkehrsachsen',
+		'allgemeine Wohnform der gehobeneren Schichten in Vororten',
+		'zunehmende Entstehung von __Gated Communties__', 
+		'verfallende Kernstädte und Ghettobildung'
 	];
 	let title = new basics.Title(titleText~);
 	let list = new List(contents~);
@@ -286,5 +294,7 @@ slide overview:
 
 	//TODO: This feature would be like super cool.
 	step:
+		let svgSrc~ = svg(@'city\overlay.svg');
+		let imgSvg = new Image(svgSrc~);
 		//filter = grayscale(1);
 endslide

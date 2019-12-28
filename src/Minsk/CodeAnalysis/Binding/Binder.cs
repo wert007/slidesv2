@@ -1360,6 +1360,7 @@ namespace Minsk.CodeAnalysis.Binding
 
 			switch (bestMatch.Name)
 			{
+				case "svg":
 				case "image":
 					BindImageFunction(syntax.Span, bestMatch, arguments.ToArray());
 					break;

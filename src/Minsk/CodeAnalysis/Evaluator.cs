@@ -388,12 +388,6 @@ namespace Minsk.CodeAnalysis
 				case "applyStyle":
 					var style = (Style)EvaluateExpression(expression.Function.Arguments[0]);
 					return style.ModifiedFields;
-				//case "setPadding":
-				//case "setMargin":
-				//	var value = EvaluateExpression(expression.Function.Arguments[0]);
-				//	var result = new Dictionary<string, object>();
-				//	result.Add(expression.Function.Function.Name, value);
-				//	return result;
 				default:
 					Logger.LogUnmatchedStyleFunction(expression.Function.Function.Name, styleName);
 
@@ -891,10 +885,30 @@ namespace Minsk.CodeAnalysis
 						return (float)EvaluateExpression(be.Left);
 				}
 				{
-					if (CountLambdaArgs(be.Left, variable) >= index)
+					if (HasLambdaArgsIndex(be.Left, variable, index) && HasLambdaArgsIndex(be.Right, variable, index))
+					{
+						switch (be.Op.Kind)
+						{
+							case BoundBinaryOperatorKind.Addition:
+								return GetLambdaValue(be.Left, variable, index) + GetLambdaValue(be.Right, variable, index);
+							case BoundBinaryOperatorKind.Subtraction:
+								return GetLambdaValue(be.Left, variable, index) - GetLambdaValue(be.Right, variable, index);
+							case BoundBinaryOperatorKind.Multiplication:
+								return GetLambdaValue(be.Left, variable, index) * GetLambdaValue(be.Right, variable, index);
+							case BoundBinaryOperatorKind.Division:
+								return GetLambdaValue(be.Left, variable, index) / GetLambdaValue(be.Right, variable, index);
+							case BoundBinaryOperatorKind.Exponentiation:
+								return (float)Math.Pow(GetLambdaValue(be.Left, variable, index), GetLambdaValue(be.Right, variable, index));
+							default:
+								throw new Exception();
+						}
+					}
+					else if (HasLambdaArgsIndex(be.Left, variable, index))
 						return GetLambdaValue(be.Left, variable, index);
-					else if (CountLambdaArgs(be.Right, variable) >= index)
+					else if (HasLambdaArgsIndex(be.Right, variable, index))
 						return GetLambdaValue(be.Right, variable, index);
+					if (index == 0) //TODO
+						return 0;
 					throw new Exception();
 				}
 			}
@@ -918,6 +932,26 @@ namespace Minsk.CodeAnalysis
 				if (!(child is BoundExpression e))
 					continue;
 				result = Math.Max(CountLambdaArgs(e, variable), result);
+			}
+			return result;
+		}
+		private bool HasLambdaArgsIndex(BoundExpression expression, VariableSymbol variable, int index)
+		{
+			if (expression is BoundBinaryExpression b && b.Op.Kind == BoundBinaryOperatorKind.Exponentiation)
+				if (b.Left is BoundVariableExpression ve)
+					if (ve.Variable == variable)
+						return (int)EvaluateExpression(b.Right) == index;
+			if (expression is BoundVariableExpression v)
+			{
+				if (v.Variable == variable)
+					return 1 == index;
+			}
+			bool result = false;
+			foreach (var child in expression.GetChildren())
+			{
+				if (!(child is BoundExpression e))
+					continue;
+				result = result || HasLambdaArgsIndex(e, variable, index);
 			}
 			return result;
 		}

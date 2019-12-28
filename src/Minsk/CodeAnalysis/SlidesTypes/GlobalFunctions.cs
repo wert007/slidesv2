@@ -39,6 +39,18 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			return result;
 		}
 
+		public static ImageSource svg(string path)
+		{
+			var result = new ImageSource(path, true);
+			using (var image = new MagickImage(path))
+			{
+				result.width = image.BaseWidth;
+				result.height = image.BaseHeight;
+			}
+			return result;
+
+		}
+
 		public static IFrame youtube(string video)
 		{
 			return youtube(video, false);
