@@ -12,6 +12,15 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 
 	public static class GlobalFunctions
 	{
+		//TODO: Do this smarter
+		public static float @float(int i)
+		{
+			return i;
+		}
+		public static int @int(float f)
+		{
+			return (int)f;
+		}
 		public static CSVFile csv(string path)
 		{
 			string fileContents = null;

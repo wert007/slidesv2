@@ -32,8 +32,6 @@ namespace Minsk.CodeAnalysis.Syntax
 
 		private char Current => Peek(0);
 
-		private char Lookahead => Peek(1);
-
 		private char Peek(int offset)
 		{
 			var index = _position + offset;
@@ -113,13 +111,13 @@ namespace Minsk.CodeAnalysis.Syntax
 					_position++;
 					if (Current == '/')
 					{
-						while(Current != '\n')
+						while (Current != '\n' && Current != '\0')
 						{
 							_position++;
 						}
 						_kind = SyntaxKind.CommentToken;
 					}
-					else if(Current == '=')
+					else if (Current == '=')
 					{
 						_position++;
 						_kind = SyntaxKind.SlashEqualsToken;
@@ -164,7 +162,7 @@ namespace Minsk.CodeAnalysis.Syntax
 				case '.':
 					_kind = SyntaxKind.PeriodToken;
 					_position++;
-					if(Current == '.')
+					if (Current == '.')
 					{
 						_kind = SyntaxKind.PeriodPeriodToken;
 						_position++;
@@ -209,12 +207,12 @@ namespace Minsk.CodeAnalysis.Syntax
 					break;
 				case '=':
 					_position++;
-					if(Current == '>')
+					if (Current == '>')
 					{
 						_kind = SyntaxKind.EqualsGreaterToken;
 						_position++;
 					}
-					else if(Current == '=')
+					else if (Current == '=')
 					{
 						_kind = SyntaxKind.EqualsEqualsToken;
 						_position++;
@@ -339,7 +337,7 @@ namespace Minsk.CodeAnalysis.Syntax
 
 			var isFloat = false;
 			var hasSuffix = false;
-			if(Current == '.' && Peek(1) != '.')
+			if (Current == '.' && Peek(1) != '.')
 			{
 				isFloat = true;
 				_position++;
@@ -388,8 +386,16 @@ namespace Minsk.CodeAnalysis.Syntax
 				replaceBackSlash = true;
 
 			_position += trimStart;
-			while (Current != '\'' && Current != '\0' && Current != '{')
+			while (true)
+			{
+				if (Current == '\0')
+					break;
+				if (Current == '\'' && Peek(-1) != '\\')
+					break;
+				if (Current == '{' && Peek(1) != '{')
+					break;
 				_position++;
+			}
 			if (Current != '\'' && Current != '{')
 				_diagnostics.ReportMissingCharacter(_start, '\'', '\'');
 			else

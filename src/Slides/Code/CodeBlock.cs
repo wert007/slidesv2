@@ -4,7 +4,7 @@
 	{
 		public override ElementType type => ElementType.CodeBlock;
 
-		public bool useLineNumbers { get; set; } = true;
+		public bool showLineNumbers { get; set; } = true;
 		public int lineStart { get; set; } = 1;
 		public string code { get; set; }
 		public string language { get; set; }

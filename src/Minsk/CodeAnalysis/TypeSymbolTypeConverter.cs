@@ -31,6 +31,11 @@ namespace Minsk.CodeAnalysis
 			}
 		}
 
+		public string[] GetAllTypesByName()
+		{
+			return _toType.Keys.Select(t => t.Name).ToArray();
+		}
+
 		private TypeSymbolTypeConverter()
 		{
 			_toType = new Dictionary<TypeSymbol, Type>();
@@ -46,6 +51,7 @@ namespace Minsk.CodeAnalysis
 			Add(typeof(float), PrimitiveTypeSymbol.Float);
 			Add(typeof(void), PrimitiveTypeSymbol.Void);
 			Add(typeof(object), PrimitiveTypeSymbol.Object);
+			Add(typeof(TypeSymbol), CreateEmptySymbol("type", isData: true));
 
 			//Maybe allow the user to use Font.Measure(string, Unit) -> Vector
 			//It's the only reference right now to Vector
@@ -56,7 +62,8 @@ namespace Minsk.CodeAnalysis
 			Add(typeof(Range), isData:true);
 			Add(typeof(LambdaFunction), isData: true);
 
-			Add(typeof(Style), CreateEmptySymbol("Style"));
+			Add(typeof(CustomStyle), CreateEmptySymbol("Style"));
+			Add(typeof(StdStyle), CreateEmptySymbol("Style"));
 			Add(typeof(ElementType), CreateEmptySymbol("ElementType"));
 			Add(typeof(ChartType));
 			Add(typeof(LibrarySymbol), CreateEmptySymbol("Library"));
@@ -136,6 +143,7 @@ namespace Minsk.CodeAnalysis
 			Add(typeof(Template));
 			Add(typeof(AnimationSymbol), CreateAnimationSymbol("Animation"));
 			Add(typeof(SlideAttributes), name: "Slide");
+			Add(typeof(StyleSlideAttributes),name: "_Slide", fieldsAreNoneable: true);
 
 			Add(typeof(CodeHighlighter));
 			Add(typeof(Github.File), CreateEmptySymbol("GithubFile"));
@@ -173,22 +181,22 @@ namespace Minsk.CodeAnalysis
 			return new AdvancedTypeSymbol(name, VariableSymbolCollection.Empty, FunctionSymbolCollection.Empty, functions);
 		}
 
-		private TypeSymbol CreateEmptySymbol(string name)
+		private TypeSymbol CreateEmptySymbol(string name, bool isData = false)
 		{
 			var result = new AdvancedTypeSymbol(name, VariableSymbolCollection.Empty, FunctionSymbolCollection.Empty);
-			result.SetData(false);
+			result.SetData(isData);
 			return result;
 		}
 
 		
-		private void Add(Type type, TypeSymbol[] canBeCastedTo = null, bool isData = false, string name = null)
+		private void Add(Type type, TypeSymbol[] canBeCastedTo = null, bool isData = false, string name = null, bool fieldsAreNoneable = false)
 		{
 			TypeSymbol symbol;
 			if (name == null)
 				name = type.Name;
 			if (!type.IsEnum)
 			{
-				symbol = CreateAdvancedType(type, name, canBeCastedTo);
+				symbol = CreateAdvancedType(type, name, canBeCastedTo, fieldsAreNoneable);
 				((AdvancedTypeSymbol)symbol).SetData(isData);
 			}
 			else
@@ -226,7 +234,7 @@ namespace Minsk.CodeAnalysis
 			return false;
 		}
 
-		private TypeSymbol CreateAdvancedType(Type type, string name, TypeSymbol[] canBeCastedTo)
+		private TypeSymbol CreateAdvancedType(Type type, string name, TypeSymbol[] canBeCastedTo, bool fieldsAreNoneable = false)
 		{
 			TypeSymbol symbol;
 			List<string> todoList = new List<string>();
@@ -238,6 +246,8 @@ namespace Minsk.CodeAnalysis
 				if (field.FieldType != type)
 				{
 					fieldType = LookSymbolUp(field.FieldType);
+					if (fieldsAreNoneable)
+						fieldType = new NullableTypeSymbol(fieldType);
 				}
 				else
 				{
@@ -257,6 +267,8 @@ namespace Minsk.CodeAnalysis
 				if(prop.PropertyType != type)
 				{
 					propertyType = LookSymbolUp(prop.PropertyType);
+					if (fieldsAreNoneable)
+						propertyType = new NullableTypeSymbol(propertyType);
 				}
 				else
 				{
@@ -308,7 +320,7 @@ namespace Minsk.CodeAnalysis
 			}
 			if(typeof(Element).IsAssignableFrom(type))
 			{
-				functions.Add(new FunctionSymbol("applyStyle", new VariableSymbol("style", true, LookSymbolUp(typeof(Style)), false), PrimitiveTypeSymbol.Void));
+				functions.Add(new FunctionSymbol("applyStyle", new VariableSymbol("style", true, LookSymbolUp(typeof(StdStyle)), false), PrimitiveTypeSymbol.Void));
 			}
 			functions.Seal();
 			var parent = type.BaseType;

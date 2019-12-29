@@ -217,14 +217,6 @@ namespace HTMLWriter
 			if (element.name == null)
 				id = null;
 			StyleWriter.WriteElement(_cssWriter, id, element, parent);
-			var needsOuterDiv = element.orientation == Orientation.Center ||
-				element.orientation == Orientation.LeftCenter ||
-				element.orientation == Orientation.RightCenter ||
-				element.orientation == Orientation.StretchCenter;
-			if (needsOuterDiv)
-			{
-				_htmlWriter.StartTag("div", classes: "vertical-center-parent");
-			}
 			switch (element.type)
 			{
 				case ElementType.Image:
@@ -263,9 +255,6 @@ namespace HTMLWriter
 				default:
 					throw new Exception($"ElementType unknown: {element.type}");
 			}
-
-			if (needsOuterDiv)
-				_htmlWriter.EndTag();
 		}
 
 		private static void WriteList(string id, List element)
@@ -302,11 +291,11 @@ namespace HTMLWriter
 			_htmlWriter.StartTag("div", id: id, classes: "codeblock");
 			_htmlWriter.PushAttribute("data-start", element.lineStart.ToString());
 			var lineNumbersClass = "";
-			if (element.useLineNumbers)
+			if (element.showLineNumbers)
 				lineNumbersClass = "line-numbers ";
 			_htmlWriter.StartTag("pre", classes: lineNumbersClass + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)), useNewLine: false);
 			_htmlWriter.StartTag("code", classes: $"language-clike", useNewLine: false);
-			_htmlWriter.Write(element.code);
+			WriteText( element.code);
 			_htmlWriter.EndTag(false);
 			_htmlWriter.EndTag(false);
 			_htmlWriter.StartTag("div", classes: "codeblock-caption");
@@ -401,6 +390,45 @@ namespace HTMLWriter
 			_htmlWriter.EndTag();
 		}
 
+		private static void WriteText(string text)
+		{
+			var span = new StringBuilder();
+			for (int i = 0; i < text.Length; i++)
+			{
+				var character = text[i];
+				var next = (char)0;
+				if (i + 1 < text.Length)
+					next = text[i + 1];
+				switch (character)
+				{
+					case '\\':
+						i++;
+						switch (next)
+						{
+							case 'n':
+								span.Append('\n');
+								break;
+							case 't':
+								span.Append('\t');
+								break;
+							case '\\':
+								span.Append('\\');
+								break;
+							case '\'':
+								span.Append('\'');
+								break;
+							default:
+								throw new Exception();
+						}
+						break;
+					default:
+						span.Append(character);
+						break;
+				}
+			}
+			_htmlWriter.Write(span.ToString());
+		}
+
 		private static void WriteFormattedText(string text)
 		{
 			var span = new StringBuilder();
@@ -474,6 +502,9 @@ namespace HTMLWriter
 								break;
 							case '\\':
 								span.Append('\\');
+								break;
+							case '\'':
+								span.Append('\'');
 								break;
 							default:
 								throw new Exception();

@@ -14,7 +14,7 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			var name = "code";
 			var libraries = new LibrarySymbol[0];
 			var customTypes = new BodySymbol[0];
-			var styles = new Style[0];
+			var styles = new StdStyle[0];
 			var globalVariables = new VariableValueCollection(null);
 			var globalFunctions = new FunctionSymbol[]
 			{

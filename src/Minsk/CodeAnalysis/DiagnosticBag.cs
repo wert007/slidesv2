@@ -32,6 +32,79 @@ namespace Minsk.CodeAnalysis
 			FileName = fileName;
 		}
 
+
+
+		public string Join(object[] obj, string prefix = null, string postfix = null)
+		{
+			if (prefix == null) prefix = string.Empty;
+			if (postfix == null) postfix = string.Empty;
+			if (obj.Length > 2)
+				return $"{prefix}{string.Join($"{postfix}, {prefix}", obj.Take(obj.Length - 1))}{postfix} or {prefix}{obj.Last()}{postfix}";
+			if (obj.Length == 2)
+				return $"{prefix}{obj[0]}{postfix} or {prefix}{obj[1]}{postfix}";
+			return $"{prefix}{obj[0]}{postfix}";
+		}
+
+		private string[] SimiliarValues(string[] values, string memberName)
+		{
+			string[] mostSimiliarNames = new string[Math.Min(values.Length, 5)];
+			int[] sim = PopulateDistances(values, memberName);
+			for (int j = 0; j < mostSimiliarNames.Length; j++)
+			{
+				int lastMin = int.MaxValue;
+				int index = -1;
+				for (int i = 0; i < sim.Length; i++)
+				{
+					if (sim[i] < lastMin)
+					{
+						lastMin = sim[i];
+						index = i;
+					}
+				}
+				mostSimiliarNames[j] = values[index];
+				sim[index] = int.MaxValue;
+			}
+
+			return mostSimiliarNames;
+		}
+
+		private int[] PopulateDistances(string[] values, string found)
+		{
+			int[] sim = new int[values.Length];
+			for (int i = 0; i < sim.Length; i++)
+			{
+				sim[i] = strDist(values[i], found);
+			}
+			return sim;
+		}
+
+		private int strDist(string a, string b)
+		{
+			if (string.IsNullOrEmpty(a))
+				return int.MaxValue;
+			if (string.IsNullOrEmpty(b))
+				return int.MaxValue;
+			int[] p = new int[a.Length + 1];
+			int[] d = new int[a.Length + 1];
+			int i, j;
+
+			for (i = 0; i <= a.Length; i++)
+				p[i] = i;
+			for (j = 1; j <= b.Length; j++)
+			{
+				d[0] = j;
+				for (i = 1; i <= a.Length; i++)
+				{
+					int cost = a[i - 1] == b[j - 1] ? 0 : 1;
+					d[i] = Math.Min(Math.Min(d[i - 1] + 1, p[i] + 1), p[i - 1] + cost);
+				}
+				int[] dPlaceholder = p;
+				p = d;
+				d = dPlaceholder;
+			}
+			return p[a.Length];
+		}
+
 		public void AddRange(DiagnosticBag diagnostics)
 		{
 			_diagnostics.AddRange(diagnostics._diagnostics);
@@ -103,7 +176,8 @@ namespace Minsk.CodeAnalysis
 
 		public void ReportUndefinedEnumValue(TextSpan span, EnumTypeSymbol enumType, string memberName)
 		{
-			var message = $"Enum '{enumType}' doesn't contain value named '{memberName}'.";
+			string[] mostSimiliarNames = SimiliarValues(enumType.Values, memberName);
+			var message = $"Enum '{enumType}' doesn't contain value named '{memberName}'. Maybe try {Join(mostSimiliarNames, "'", "'")}.";
 			Report(span, message, DiagnosticLevel.Error);
 		}
 
@@ -118,6 +192,11 @@ namespace Minsk.CodeAnalysis
 			if (parent == PrimitiveTypeSymbol.Error)
 				return;
 			var message = $"Field '{parent}.{name}' doesn't exist.";
+			if (parent is AdvancedTypeSymbol advanced)
+			{
+				var mostSimiliarOnes = SimiliarValues(advanced.Fields.Select(v => v.Name).ToArray(), name);
+				message += $" Maybe try {Join(mostSimiliarOnes, "'", "'")}.";
+			}
 			Report(span, message, DiagnosticLevel.Error);
 		}
 
@@ -274,7 +353,7 @@ namespace Minsk.CodeAnalysis
 				message += $"Try '{minParameterCount}'";
 			if (maxParameterCount != null && minParameterCount != null)
 				message += $" or '{maxParameterCount}'";
-			else if(maxParameterCount != null)
+			else if (maxParameterCount != null)
 				message += $"Try '{maxParameterCount}'";
 			message += ".";
 			Report(span, message, DiagnosticLevel.Error);

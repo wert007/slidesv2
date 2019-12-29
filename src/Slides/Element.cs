@@ -72,8 +72,8 @@ namespace Slides
 		public Unit initHeight { get; set; }
 		public abstract ElementType type { get; }
 		public string name { get; set; }
-		public Style hover { get; set; }
-		private Stack<Style> appliedStyles;
+		public CustomStyle hover { get; set; }
+		private Stack<CustomStyle> appliedStyles;
 
 		public Element()
 		{
@@ -86,19 +86,19 @@ namespace Slides
 			margin = null;
 			padding = null;
 
-			appliedStyles = new Stack<Style>();
+			appliedStyles = new Stack<CustomStyle>();
 
 			width = null;
 			height = null;
 			name = null;
 		}
 
-		public void applyStyle(Style style)
+		public void applyStyle(CustomStyle style)
 		{
 			appliedStyles.Push(style);
 		}
 
-		public Style[] get_AppliedStyles()
+		public CustomStyle[] get_AppliedStyles()
 		{
 			return appliedStyles.ToArray();
 		}

@@ -12,7 +12,7 @@ namespace Slides
 		public Unit fontsize { get; set; }
 		public Thickness padding { get; set; }
 		public Time duration { get; set; }
-		private HashSet<Style> appliedStyles = new HashSet<Style>();
+		private HashSet<StdStyle> appliedStyles = new HashSet<StdStyle>();
 		public TransitionCall from { get; }
 		public TransitionCall to { get; }
 

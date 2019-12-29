@@ -48,8 +48,8 @@ namespace Minsk.CodeAnalysis
 
 		private object _lastValue;
 		private Stack<List<Element>> _groupChildren = new Stack<List<Element>>();
-		private Stack<List<Style>> _groupAppliedStyles = new Stack<List<Style>>();
-		private readonly TypeSymbolTypeConverter _typeConverter = TypeSymbolTypeConverter.Instance;
+		private Stack<List<CustomStyle>> _groupAppliedStyles = new Stack<List<CustomStyle>>();
+		private readonly TypeSymbolTypeConverter _builtInTypes = TypeSymbolTypeConverter.Instance;
 
 		public Evaluator(BoundBlockStatement root, Dictionary<VariableSymbol, object> variables, LibrarySymbol[] referenced, Dictionary<VariableSymbol, BoundStatement> declarations)
 		{
@@ -59,19 +59,25 @@ namespace Minsk.CodeAnalysis
 			_declarations = declarations;
 			foreach (var declaration in _declarations)
 			{
-				if (declaration.Key.Type == _typeConverter.LookSymbolUp(typeof(SlideAttributes)))
+				if (declaration.Key.Type == _builtInTypes.LookSymbolUp(typeof(SlideAttributes)))
 					slideCount++;
 			}
 			_variables = new VariableValueCollection(variables);
 			_variables.Add(new VariableSymbol("slideCount", true, PrimitiveTypeSymbol.Integer, false), slideCount);
 			if (!variables.Any())
 			{
-				_variables.Add(new VariableSymbol("seperator", true, _typeConverter.LookSymbolUp(typeof(LibrarySymbol)), false), Library.Seperator);
-				_variables.Add(new VariableSymbol("code", true, _typeConverter.LookSymbolUp(typeof(LibrarySymbol)), false), Library.Code);
-				_variables.Add(new VariableSymbol("auto", true, _typeConverter.LookSymbolUp(typeof(Unit)), false), new Unit(0, Unit.UnitKind.Auto));
+				_variables.Add(new VariableSymbol("None", true, _builtInTypes.LookSymbolUp(typeof(Brush)), false), null);
+				_variables.Add(new VariableSymbol("seperator", true, _builtInTypes.LookSymbolUp(typeof(LibrarySymbol)), false), Library.Seperator);
+				_variables.Add(new VariableSymbol("code", true, _builtInTypes.LookSymbolUp(typeof(LibrarySymbol)), false), Library.Code);
+				_variables.Add(new VariableSymbol("auto", true, _builtInTypes.LookSymbolUp(typeof(Unit)), false), new Unit(0, Unit.UnitKind.Auto));
 				foreach (var color in Color.GetStaticColors())
 				{
-					_variables.Add(new VariableSymbol(color.Key, true, _typeConverter.LookSymbolUp(typeof(Color)), false), color.Value);
+					_variables.Add(new VariableSymbol(color.Key, true, _builtInTypes.LookSymbolUp(typeof(Color)), false), color.Value);
+				}
+				foreach (var typeName in _builtInTypes.GetAllTypesByName())
+				{
+					if (_builtInTypes.TryGetSymbol(typeName, out var type))
+						_variables.Add(new VariableSymbol(typeName, true, _builtInTypes.LookSymbolUp(typeof(TypeSymbol)), false), type);
 				}
 			}
 		}
@@ -291,23 +297,36 @@ namespace Minsk.CodeAnalysis
 			}
 		}
 
-		private Dictionary<string, object> CollectStyleFields(BoundBlockStatement statement, string styleName)
+
+		private List<TypedModifications> CollectStyleFields(BoundBlockStatement statement, string styleName)
 		{
-			var result = new Dictionary<string, object>();
+			var result = new List<TypedModifications>();
 			foreach (var s in statement.Statements)
 			{
-				foreach (var field in CollectStyleFields(s, styleName))
+				foreach (var typedStyle in CollectStyleFields(s, styleName))
 				{
-					if (!result.ContainsKey(field.Key))
-						result.Add(field.Key, field.Value);
-					else
-						result[field.Key] = field.Value;
+					var foundStyle = false;
+					foreach (var foundStyles in result)
+					{
+						if (foundStyles.Type == typedStyle.Type)
+						{
+							foreach (var field in typedStyle.ModifiedFields)
+							{
+								foundStyles.ModifiedFields.Add(field.Key, field.Value);
+							}
+							foundStyle = true;
+							break;
+						}
+					}
+					if (!foundStyle)
+						result.Add(typedStyle);
+
 				}
 			}
 			return result;
 		}
 
-		private Dictionary<string, object> CollectStyleFields(BoundStatement statement, string styleName)
+		private List<TypedModifications> CollectStyleFields(BoundStatement statement, string styleName)
 		{
 			switch (statement.Kind)
 			{
@@ -319,19 +338,19 @@ namespace Minsk.CodeAnalysis
 					return CollectStyleFields((BoundBlockStatement)statement, styleName);
 				case BoundNodeKind.VariableDeclaration:
 					Evaluate(statement);
-					return new Dictionary<string, object>();
+					return new List<TypedModifications>();
 				default:
 					Logger.LogUnexpectedSyntaxKind(statement.Kind, "CollectStyleFields");
-					return new Dictionary<string, object>();
+					return new List<TypedModifications>();
 			}
 		}
 
-		private Dictionary<string, object> CollectStyleFields(BoundExpressionStatement statement, string styleName)
+		private List<TypedModifications> CollectStyleFields(BoundExpressionStatement statement, string styleName)
 		{
 			return CollectStyleFields(statement.Expression, styleName);
 		}
 
-		private Dictionary<string, object> CollectStyleFields(BoundIfStatement statement, string styleName)
+		private List<TypedModifications> CollectStyleFields(BoundIfStatement statement, string styleName)
 		{
 			var condition = (bool)EvaluateExpression(statement.BoundCondition);
 			if (condition)
@@ -342,10 +361,10 @@ namespace Minsk.CodeAnalysis
 			{
 				return CollectStyleFields(statement.BoundElse, styleName);
 			}
-			return new Dictionary<string, object>();
+			return new List<TypedModifications>();
 		}
 
-		private Dictionary<string, object> CollectStyleFields(BoundExpression expression, string styleName)
+		private List<TypedModifications> CollectStyleFields(BoundExpression expression, string styleName)
 		{
 			switch (expression.Kind)
 			{
@@ -357,41 +376,49 @@ namespace Minsk.CodeAnalysis
 					return CollectStyleFields((BoundFunctionAccessExpression)expression, styleName);
 				default:
 					Logger.LogUnexpectedSyntaxKind(expression.Kind, "CollectStyleFields");
-					return new Dictionary<string, object>();
+					return new List<TypedModifications>();
 			}
 		}
 
-		private Dictionary<string, object> CollectStyleFields(BoundFieldAssignmentExpression expression)
+		private List<TypedModifications> CollectStyleFields(BoundFieldAssignmentExpression expression)
 		{
 			//TODO(Major): Std-Style needs a very own class for ModifiedFields. There could be subtypes and everything!
+			//working on it
 			var field = expression.Field.Field.Variable.Name;
 			var value = EvaluateExpression(expression.Initializer);
-			var result = new Dictionary<string, object>();
-			result.Add(field, value);
-			return result;
+			var fields = new Dictionary<string, object>();
+			fields.Add(field, value);
+			return new List<TypedModifications>
+			{
+				new TypedModifications(expression.Field.Parent.Type.Name, fields)
+			};
 		}
 
-		private Dictionary<string, object> CollectStyleFields(BoundAssignmentExpression expression)
+		private List<TypedModifications> CollectStyleFields(BoundAssignmentExpression expression)
 		{
 			//TODO(Time): Maybe hacky
 			var field = expression.Variables[0].Name;
 			var value = EvaluateExpression(expression.Expression);
-			var result = new Dictionary<string, object>();
-			result.Add(field, value);
-			return result;
+			var fields = new Dictionary<string, object>();
+			fields.Add(field, value);
+			return new List<TypedModifications>
+			{
+				new TypedModifications("*", fields)
+			};
 		}
 
-		private Dictionary<string, object> CollectStyleFields(BoundFunctionAccessExpression expression, string styleName)
+		private List<TypedModifications> CollectStyleFields(BoundFunctionAccessExpression expression, string styleName)
 		{
 			switch (expression.Function.Function.Name)
 			{
 				case "applyStyle":
-					var style = (Style)EvaluateExpression(expression.Function.Arguments[0]);
-					return style.ModifiedFields;
+					var style = (CustomStyle)EvaluateExpression(expression.Function.Arguments[0]);
+					return new List<TypedModifications>()
+					{ new TypedModifications("*", style.ModifiedFields) };
 				default:
 					Logger.LogUnmatchedStyleFunction(expression.Function.Function.Name, styleName);
 
-					return new Dictionary<string, object>();
+					return new List<TypedModifications>();
 			}
 		}
 
@@ -408,16 +435,20 @@ namespace Minsk.CodeAnalysis
 			if (node.Variable != null)
 			{
 				var modifiedFields = CollectStyleFields(node.BoundBody, node.Variable.Name);
-
-				var style = new Style(node.Variable.Name, modifiedFields);
+				//TODO!
+				var combinedModifiedFields = new Dictionary<string, object>();
+				foreach (var subtype in modifiedFields)
+					foreach (var field in subtype.ModifiedFields)
+						combinedModifiedFields.Add(field.Key, field.Value);
+				var style = new CustomStyle(node.Variable.Name, combinedModifiedFields);
 				_styles.Add(node.Variable, style);
 			}
 			else
 			{
 				var modifiedFields = CollectStyleFields(node.BoundBody, "std");
 
-				var style = new Style("std", modifiedFields);
-				_styles.Add(new VariableSymbol("std", true, _typeConverter.LookSymbolUp(typeof(Style)), false), style);
+				var style = new StdStyle(modifiedFields.ToArray());
+				_styles.Add(new VariableSymbol("std", true, _builtInTypes.LookSymbolUp(typeof(StdStyle)), false), style);
 			}
 			_variables = _variables.Pop(out var _);
 		}
@@ -984,7 +1015,7 @@ namespace Minsk.CodeAnalysis
 			var parameters = new Type[function.Function.Parameter.Count];
 			for (int i = 0; i < parameters.Length; i++)
 			{
-				parameters[i] = args[i]?.GetType() ?? _typeConverter.LookTypeUp(function.Function.Parameter[i].Type);
+				parameters[i] = args[i]?.GetType() ?? _builtInTypes.LookTypeUp(function.Function.Parameter[i].Type);
 			}
 			return EvaluateFunctionAccessCall(function.Function, parent, args);
 		}
@@ -1056,7 +1087,7 @@ namespace Minsk.CodeAnalysis
 
 		private object EvaluateEnumExpression(BoundEnumExpression node)
 		{
-			var type = _typeConverter.LookTypeUp(node.Type);
+			var type = _builtInTypes.LookTypeUp(node.Type);
 			foreach (var value in type.GetEnumValues())
 			{
 				if (value.ToString() == node.Value)
@@ -1081,7 +1112,7 @@ namespace Minsk.CodeAnalysis
 
 		private object EvaluateStaticFieldAccessExpression(BoundStaticFieldAccesExpression node)
 		{
-			var type = _typeConverter.LookTypeUp(node.BaseType);
+			var type = _builtInTypes.LookTypeUp(node.BaseType);
 			return type.GetProperty(node.Field.Name).GetValue(null);
 		}
 
@@ -1125,7 +1156,7 @@ namespace Minsk.CodeAnalysis
 			_libraryUsed[_currentReferenced.Name] = true;
 
 			_groupChildren.Push(new List<Element>());
-			_groupAppliedStyles.Push(new List<Style>());
+			_groupAppliedStyles.Push(new List<CustomStyle>());
 			if (group.Body != null)
 				Evaluate(group.Body);
 
@@ -1197,9 +1228,9 @@ namespace Minsk.CodeAnalysis
 					default:
 						var type = variable.Value.GetType();
 						var typeSymbol = variable.Key.Type;
-						if (!typeSymbol.CanBeConvertedTo(_typeConverter.LookSymbolUp(typeof(Element))) &&
+						if (!typeSymbol.CanBeConvertedTo(_builtInTypes.LookSymbolUp(typeof(Element))) &&
 							type != typeof(ImageSource) && type != typeof(CSVFile))
-							Logger.LogUnusedVariableInGroup(variable.Key.Name, _typeConverter.TryLookTypeUp(variable.Key.Type), element.TypeName);
+							Logger.LogUnusedVariableInGroup(variable.Key.Name, _builtInTypes.TryLookTypeUp(variable.Key.Type), element.TypeName);
 						break;
 				}
 			}
@@ -1252,7 +1283,7 @@ namespace Minsk.CodeAnalysis
 					Flags.AnimationsAllowed = true;
 					return null;
 				case "applyStyle":
-					var style = (Style)args[0];
+					var style = (CustomStyle)args[0];
 					if (_groupAppliedStyles.Count == 0)
 						_currentSlide.applyStyle(style);
 					else
@@ -1384,7 +1415,7 @@ namespace Minsk.CodeAnalysis
 
 		private object EvaluateVariableExpression(BoundVariableExpression v)
 		{
-			if (v.Type == _typeConverter.LookSymbolUp(typeof(Style)))
+			if (v.Type == _builtInTypes.LookSymbolUp(typeof(StdStyle)))
 			{
 				if (_styles.ContainsKey(v.Variable))
 					return _styles[v.Variable];

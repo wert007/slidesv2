@@ -7,20 +7,68 @@ namespace HTMLWriter
 {
 	public static class StyleWriter
 	{
-		public static void Write(CSSWriter writer, Style style, out string stdTransition)
+		private static string TypeSymbolToCSSClass(string type)
+		{
+			switch (type)
+			{
+				case "std": return "*";
+				case "_Slide": return "slide";
+				case "Label": return "label";
+				case "Image": return "image";
+				default:
+					Logger.LogUnmatchedCSSField(type);
+					return type.ToLower();
+			}
+		}
+		private static void WriteTypedModification(CSSWriter writer, TypedModifications typedModifications)
+		{
+			//TODO: TypeSymbol to CSS-Class Converter
+			writer.StartClass(TypeSymbolToCSSClass(typedModifications.Type));
+
+			foreach (var modifiedField in typedModifications.ModifiedFields)
+			{
+				writer.WriteAttribute(ToCssAttribute(modifiedField.Key), modifiedField.Value);
+			}
+			writer.EndSelector();
+		}
+		private static void WriteStdStyle(CSSWriter writer, StdStyle style, out string stdTransition)
 		{
 			stdTransition = null;
-			if (style.ModifiedFields.Count == 0)
-			{
-				Logger.LogEmptyStyle(style.Name);
-				return;
-			}
-			if (style.Name == "std")
-				writer.StartSelector("*");
-			else
-				writer.StartClass(style.Name);
-
+			writer.StartSelector("*");
 			Transition toWrite = null;
+			foreach (var modifiedField in style.GetStyle("*").ModifiedFields)
+			{
+				switch (modifiedField.Key)
+				{
+					case "transition":
+						toWrite = (Transition)modifiedField.Value;
+						break;
+					default:
+						writer.WriteAttribute(ToCssAttribute(modifiedField.Key), modifiedField.Value);
+						break;
+				}
+			}
+			writer.EndSelector();
+
+			foreach(var substyle in style.Substyles)
+			{
+				if (substyle.Type == "*")
+					continue;
+				WriteTypedModification(writer, substyle);
+			}
+
+			if (toWrite != null)
+			{
+				stdTransition = toWrite.name;
+				WriteStdTransition(writer, toWrite.name, toWrite.from, toWrite.to);
+			}
+		}
+
+		private static void WriteCustomStyle(CSSWriter writer, CustomStyle style)
+		{
+			writer.StartClass(style.Name);
+			Transition toWrite = null;
+
 			foreach (var modifiedField in style.ModifiedFields)
 			{
 				switch (modifiedField.Key)
@@ -37,10 +85,24 @@ namespace HTMLWriter
 
 			if (toWrite != null)
 			{
-				if (style.Name == "std")
-					stdTransition = toWrite.name;
 				WriteStdTransition(writer, toWrite.name, toWrite.from, toWrite.to);
 			}
+		}
+		public static void Write(CSSWriter writer, Style style, out string stdTransition)
+		{
+			stdTransition = null;
+			//TODO: Where do we want to find empty style? Probably during binding!!!
+			//if (style.ModifiedFields.Count == 0)
+			//{
+			//	Logger.LogEmptyStyle(style.Name);
+			//	return;
+			//}
+			if (style.Name == "std")
+				WriteStdStyle(writer, (StdStyle)style, out stdTransition);
+			else
+				WriteCustomStyle(writer, (CustomStyle)style);
+
+			
 		}
 
 		private static void WriteStdTransition(CSSWriter writer, string transitionName, TransitionCall from, TransitionCall to)
@@ -244,9 +306,9 @@ namespace HTMLWriter
 				writer.WriteAttribute("height", unit100Percent - padding.Vertical);
 			else if (element.get_StyleHeight().Kind == Unit.UnitKind.Auto)
 			{
-				if(!(element is CodeBlock codeBlock) && hasVerticalCenter)
+				/*if(!(element is CodeBlock codeBlock) && hasVerticalCenter)
 					writer.WriteAttribute("height", unit100Percent - padding.Vertical);
-				else if (element is Image i)
+				else*/ if (element is Image i)
 					writer.WriteAttribute("height", "auto");
 				else
 					writer.WriteAttribute("height", "fit-content");
@@ -259,9 +321,9 @@ namespace HTMLWriter
 				writer.WriteAttribute("width", unit100Percent - padding.Horizontal);
 			else if (element.get_StyleWidth().Kind == Unit.UnitKind.Auto)
 			{
-				if (!(element is CodeBlock codeBlock) && hasHorizontalCenter)
+				/*if (!(element is CodeBlock codeBlock) && hasHorizontalCenter)
 					writer.WriteAttribute("width", unit100Percent - padding.Horizontal);
-				else if (element is Image i)
+				else*/ if (element is Image i)
 					writer.WriteAttribute("width", "auto");
 				else
 					writer.WriteAttribute("width", "fit-content");

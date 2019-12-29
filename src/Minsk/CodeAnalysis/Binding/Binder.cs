@@ -39,6 +39,7 @@ namespace Minsk.CodeAnalysis.Binding
 
 			_builtInTypes = TypeSymbolTypeConverter.Instance;
 			_builtInConstants = new Dictionary<string, VariableSymbol>();
+			_builtInConstants.Add("None", new VariableSymbol("None", true, _builtInTypes.LookSymbolUp(typeof(Brush)), false));
 
 			_builtInConstants.Add("seperator", new VariableSymbol("seperator", true, _builtInTypes.LookSymbolUp(typeof(LibrarySymbol)), false));
 			_builtInConstants.Add("code", new VariableSymbol("code", true, _builtInTypes.LookSymbolUp(typeof(LibrarySymbol)), false));
@@ -47,6 +48,11 @@ namespace Minsk.CodeAnalysis.Binding
 			foreach (var color in Color.GetStaticColors())
 			{
 				_builtInConstants.Add(color.Key, new VariableSymbol(color.Key, true, _builtInTypes.LookSymbolUp(typeof(Color)), false));
+			}
+
+			foreach (var type in _builtInTypes.GetAllTypesByName())
+			{
+				_builtInConstants.Add(type, new VariableSymbol(type, true, _builtInTypes.LookSymbolUp(typeof(TypeSymbol)), false));
 			}
 		}
 
@@ -186,7 +192,7 @@ namespace Minsk.CodeAnalysis.Binding
 			VariableSymbol variable = null;
 			if (syntax.Identifier.Kind != SyntaxKind.StdKeyword)
 			{
-				variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(Style)), true);
+				variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(StdStyle)), true);
 				TextSpan? span = null;
 				if (!_flags.IsLibrarySymbol)
 					span = syntax.Identifier.Span;
@@ -253,6 +259,7 @@ namespace Minsk.CodeAnalysis.Binding
 			if (!_scope.TryDeclare(variable, null))
 				_diagnostics.ReportVariableAlreadyDeclared(syntax.Identifier.Span, name);
 
+			//TODO: What to do, when we have multiple elements with the same name? We need to throw a diagnostic here!
 			_declarations.Add(variable, null);
 		}
 
@@ -594,7 +601,9 @@ namespace Minsk.CodeAnalysis.Binding
 				{
 					_scope.TryDeclare(field, null);
 				}
-				_scope.TryDeclare(new VariableSymbol("Slide", false, _builtInTypes.LookSymbolUp(typeof(SlideAttributes)), false));
+				_scope.TryDeclare(new VariableSymbol("Slide", false, _builtInTypes.LookSymbolUp(typeof(StyleSlideAttributes)), false));
+				_scope.TryDeclare(new VariableSymbol("Label", false, _builtInTypes.LookSymbolUp(typeof(Label)), false));
+				_scope.TryDeclare(new VariableSymbol("Image", false, _builtInTypes.LookSymbolUp(typeof(Image)), false));
 			}
 			var boundBody = BindBlockStatement(syntax.Body);
 			CheckUnusedSymbols(_scope);
@@ -1021,8 +1030,10 @@ namespace Minsk.CodeAnalysis.Binding
 		{
 			if (TryBindEnumExpression(syntax, out var result))
 				return result;
-			if (TryBindStaticMemberAccess(syntax, out result))
-				return result;
+			//TODO: No need for static fields. And they confuse the program. so lets keep it simple
+			//Actual todo: We need to remove everything that has to do with static fields.
+			//if (TryBindStaticMemberAccess(syntax, out result))
+			//	return result;
 
 			var boundExpression = BindExpression(syntax.Expression);
 
@@ -1094,7 +1105,7 @@ namespace Minsk.CodeAnalysis.Binding
 					_diagnostics.ReportUndefinedStyle(variableExpression.Span, variableExpression.Identifier.Text, library);
 					return new BoundErrorExpression();
 				}
-				return new BoundVariableExpression(new VariableSymbol(style.Name, true, _builtInTypes.LookSymbolUp(typeof(Style)), false), null, _builtInTypes.LookSymbolUp(typeof(Style)));
+				return new BoundVariableExpression(new VariableSymbol(style.Name, true, _builtInTypes.LookSymbolUp(typeof(StdStyle)), false), null, _builtInTypes.LookSymbolUp(typeof(StdStyle)));
 			}
 			else if (syntax.Member.Kind == SyntaxKind.FunctionExpression)
 			{

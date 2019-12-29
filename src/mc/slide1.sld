@@ -14,20 +14,22 @@ template pagenumber(child: Slide):
 	label.orientation = Horizontal.Right | Vertical.Top;
 	label.fontsize = 12pt;
 	label.margin = margin(10px);
+
+	let progress~ = float(child.index) / float(slideCount - 1);
+	let rect = new Rectangle(progress~, 5px);
+	rect.fill = cyan;
+	rect.orientation = Vertical.Bottom | Horizontal.Left;
+
+	child.background = rgb(int(255f * progress~), 0, int(255f * (1f - progress~)));
 endtemplate
 
 style std:
+	Slide.background = white;
+	
 	color = rgb(23, 23, 23);
-	//Slide.background = black;
-	//TODO: support std-styles for classes
-	//e.g. 
-	//if slide.background == None:
-	//	slide.background = black;
-	//endif
-	//image.filter = saturate(0.5f);
 	font = quicksand~;
 	fontsize = 14pt;
-	transition = stdTransition;
+	//transition = stdTransition;
 endstyle
 
 transition stdTransition(from: Slide, to: Slide):
@@ -36,21 +38,6 @@ transition stdTransition(from: Slide, to: Slide):
 	from.hide(duration);
 	to.fadeIn(0ms, duration);
 endtransition
-
-filter myFilter(source: FilterInput):
-	//let blurred~ = blur(source, 5);
-	let saturated~ = saturate(source, 0.5f);
-	let matrix~ = matrix([
-		  -1, 0, 0, 2, 0, 0, -1,
-		  -1, 0, 0, 2, 0, 0, -1,
-		  -1, 0, 0, 2, 0, 0, -1,
-		  -1, 0, 0, 1, 0, 0, -1,
-		  -1, 0, 0, 2, 0, 0, -1,
-		  -1, 0, 0, 2, 0, 0, -1,
-		  -1, 0, 0, 2, 0, 0, -1
-		], 7, 7);
-	let result~ = convolve(saturated~, matrix~);
-endfilter
 
 filter discrete(source: FilterInput):
 	let blurred~ = blur(source, 1.5f);
@@ -88,43 +75,13 @@ animation unblur(element: any, duration~: Time):
 		element.filter = blur(0);
 endanimation
 
-//Doesn't work. I don't know..
-//slide moarSliders < pagenumber:
-//	//print($'{y~}'); //TODO: Support " as well!
-//	let f~ = x~ => -1f * x~ + 3f - 1f * x~^2;
-//	//let f~ = x~ => 2f * 3f * x~ - 4f * x~^2;
-////	let fTwo~ = x~, y~ => 2 * y~ * x~ - 4 * x~^2 - y~;
-//	let plot = new LineChart(f~, -5..5);
-//	//plot.showXAxis = false;
-//	plot.color = red;
-//	plot.orientation = Orientation.Stretch;
-//endslide
-//
-//slide github < pagenumber:
-//	let sldEnd = new Slider(5..50);
-//	let sldStart = new Slider(1..5);
-//	sldStart.margin = margin(50px, 0, 0, 0);
-//	sldStart.max = sldEnd.value;
-//	sldEnd.min = sldStart.value;
-//
-//	code.setStyle(CodeHighlighter.Funky);
-//	let repository~ = code.github('wert007/GTIProject');
-//	let codeBlockB = code.codeblock(repository~, 'main.c', 3..14);
-//	codeBlockB.fontsize = 10pt;
-//	codeBlockB.orientation = Horizontal.Center | Vertical.Center;
-//	codeBlockB.margin = margin(0, 50%, 0, 0);
-//	codeBlockB.range = sldStart.value..sldEnd.value;
-//	let slider = new Slider(0..1000);
-//	slider.orientation = Horizontal.Stretch | Vertical.Top;
-//	let l = new Label('value not found');
-//	l.margin = margin(25px, 0, 0, 0);
-//	l.text = $'value: {slider.value}';
-////	step lol:
-////		let vid = youtube('VB4CCHHYOqY', true);
-////		vid.orientation = Orientation.Stretch;
-////		vid.filter = discrete~;
-////		vid.margin = margin(0, 0, 0, 50%);
-//endslide
+slide a < pagenumber:
+	let lbl = new Label('Hello World!');
+	lbl.color = black;
+	lbl.fontsize = 80pt;
+	lbl.orientation = Vertical.Center | Horizontal.Stretch;
+	lbl.align = Alignment.Center;
+endslide
 
 slide cityDevelopment < pagenumber:
 	let titleText~ = 'Geschichte der Stadtentwicklung';
@@ -139,6 +96,9 @@ slide cityDevelopment < pagenumber:
 			'Filmindustrie'
 		]
 	];
+
+	//I don't know for what I needed it. But now we have it. Cheers!
+	let typeofInt~ = int;
 
 	
 	let args~ = new custom.cityDevelopmentParameter();
@@ -298,3 +258,67 @@ slide overview:
 		let imgSvg = new Image(svgSrc~);
 		//filter = grayscale(1);
 endslide
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//Doesn't work. I don't know..
+//slide moarSliders < pagenumber:
+//	//print($'{y~}'); //TODO: Support " as well!
+//	let f~ = x~ => -1f * x~ + 3f - 1f * x~^2;
+//	//let f~ = x~ => 2f * 3f * x~ - 4f * x~^2;
+////	let fTwo~ = x~, y~ => 2 * y~ * x~ - 4 * x~^2 - y~;
+//	let plot = new LineChart(f~, -5..5);
+//	//plot.showXAxis = false;
+//	plot.color = red;
+//	plot.orientation = Orientation.Stretch;
+//endslide
+//
+//slide github < pagenumber:
+//	let sldEnd = new Slider(5..50);
+//	let sldStart = new Slider(1..5);
+//	sldStart.margin = margin(50px, 0, 0, 0);
+//	sldStart.max = sldEnd.value;
+//	sldEnd.min = sldStart.value;
+//
+//	code.setStyle(CodeHighlighter.Funky);
+//	let repository~ = code.github('wert007/GTIProject');
+//	let codeBlockB = code.codeblock(repository~, 'main.c', 3..14);
+//	codeBlockB.fontsize = 10pt;
+//	codeBlockB.orientation = Horizontal.Center | Vertical.Center;
+//	codeBlockB.margin = margin(0, 50%, 0, 0);
+//	codeBlockB.range = sldStart.value..sldEnd.value;
+//	let slider = new Slider(0..1000);
+//	slider.orientation = Horizontal.Stretch | Vertical.Top;
+//	let l = new Label('value not found');
+//	l.margin = margin(25px, 0, 0, 0);
+//	l.text = $'value: {slider.value}';
+////	step lol:
+////		let vid = youtube('VB4CCHHYOqY', true);
+////		vid.orientation = Orientation.Stretch;
+////		vid.filter = discrete~;
+////		vid.margin = margin(0, 0, 0, 50%);
+//endslide

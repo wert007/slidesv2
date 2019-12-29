@@ -2,7 +2,7 @@
   "profiles": {
     "mc": {
       "commandName": "Project",
-      "commandLineArgs": "slide1.sld presentation -build-fresh"
+      "commandLineArgs": "helloWorld.sld introduction -build-fresh"
     }
   }
 }

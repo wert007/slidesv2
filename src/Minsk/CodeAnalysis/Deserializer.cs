@@ -643,7 +643,7 @@ namespace Minsk.CodeAnalysis
 			{
 				ConsumeToken(); //<
 				boundParameter = DeserializeParameterStatement();
-				variable = new VariableSymbol(identifier, true, _builtInTypes.LookSymbolUp(typeof(Style)), false);
+				variable = new VariableSymbol(identifier, true, _builtInTypes.LookSymbolUp(typeof(StdStyle)), false);
 			}
 			ConsumeToken(); //:
 			var boundBody = DeserializeBlockStatement();

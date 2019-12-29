@@ -22,6 +22,14 @@ span {
 	font-size: inherit;
 }
 
+span.bold {
+	font-weight: bold;
+}
+
+span.italic {
+	font-style: italic;
+}
+
 .codeblock-caption {
 	position: absolute;
 	top: 2%;
@@ -62,7 +70,6 @@ span {
 	cursor: pointer;
 }
 
-/*TODO Make it more specific*/
 svg#custom-filters {
 	display: none;
 }

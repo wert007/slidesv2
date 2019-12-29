@@ -146,7 +146,10 @@ namespace Minsk.CodeAnalysis.Symbols
 			if (this == PrimitiveTypeSymbol.Object || to == PrimitiveTypeSymbol.Object)
 				return true;
 			if (Type != TypeType.Nullable && to.Type == TypeType.Nullable)
-				return this == ((NullableTypeSymbol)to).BaseType;
+			{
+				var baseType = ((NullableTypeSymbol)to).BaseType;
+				return this == baseType || InnerCanBeConvertedTo(baseType);
+			}
 			return this == to || InnerCanBeConvertedTo(to);
 		}
 
