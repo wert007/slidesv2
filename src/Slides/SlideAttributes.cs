@@ -22,6 +22,7 @@ namespace Slides
 	{
 		public string name { get; }
 		public int index { get; }
+		public bool isVisible { get; }
 		public Brush background { get; set; }
 		public Color color { get; set; }
 		public Font font { get; set; }
@@ -31,10 +32,11 @@ namespace Slides
 		public Filter filter { get; set; }
 		private HashSet<CustomStyle> appliedStyles = new HashSet<CustomStyle>();
 
-		public SlideAttributes(string name, int index)
+		public SlideAttributes(string name, int index, bool isVisible)
 		{
 			this.name = name;
 			this.index = index;
+			this.isVisible = isVisible;
 		}
 
 		public void hide(Time delay)

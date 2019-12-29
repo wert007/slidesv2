@@ -90,3 +90,53 @@ slide howDoesThePresentationWork:
 	//These just translate to css-text-align properties.
 	lblControls.align = Alignment.Right;
 endslide
+
+//A style is a preset for fields of visual elements
+//Most styles can be applied to an element via "element.applyStyle(<StyleName>)""
+//But "style std" is automatically applied to all elements in your slide.
+style std:
+	//Here we set the font to mono. Just like we did
+	//before on all the labels. But now every Label
+	//and erverything else, that displays text will
+	//automatically have this font. If you want to
+	//use a special font for a single element you can
+	//just write "specialelement.font = comicSans;" and
+	//the std font will be overridden.
+	font = mono~;
+
+//Just like on slides you need to say on styles as well
+//when they end.
+endstyle
+
+//the tilde before the identifier tells you, that this slide is hidden,
+//when the html file is generated.
+slide ~hidden:
+	let lbl = new Label('This slide will be skipped during compile-time.');
+	
+	//So we have Lists as well. A List is a list of Labels, so all the formatting
+	//works as well. 
+	let list = new List();
+	//via the add function you can add a list item
+	list.add('Great for when you want to have different presentations, with the same topic.');
+	list.add('Like when you have different target groups.');
+
+	//This is really helpful when styling your slides.
+	//you can set the margin values "top", "right", "bottom", "left"
+	//so the top value says, where your list starts on the y axis.
+	//
+	//In this case we set it to the bottom_side of our lbl. 
+	//So if we move our Label, the List will move as well.
+	list.top = lbl.bottom_side; //WIP
+endslide
+
+style hoverStyle(element: any):
+	element.filter = grayscale(1);
+endstyle
+
+slide hoverExample:
+	let lblRedText = new Label('This Text is RED!!!');
+	lblRedText.orientation = Horizontal.Center | Vertical.Center;
+	lblRedText.fontsize = 50pt;
+	lblRedText.color = red;
+	lblRedText.hover = hoverStyle;
+endslide

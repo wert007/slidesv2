@@ -254,7 +254,9 @@ namespace Minsk.CodeAnalysis.Binding
 		private void CollectDeclarations(SlideStatementSyntax syntax)
 		{
 			var name = syntax.Identifier.Text;
+			var isVisible = syntax.PretildeToken == null;
 			var variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(SlideAttributes)), false);
+			variable.IsVisible = isVisible;
 
 			if (!_scope.TryDeclare(variable, null))
 				_diagnostics.ReportVariableAlreadyDeclared(syntax.Identifier.Span, name);

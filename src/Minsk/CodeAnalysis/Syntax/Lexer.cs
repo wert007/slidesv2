@@ -419,9 +419,12 @@ namespace Minsk.CodeAnalysis.Syntax
 
 		private void ReadIdentifierOrKeyword()
 		{
-			while (char.IsLetter(Current))
+			var isFirst = true;
+			while (char.IsLetter(Current) || Current == '_' || (!isFirst && char.IsDigit(Current)))
+			{
+				isFirst = false;
 				_position++;
-
+			}
 			var length = _position - _start;
 			var text = _text.ToString(_start, length);
 			_kind = SyntaxFacts.GetKeywordKind(text);

@@ -379,6 +379,9 @@ namespace Minsk.CodeAnalysis.Syntax
 		private SlideStatementSyntax ParseSlideStatement()
 		{
 			var slideKeyword = MatchToken(SyntaxKind.SlideKeyword);
+			SyntaxToken optionalPretildeToken = null;
+			if (Current.Kind == SyntaxKind.TildeToken)
+				optionalPretildeToken = NextToken();
 			var identifier = MatchToken(SyntaxKind.IdentifierToken);
 			TemplateInheritance template = null;
 			if(Current.Kind == SyntaxKind.LessToken)
@@ -387,7 +390,7 @@ namespace Minsk.CodeAnalysis.Syntax
 			var statements = ParseSlideBlockStatement();
 			var endslideKeyword = MatchToken(SyntaxKind.EndSlideKeyword);
 
-			return new SlideStatementSyntax(slideKeyword, identifier, template, colonToken, statements, endslideKeyword);
+			return new SlideStatementSyntax(slideKeyword, optionalPretildeToken, identifier, template, colonToken, statements, endslideKeyword);
 		}
 
 

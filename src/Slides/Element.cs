@@ -36,10 +36,44 @@ namespace Slides
 		public Thickness padding { get; set; }
 		public Thickness marginAndPadding => (margin ?? new Thickness()) + (padding ?? new Thickness());
 		public Element parent { get; set; }
-		public Unit top => margin?.Top;
-		public Unit left => margin?.Left;
-		public Unit right => left == null ? get_ActualWidth() : left + get_ActualWidth();
-		public Unit bottom => top == null ? get_ActualHeight() : top + get_ActualHeight();
+		public Unit top
+		{
+			get { return margin?.Top; }
+			set
+			{
+				if (margin == null) margin = new Thickness();
+				margin.Top = value;
+			}
+		}
+		public Unit left
+		{
+			get { return margin?.Left; }
+			set
+			{
+				if (margin == null) margin = new Thickness();
+				margin.Left = value;
+			}
+		}
+		public Unit bottom
+		{
+			get { return margin?.Bottom; }
+			set
+			{
+				if (margin == null) margin = new Thickness();
+				margin.Bottom = value;
+			}
+		}
+		public Unit right
+		{
+			get { return margin?.Right; }
+			set
+			{
+				if (margin == null) margin = new Thickness();
+				margin.Right = value;
+			}
+		}
+		public Unit right_side => left == null ? get_ActualWidth() : left + get_ActualWidth();
+		public Unit bottom_side => top == null ? get_ActualHeight() : top + get_ActualHeight();
 		public Unit width
 		{
 			get
@@ -57,7 +91,7 @@ namespace Slides
 		{
 			get
 			{
-				if (_height!= null)
+				if (_height != null)
 					return _height;
 				return get_ActualHeight();
 			}

@@ -171,6 +171,8 @@ namespace HTMLWriter
 
 		private static void Write(Slide slide)
 		{
+			if (!slide.Attributes.isVisible)
+				return;
 			StyleWriter.WriteSlide(_cssWriter, slide);
 			//data-transition-id="stdTransition"
 			_htmlWriter.PushAttribute("data-transition-id", _stdTransition);

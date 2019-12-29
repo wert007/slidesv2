@@ -607,7 +607,7 @@ namespace Minsk.CodeAnalysis
 			if (Flags.IsLibrarySymbol)
 				throw new Exception();
 			_variables = _variables.Push();
-			_currentSlide = new SlideAttributes(node.Variable.Name, _slides.Count);
+			_currentSlide = new SlideAttributes(node.Variable.Name, _slides.Count, node.Variable.IsVisible);
 
 			_steps = new List<Step>();
 			foreach (var statement in node.Statements)
