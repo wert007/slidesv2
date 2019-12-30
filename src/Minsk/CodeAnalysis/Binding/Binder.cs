@@ -39,7 +39,7 @@ namespace Minsk.CodeAnalysis.Binding
 
 			_builtInTypes = TypeSymbolTypeConverter.Instance;
 			_builtInConstants = new Dictionary<string, VariableSymbol>();
-			_builtInConstants.Add("None", new VariableSymbol("None", true, _builtInTypes.LookSymbolUp(typeof(Brush)), false));
+			_builtInConstants.Add("elapsedTime", new VariableSymbol("elapsedTime", true, _builtInTypes.LookSymbolUp(typeof(float)), false));
 
 			_builtInConstants.Add("seperator", new VariableSymbol("seperator", true, _builtInTypes.LookSymbolUp(typeof(LibrarySymbol)), false));
 			_builtInConstants.Add("code", new VariableSymbol("code", true, _builtInTypes.LookSymbolUp(typeof(LibrarySymbol)), false));

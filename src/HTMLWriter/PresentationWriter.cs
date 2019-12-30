@@ -164,7 +164,7 @@ namespace HTMLWriter
 		{
 			StyleWriter.WriteTransition(_cssWriter, transition);
 			//data-duration="1000"
-			_htmlWriter.PushAttribute("data-duration", transition.duration.ToMilliseconds().ToString());
+			_htmlWriter.PushAttribute("data-duration", transition.duration.toMilliseconds().ToString());
 			_htmlWriter.StartTag("section", id: transition.name, classes: "transition");
 			_htmlWriter.EndTag();
 		}
@@ -541,10 +541,17 @@ namespace HTMLWriter
 
 		private static void WriteImage(string id, Image element)
 		{
-			_htmlWriter.PushAttribute("src", element.source.Path);
-			if (element.alt != string.Empty)
-				_htmlWriter.PushAttribute("alt", element.alt);
-			_htmlWriter.WriteTag("img", id: id, needsEnding: false, classes: "image " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
+			//TODO: Different modi.
+			//If we have height and width set, we should use div with background-image set
+			//If we have just one of those two, we should use image with the other value set to auto
+			//If we have zero???????????????????????????
+			//		Then we have to check the Orientation. 
+			//		if we have Stretch, we have two values set.
+			//		else: We set the image to its original size. And set max-width, max-height
+			if(element.alt != string.Empty)
+				_htmlWriter.PushAttribute("aria-label", element.alt);
+			_htmlWriter.StartTag("div", id: id, classes: "image " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
+			_htmlWriter.EndTag();
 		}
 	}
 }

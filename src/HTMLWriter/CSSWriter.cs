@@ -95,6 +95,9 @@ namespace HTMLWriter
 				case ImageSource i:
 					_writer.Write($"url(\"{i.Path.Replace('\\', '/')}\")");
 					break;
+				case ImageStretching stretching:
+					WriteImageStretching(stretching);
+					break;
 				case UnitAddition unitAddition:
 					_writer.Write($"calc({unitAddition})");
 					break;
@@ -105,7 +108,7 @@ namespace HTMLWriter
 					_writer.Write($"'{font.name}'");
 					break;
 				case Time time:
-					_writer.Write($"{time.ToMilliseconds()}ms");
+					_writer.Write($"{time.toMilliseconds()}ms");
 					break;
 				case Filter filter:
 					WriteFilter(filter);
@@ -197,6 +200,24 @@ namespace HTMLWriter
 			}
 		}
 
+		private void WriteImageStretching(ImageStretching stretching)
+		{
+			switch (stretching)
+			{
+				case ImageStretching.Stretch:
+					_writer.Write("100% 100%");
+					break;
+				case ImageStretching.Contain:
+					_writer.Write("contain");
+					break;
+				case ImageStretching.Cover:
+					_writer.Write("cover");
+					break;
+				default:
+					throw new NotImplementedException();
+			}
+		}
+
 		public void Dispose()
 		{
 			_writer.Flush();
@@ -243,7 +264,7 @@ namespace HTMLWriter
 				case Font font:
 					return $"'{font.name}'";
 				case Time time:
-					return $"{time.ToMilliseconds()}ms";
+					return $"{time.toMilliseconds()}ms";
 				case Filter filter:
 					throw new NotImplementedException();
 				//return ToString(filter);

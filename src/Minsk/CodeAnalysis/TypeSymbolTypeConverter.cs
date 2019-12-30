@@ -121,6 +121,7 @@ namespace Minsk.CodeAnalysis
 			Add(typeof(Element), canBeCastedTo: implementsIFilterInput);
 			Add(typeof(Element), name: "any", canBeCastedTo: implementsIFilterInput);
 			Add(typeof(Rectangle));
+			Add(typeof(ImageStretching));
 			Add(typeof(Image));
 			Add(typeof(Stack.StackOrientation));
 			Add(typeof(Stack));

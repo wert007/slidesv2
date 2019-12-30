@@ -3,10 +3,11 @@
 	useData();
 endlibrary
 
-group CaptionedImage(img~: ImageSource, caption~ : string):
+group CaptionedImage(img~: ImageSource, caption~ : string, stretching~ = ImageStretching.Contain):
 	let image = new Image(img~);
 	image.height = 100%;
 	image.width = 100%;
+	image.stretching = stretching~;
 	let lblCaption = new Label(caption~);
 	initWidth = 100%; 
 	initHeight = 100%; 

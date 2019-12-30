@@ -1,5 +1,5 @@
-﻿import lib('lib1.sld') as basics;
-import lib('lib2.sld') as custom;
+﻿import lib('sldsrc/lib1.sld') as basics;
+import lib('sldsrc/lib2.sld') as custom;
 import gfont('Quicksand') as quicksand;
 
 //Possible Features:
@@ -52,7 +52,7 @@ animation quoteGoesUp(element: any, duration~: Time):
 	case init:
 		interpolation = Interpolation.Linear;
 	case done:
-		element.margin = margin(-100%, 0, 0, 0);
+		element.margin = margin(200%, 0, 0, 0); //200% -> -100%
 		//TODO(bug): Doesn't work. Turns black instead.
 		element.background = red;
 endanimation
@@ -144,7 +144,7 @@ slide cityDevelopment < pagenumber:
 endslide
 
 slide introduction:
-	background = image(@'city\los-angeles-picture.jpg');
+	background = image(@'sldsrc\city\los-angeles-picture.jpg');
 	let losAngeles = new Label('Los Angeles');
 	losAngeles.applyStyle(custom.imgLabel);
 
@@ -180,7 +180,7 @@ slide title:
 	let title = new basics.MainTitle(main~, sub~);
 	title.orientation = Vertical.Center | Horizontal.Stretch;
 	title.background = alpha(antiquewhite, 0.17f);
-	background = image(@'city\night.jpg');
+	background = image(@'sldsrc\city\night.jpg');
 endslide
 
 slide traits < pagenumber:
@@ -208,23 +208,23 @@ slide city < pagenumber:
 	let titleText~ = 'Allgemeines zu Los Angeles';
 	let title = new basics.Title(titleText~);
 
-	let logo~ = image(@'city\logo.png');
+	let logo~ = image(@'sldsrc\city\logo.png');
 	let imgLogo = new Image(logo~);// new basics.CaptionedImage(logo~, captionLogo~);
 	imgLogo.height = title.height;
 	imgLogo.width = imgLogo.height;
 
-	title.margin = margin(0, 0, 0, imgLogo.right);
+	title.margin = margin(0, 0, 0, imgLogo.right_side);
 	
 	let captionLogo~ = '(c) City of Los Angeles';
 	let imgLogoCaption = new Label(captionLogo~);
 	imgLogoCaption.orientation = Horizontal.Left | Vertical.Top;
-	imgLogoCaption.margin = margin(title.bottom, 0, 0, 0);
+	imgLogoCaption.margin = margin(title.bottom_side, 0, 0, 0);
 	imgLogoCaption.fontsize = 8pt;
 
 	let map = new custom.map();
 	map.width = 50%;
 	map.orientation = Vertical.Top | Horizontal.Right;
-	map.margin = margin(title.bottom, 0, 0, 0);
+	map.margin = margin(title.bottom_side, 0, 0, 0);
 
 	let contents~ = [
 		'Zweitgrößte Stadt der USA',
@@ -235,18 +235,18 @@ slide city < pagenumber:
 	];
 	let list = new List(contents~);
 	list.fontsize = 24pt;
-	list.margin = margin(imgLogoCaption.bottom, 0, 0, 0);
+	list.margin = margin(imgLogoCaption.bottom_side, 0, 0, 0);
 	padding = padding(5%);
 endslide
 
 slide overview:
-	let la~ = image(@'city\los-angeles-picture.jpg');
+	let la~ = image(@'sldsrc\city\los-angeles-picture.jpg');
 	let imgBackground = new Image(la~);
 	imgBackground.filter = blur(5);
 	let whitePane = new Rectangle(100%, 100%);
 	whitePane.fill = argb(160, 255, 255, 255);
 
-	let map~ = image(@'city\map.png'); //TODO: Change image
+	let map~ = image(@'sldsrc\city\map.png'); //TODO: Change image
 	let imgMap = new Image(map~);
 	imgMap.orientation = Horizontal.Center | Vertical.Center;
 	imgMap.width = 50%;
@@ -254,7 +254,7 @@ slide overview:
 
 	//TODO: This feature would be like super cool.
 	step:
-		let svgSrc~ = svg(@'city\overlay.svg');
+		let svgSrc~ = svg(@'sldsrc\city\overlay.svg');
 		let imgSvg = new Image(svgSrc~);
 		//filter = grayscale(1);
 endslide

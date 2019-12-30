@@ -1,5 +1,5 @@
-﻿import gfont('Amatic SC') as quoteFont;
-import lib('lib1.sld') as basics;
+﻿import lib('sldsrc/lib1.sld') as basics;
+import gfont('Amatic SC') as quoteFont;
 
 library custom:
     useStyle();
@@ -35,7 +35,7 @@ group introductingQuote(quote~: string, author~: string):
 endgroup
 
 group map():
-	let map~ = image(@'city\map.png');
+	let map~ = image(@'sldsrc\city\map.png');
 	let imgMap = new Image(map~);
 	imgMap.width = 100%;
 	imgMap.height = auto;
@@ -54,18 +54,19 @@ group map():
 	marker.borderColor = red;
 
 	initWidth = 100%;
-	initHeight = auto; //You probably should be making sure, that this is fine here...
+	initHeight = 40%;
 endgroup
 
 group imageBanner():
-	let oil~ = image(@'city\oil.jpg');
-	let imgOil = new basics.CaptionedImage(oil~, '(c) wikimedia');
+	let oil~ = image(@'sldsrc\city\oil.jpg');
+	let imgOil = new basics.CaptionedImage(oil~, '(c) wikimedia', ImageStretching.Cover);
 	imgOil.height = 50%;
 
-	let night~ = image(@'city\night.jpg');
-	let imgNight = new basics.CaptionedImage(night~, '(c) pixabay');
+	let night~ = image(@'sldsrc\city\night.jpg');
+	let imgNight = new basics.CaptionedImage(night~, '(c) pixabay', ImageStretching.Cover);
 	imgNight.height = 50%;
 	imgNight.margin = margin(50%, 0, 0, 0);
+
 
 	initWidth = 100%;
 	initHeight = 100%;
@@ -90,7 +91,7 @@ group cityDevelopmentText(args~: cityDevelopmentParameter):
 
 	let title = new basics.Title(args~.header~);
 	let list = new List(args~.contents~);
-	list.margin = margin(title.bottom, 0, 0, 0);
+	list.margin = margin(title.bottom_side, 0, 0, 0);
 
 	initWidth = 100%;
 	initHeight = 100%;

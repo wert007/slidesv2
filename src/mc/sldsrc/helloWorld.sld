@@ -130,13 +130,20 @@ slide ~hidden:
 endslide
 
 style hoverStyle(element: any):
-	element.filter = grayscale(1);
+	element.filter = hueRotate(float(elapsedTime) / 10f);
 endstyle
 
 slide hoverExample:
-	let lblRedText = new Label('This Text is RED!!!');
-	lblRedText.orientation = Horizontal.Center | Vertical.Center;
-	lblRedText.fontsize = 50pt;
-	lblRedText.color = red;
-	lblRedText.hover = hoverStyle;
+	//TODO: This shouldn't be needed. I want to copy that totally normal.
+	//because our source file is in the same directory and it would be 
+	//strange, if its afterwards different.
+	
+	//BIG FUCKING TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	let imgSrc~ = image('sldsrc/desert.jpg');
+	let imgDesert = new Image(imgSrc~);
+	imgDesert.orientation = Horizontal.Stretch | Vertical.Stretch;
+	imgDesert.margin = margin(5%);
+	imgDesert.hover = hoverStyle;
+	imgDesert.stretching = ImageStretching.Cover;
+	imgDesert.filter = hueRotate(0);
 endslide

@@ -23,7 +23,7 @@ namespace Slides
 			Unit = unit;
 		}
 
-		public int ToMilliseconds()
+		public int toMilliseconds()
 		{
 			var result = Value;
 			switch (Unit)

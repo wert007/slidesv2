@@ -66,7 +66,8 @@ namespace Minsk.CodeAnalysis
 			_variables.Add(new VariableSymbol("slideCount", true, PrimitiveTypeSymbol.Integer, false), slideCount);
 			if (!variables.Any())
 			{
-				_variables.Add(new VariableSymbol("None", true, _builtInTypes.LookSymbolUp(typeof(Brush)), false), null);
+				//TODO: This needs to be calculated in js!
+				_variables.Add(new VariableSymbol("elapsedTime", true, _builtInTypes.LookSymbolUp(typeof(float)), false), 5);
 				_variables.Add(new VariableSymbol("seperator", true, _builtInTypes.LookSymbolUp(typeof(LibrarySymbol)), false), Library.Seperator);
 				_variables.Add(new VariableSymbol("code", true, _builtInTypes.LookSymbolUp(typeof(LibrarySymbol)), false), Library.Code);
 				_variables.Add(new VariableSymbol("auto", true, _builtInTypes.LookSymbolUp(typeof(Unit)), false), new Unit(0, Unit.UnitKind.Auto));

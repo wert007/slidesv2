@@ -49,7 +49,7 @@ namespace HTMLWriter
 		}
 		public static void Write(JavaScriptWriter writer, AnimationCall animation, int stepId, string elementId)
 		{
-			_animations.Add(new AnimationJS(stepId, elementId, animation.Name, animation.Time.ToMilliseconds()));
+			_animations.Add(new AnimationJS(stepId, elementId, animation.Name, animation.Time.toMilliseconds()));
 
 			writer.StartFunction(animation.Name, "progress", "element");
 			writer.WriteVariableDeclarationInline("computedStyle", "getComputedStyle(element)", true);
