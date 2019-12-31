@@ -7,6 +7,56 @@ using System.Text;
 
 namespace HTMLWriter
 {
+
+	//TODO: Different modi.
+	//If we have height and width set, we should use div with background-image set
+	//If we have just one of those two, we should use image with the other value set to auto
+	//If we have zero???????????????????????????
+	//		Then we have to check the Orientation. 
+	//		if we have Stretch, we have two values set. -> div
+	//		else: We set the image to its original size. And set max-width, max-height -> image
+	internal enum ImageMode
+	{
+		WidthAndHeightSet,
+		WidthSet,
+		HeightSet,
+		StretchOrientationWidthSet,
+		StretchOrientationHeightSet,
+		StretchOrientationWidthAndHeightSet,
+		NoSet,
+	}
+	internal static class ImageHelper
+	{
+		public static ImageMode GetImageMode(this Image i)
+		{
+			var width = i.get_StyleWidth();
+			var height = i.get_StyleHeight();
+			if (width != null && height != null)
+				return ImageMode.WidthAndHeightSet;
+			else if (width != null)
+				return ImageMode.WidthSet;
+			else if (height != null)
+				return ImageMode.HeightSet;
+			else
+			{
+				switch (i.orientation)
+				{
+					case Orientation.LeftStretch:
+					case Orientation.CenterStretch:
+					case Orientation.RightStretch:
+						return ImageMode.StretchOrientationHeightSet;
+					case Orientation.StretchTop:
+					case Orientation.StretchCenter:
+					case Orientation.StretchBottom:
+						return ImageMode.StretchOrientationWidthSet;
+					case Orientation.Stretch:
+						return ImageMode.StretchOrientationWidthAndHeightSet;
+					default:
+						return ImageMode.NoSet;
+				}
+			}
+		}
+	}
 	public static class PresentationWriter
 	{
 		static HTMLWriter _htmlWriter;
@@ -126,6 +176,9 @@ namespace HTMLWriter
 						_htmlWriter.PushAttribute("onload", "load()");
 						_htmlWriter.PushAttribute("onkeydown", "keyDown(event);");
 						_htmlWriter.StartBody();
+
+						WriteStdOverlay();
+
 						if (presentation.CodeHighlighter != CodeHighlighter.None)
 							_htmlWriter.UseJS("prism.js");
 
@@ -159,6 +212,19 @@ namespace HTMLWriter
 			}
 		}
 
+		private static void WriteStdOverlay()
+		{
+			//< div id = "search-slide" class="invisible">
+			//        <input id = "search-slide-input" type="text"/>
+			//<ul id="search-slide-suggestions</ ul >
+			//    </div>
+			_htmlWriter.StartTag("div", "search-slide", "invisible");
+			_htmlWriter.PushAttribute("type", "text");
+			_htmlWriter.WriteTag("input", "search-slide-input");
+			_htmlWriter.StartTag("ul", "search-slide-suggestions");
+			_htmlWriter.EndTag();
+			_htmlWriter.EndTag();
+		}
 
 		private static void Write(Transition transition)
 		{
@@ -262,7 +328,7 @@ namespace HTMLWriter
 		private static void WriteList(string id, List element)
 		{
 			string parentName = null;
-			if(id != null)
+			if (id != null)
 				parentName = id.Split('-')[0];
 			var startTag = "ul";
 			if (element.isOrdered)
@@ -297,7 +363,7 @@ namespace HTMLWriter
 				lineNumbersClass = "line-numbers ";
 			_htmlWriter.StartTag("pre", classes: lineNumbersClass + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)), useNewLine: false);
 			_htmlWriter.StartTag("code", classes: $"language-clike", useNewLine: false);
-			WriteText( element.code);
+			WriteText(element.code);
 			_htmlWriter.EndTag(false);
 			_htmlWriter.EndTag(false);
 			_htmlWriter.StartTag("div", classes: "codeblock-caption");
@@ -350,7 +416,7 @@ namespace HTMLWriter
 		{
 			_htmlWriter.StartTag("div", id: id, classes: "container " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
 			string parentName = null;
-			if(id != null)
+			if (id != null)
 				parentName = id.Split('-')[0];
 			WriteElement(parentName, element.child, element);
 			_htmlWriter.EndTag();
@@ -360,7 +426,7 @@ namespace HTMLWriter
 		{
 			_htmlWriter.StartTag("div", id: id, classes: "stack " + string.Join(" ", stack.get_AppliedStyles().Select(s => s.Name)));
 			string parentName = null;
-			if(id != null)
+			if (id != null)
 				parentName = id.Split('-')[0];
 			foreach (var element in stack.children)
 			{
@@ -541,17 +607,29 @@ namespace HTMLWriter
 
 		private static void WriteImage(string id, Image element)
 		{
-			//TODO: Different modi.
-			//If we have height and width set, we should use div with background-image set
-			//If we have just one of those two, we should use image with the other value set to auto
-			//If we have zero???????????????????????????
-			//		Then we have to check the Orientation. 
-			//		if we have Stretch, we have two values set.
-			//		else: We set the image to its original size. And set max-width, max-height
-			if(element.alt != string.Empty)
-				_htmlWriter.PushAttribute("aria-label", element.alt);
-			_htmlWriter.StartTag("div", id: id, classes: "image " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
-			_htmlWriter.EndTag();
+			switch (element.GetImageMode())
+			{
+				case ImageMode.WidthAndHeightSet:
+				case ImageMode.StretchOrientationWidthAndHeightSet:
+				case ImageMode.NoSet:
+					//if (element.alt != string.Empty)
+					//	_htmlWriter.PushAttribute("aria-label", element.alt);
+					//_htmlWriter.PushAttribute("role", "img");
+					//_htmlWriter.StartTag("div", id: id, classes: "image " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
+					//_htmlWriter.EndTag();
+					//break;
+				case ImageMode.WidthSet:
+				case ImageMode.HeightSet:
+				case ImageMode.StretchOrientationWidthSet:
+				case ImageMode.StretchOrientationHeightSet:
+					_htmlWriter.PushAttribute("src", element.source.Path);
+					if (element.alt != string.Empty)
+						_htmlWriter.PushAttribute("alt", element.alt);
+					_htmlWriter.WriteTag("img", id: id, needsEnding: false, classes: "image " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
+					break;
+				default:
+					throw new Exception();
+			}
 		}
 	}
 }

@@ -178,6 +178,10 @@ function playTransition(transition) {
     }, millisecondsToWait);
 }
 
+function enterSearchSlideMode() {
+
+}
+
 function keyDown(event) {
     //console.log(event);
     if (event.code === 'ArrowUp')
@@ -186,6 +190,8 @@ function keyDown(event) {
         next();
     else if (event.code === 'KeyF')
         enterFullScreen();
+    else if (event.code === 'KeyG')
+        enterSearchSlideMode();
 }
 
 //source: https://stackoverflow.com/questions/6268508/restart-animation-in-css3-any-better-way-than-removing-the-element#6303311

@@ -179,7 +179,7 @@ slide title:
 	let sub~ = 'Am Beispiel von Los Angeles';
 	let title = new basics.MainTitle(main~, sub~);
 	title.orientation = Vertical.Center | Horizontal.Stretch;
-	title.background = alpha(antiquewhite, 0.17f);
+	title.background = alpha(antiquewhite, 0.45f);
 	background = image(@'sldsrc\city\night.jpg');
 endslide
 

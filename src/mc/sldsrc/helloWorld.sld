@@ -89,6 +89,9 @@ slide howDoesThePresentationWork:
 	//possible values: Left, Right, Center, Block
 	//These just translate to css-text-align properties.
 	lblControls.align = Alignment.Right;
+
+	lblControls.rotation = 30;
+
 endslide
 
 //A style is a preset for fields of visual elements
@@ -129,8 +132,13 @@ slide ~hidden:
 	list.top = lbl.bottom_side; //WIP
 endslide
 
+//This is a CustomStyle. It takes the visual element as parameter
+//which is going to be affected by it. any is a keyword which says
+//that it doesn't matter which kind of element you give it to it.
 style hoverStyle(element: any):
-	element.filter = hueRotate(float(elapsedTime) / 10f);
+	//We set the filter of that element to a hueRotation of 180° 
+	//We will talk more about filters later.
+	element.filter = hueRotate(0.5f);
 endstyle
 
 slide hoverExample:
@@ -144,6 +152,4 @@ slide hoverExample:
 	imgDesert.orientation = Horizontal.Stretch | Vertical.Stretch;
 	imgDesert.margin = margin(5%);
 	imgDesert.hover = hoverStyle;
-	imgDesert.stretching = ImageStretching.Cover;
-	imgDesert.filter = hueRotate(0);
 endslide

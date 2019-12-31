@@ -7,6 +7,7 @@ namespace HTMLWriter
 {
 	public static class StyleWriter
 	{
+		private static string _currentTransform = null;
 		private static string TypeSymbolToCSSClass(string type)
 		{
 			switch (type)
@@ -196,6 +197,7 @@ namespace HTMLWriter
 
 		public static void WriteElement(CSSWriter writer, string id, Element element, Element parent = null)
 		{
+			_currentTransform = "";
 			if (element.name == null)
 				return;
 			writer.StartId(id);
@@ -211,6 +213,15 @@ namespace HTMLWriter
 			writer.WriteAttributeIfValue("padding", element.padding);
 			if (element.parent != null && element.parent.name != null)
 				writer.WriteAttribute("parent", element.parent.name);
+
+			if (element.rotation % 360 != 0)
+				_currentTransform += $"rotate({CSSWriter.GetValue(element.rotation)}deg) ";
+
+			if(!string.IsNullOrEmpty(_currentTransform))
+			{
+				writer.WriteAttribute("transform", _currentTransform);
+				_currentTransform = "";
+			}
 
 			switch (element)
 			{
@@ -238,11 +249,27 @@ namespace HTMLWriter
 					writer.WriteAttributeIfValue("font-size", cb.fontsize);
 					break;
 				case Image i:
-					writer.WriteAttribute("background-image", i.source);
-					writer.WriteAttribute("background-size", i.stretching);
-					writer.WriteAttribute("background-repeat", "no-repeat");
-					//TODO: Maybe this should be influenced by the orientation???
-					writer.WriteAttribute("background-position", "center center");
+					//BIG TODO: USE OBJECT FIT AND NO DIVS ANYMORE!!!!!!!!!!!!!!!
+					switch (i.GetImageMode())
+					{
+						case ImageMode.WidthAndHeightSet:
+						case ImageMode.StretchOrientationWidthAndHeightSet:
+						case ImageMode.NoSet:
+							writer.WriteAttribute("object-fit", i.stretching);
+							//writer.WriteAttribute("background-image", i.source);
+							//writer.WriteAttribute("background-size", i.stretching);
+							//writer.WriteAttribute("background-repeat", "no-repeat");
+							//writer.WriteAttribute("background-position", "center center");
+							break;
+						case ImageMode.WidthSet:
+						case ImageMode.HeightSet:
+						case ImageMode.StretchOrientationWidthSet:
+						case ImageMode.StretchOrientationHeightSet:
+							writer.WriteAttribute("object-fit", i.stretching);
+							break;
+						default:
+							throw new Exception();
+					}
 					break;
 				default:
 					break;
@@ -262,11 +289,6 @@ namespace HTMLWriter
 
 		private static void WriteOrientation(CSSWriter writer, Element element, Element parent = null)
 		{
-			var hasExactSize = false;
-			if (parent != null)
-			{
-				hasExactSize = parent.get_StyleWidth().Kind != Unit.UnitKind.Auto && parent.get_StyleHeight().Kind != Unit.UnitKind.Auto;
-			}
 			if (element.position == null)
 			{
 				if (parent != null && parent is Stack)
@@ -277,14 +299,12 @@ namespace HTMLWriter
 			else
 				writer.WriteAttribute("position", element.position);
 			var margin = element.margin ?? new Thickness();
-			var padding = new Thickness();
 			if (element.padding != null)
-				padding += element.padding;
+				margin += element.padding;
 			if (parent != null && parent.padding != null)
 			{
-				padding = parent.padding;
 				//writer.WriteAttribute("margin", padding);
-				margin += padding;
+				margin += parent.padding;
 			}
 
 			var unit50Percent = new Unit(50, Unit.UnitKind.Percent);
@@ -298,51 +318,80 @@ namespace HTMLWriter
 												element.orientation == Orientation.Stretch ||
 												element.orientation == Orientation.CenterStretch ||
 												element.orientation == Orientation.RightStretch;
-			var hasVerticalCenter = element.orientation == Orientation.LeftCenter ||
-												element.orientation == Orientation.StretchCenter ||
-												element.orientation == Orientation.Center ||
-												element.orientation == Orientation.RightCenter;
-			var hasHorizontalCenter = element.orientation == Orientation.CenterTop ||
-												element.orientation == Orientation.CenterStretch ||
-												element.orientation == Orientation.Center ||
-												element.orientation == Orientation.CenterBottom;
 
 
-			if (hasVerticalStretch && element is Image i)
+			//if (element is Image i)
+			//{
+			//	switch (i.GetImageMode())
+			//	{
+			//		case ImageMode.WidthAndHeightSet:
+			//			writer.WriteAttribute("width", i.width);
+			//			writer.WriteAttribute("height", i.height);
+			//			break;
+			//		case ImageMode.WidthSet:
+			//			writer.WriteAttribute("width", i.width);
+			//			writer.WriteAttribute("height", new Unit(0, Unit.UnitKind.Auto));
+			//			break;
+			//		case ImageMode.HeightSet:
+			//			writer.WriteAttribute("width", new Unit(0, Unit.UnitKind.Auto));
+			//			writer.WriteAttribute("height", i.height);
+			//			break;
+			//		case ImageMode.StretchOrientationWidthSet:
+			//			writer.WriteAttribute("width", unit100Percent - margin.Horizontal);
+			//			writer.WriteAttribute("height", new Unit(0, Unit.UnitKind.Auto));
+			//			break;
+			//		case ImageMode.StretchOrientationHeightSet:
+			//			writer.WriteAttribute("width", new Unit(0, Unit.UnitKind.Auto));
+			//			writer.WriteAttribute("height", unit100Percent - margin.Vertical);
+			//			break;
+			//		case ImageMode.StretchOrientationWidthAndHeightSet:
+			//			writer.WriteAttribute("width", unit100Percent - margin.Horizontal);
+			//			writer.WriteAttribute("height", unit100Percent - margin.Vertical);
+			//			break;
+			//		case ImageMode.NoSet:
+			//			writer.WriteAttribute("width", new Unit(i.source.width, Unit.UnitKind.Pixel));
+			//			writer.WriteAttribute("height", new Unit(i.source.height, Unit.UnitKind.Pixel));
+			//			//TODO: If the image is bigger than the slide (width and/or height) it will be stretched..
+			//			//Whats the solution to that???? Should we use a div in this case???
+			//			writer.WriteAttribute("max-width", unit100Percent - margin.Horizontal);
+			//			writer.WriteAttribute("max-height", unit100Percent - margin.Vertical);
+			//			break;
+			//		default:
+			//			throw new Exception();
+			//	}
+			//}
+			//else
 			{
-				var vval = unit100Percent - margin.Vertical;
-				writer.WriteAttribute("height", unit100Percent - margin.Vertical);
-			}
-			else if(hasVerticalStretch)
-			{
-				writer.WriteAttribute("height", unit100Percent - margin.Vertical);
-			}
-			else if (element.get_StyleHeight().Kind == Unit.UnitKind.Auto)
-			{
-				/*if(!(element is CodeBlock codeBlock) && hasVerticalCenter)
-					writer.WriteAttribute("height", unit100Percent - padding.Vertical);
-				else*/
-				if (element is Image)
-					writer.WriteAttribute("height", "auto");
+				if (hasVerticalStretch)
+				{
+					writer.WriteAttribute("height", unit100Percent - margin.Vertical);
+				}
+				else if (element.get_StyleHeight() == null)
+				{
+					/*if(!(element is CodeBlock codeBlock) && hasVerticalCenter)
+						writer.WriteAttribute("height", unit100Percent - padding.Vertical);
+					else*/
+					//if (element is Image)
+					//	writer.WriteAttribute("height", "auto");
+					//else
+						writer.WriteAttribute("height", "fit-content");
+				}
 				else
-					writer.WriteAttribute("height", "fit-content");
-			}
-			else
-				writer.WriteAttributeIfValue("height", element.get_StyleHeight() - margin.Vertical);
+					writer.WriteAttributeIfValue("height", element.get_StyleHeight() - margin.Vertical);
 
 
-			if (hasHorizontalStretch)
-				writer.WriteAttribute("width", unit100Percent - margin.Horizontal);
-			else if (element.get_StyleWidth().Kind == Unit.UnitKind.Auto)
-			{
-				if (element is Image)
-					writer.WriteAttribute("width", "auto");
+				if (hasHorizontalStretch)
+					writer.WriteAttribute("width", unit100Percent - margin.Horizontal);
+				else if (element.get_StyleWidth() == null)
+				{
+					//if (element is Image)
+					//	writer.WriteAttribute("width", "auto");
+					//else
+						writer.WriteAttribute("width", "fit-content");
+				}
 				else
-					writer.WriteAttribute("width", "fit-content");
+					writer.WriteAttributeIfValue("width", element.get_StyleWidth() - margin.Horizontal);
 			}
-			else
-				writer.WriteAttributeIfValue("width", element.get_StyleWidth() - margin.Horizontal);
-
 			var marginHorizontalOffset = margin.Left - margin.Right;
 			var marginVerticalOffset = margin.Top - margin.Bottom;
 
@@ -361,8 +410,7 @@ namespace HTMLWriter
 				case Orientation.CenterTop:
 					writer.WriteAttribute("left", unit50Percent + marginHorizontalOffset);
 					writer.WriteAttribute("top", margin.Top);
-					writer.WriteAttribute("-ms-transform", "translate(-50%, 0)");
-					writer.WriteAttribute("transform", "translate(-50%, 0)");
+					_currentTransform += "translate(-50%, 0) ";
 					break;
 				case Orientation.RightTop:
 					writer.WriteAttribute("right", margin.Right);
@@ -371,27 +419,23 @@ namespace HTMLWriter
 				case Orientation.LeftCenter:
 					writer.WriteAttribute("left", margin.Left);
 					writer.WriteAttribute("top", unit50Percent + marginVerticalOffset);
-					writer.WriteAttribute("-ms-transform", "translate(0, -50%)");
-					writer.WriteAttribute("transform", "translate(0, -50%)");
+					_currentTransform += "translate(0, -50%) ";
 					break;
 				case Orientation.StretchCenter:
 					writer.WriteAttribute("left", margin.Left);
 					writer.WriteAttribute("right", margin.Right);
 					writer.WriteAttribute("top", unit50Percent + marginVerticalOffset);
-					writer.WriteAttribute("-ms-transform", "translate(0, -50%)");
-					writer.WriteAttribute("transform", "translate(0, -50%)");
+					_currentTransform += "translate(0, -50%) ";
 					break;
 				case Orientation.Center:
 					writer.WriteAttribute("left", unit50Percent + marginHorizontalOffset);
 					writer.WriteAttribute("top", unit50Percent + marginVerticalOffset);
-					writer.WriteAttribute("-ms-transform", "translate(-50%, -50%)");
-					writer.WriteAttribute("transform", "translate(-50%, -50%)");
+					_currentTransform += "translate(-50%, -50%) ";
 					break;
 				case Orientation.RightCenter:
 					writer.WriteAttribute("right", margin.Right);
 					writer.WriteAttribute("top", unit50Percent + marginVerticalOffset);
-					writer.WriteAttribute("-ms-transform", "translate(0, -50%)");
-					writer.WriteAttribute("transform", "translate(0, -50%)");
+					_currentTransform += "translate(0, -50%) ";
 					break;
 				case Orientation.LeftStretch:
 					writer.WriteAttribute("left", margin.Left);
@@ -408,8 +452,7 @@ namespace HTMLWriter
 					writer.WriteAttribute("left", unit50Percent + marginHorizontalOffset);
 					writer.WriteAttribute("top", margin.Top);
 					writer.WriteAttribute("bottom", margin.Bottom);
-					writer.WriteAttribute("-ms-transform", "translate(-50%, 0)");
-					writer.WriteAttribute("transform", "translate(-50%, 0)");
+					_currentTransform += "translate(-50%, 0) ";
 					break;
 				case Orientation.RightStretch:
 					writer.WriteAttribute("right", margin.Right);
@@ -428,8 +471,7 @@ namespace HTMLWriter
 				case Orientation.CenterBottom:
 					writer.WriteAttribute("left", unit50Percent + marginHorizontalOffset);
 					writer.WriteAttribute("bottom", margin.Bottom);
-					writer.WriteAttribute("-ms-transform", "translate(-50%, 0)");
-					writer.WriteAttribute("transform", "translate(-50%, 0)");
+					_currentTransform += "translate(-50%, 0) ";
 					break;
 				case Orientation.RightBottom:
 					writer.WriteAttribute("right", margin.Right);
@@ -451,6 +493,8 @@ namespace HTMLWriter
 					break;
 				case Brush.BrushMode.ImageSource:
 					writer.WriteAttribute("background-image", background.Image);
+					writer.WriteAttribute("background-size", ImageStretching.Cover);
+					writer.WriteAttribute("background-position", "center center");
 					break;
 				default:
 					throw new Exception();

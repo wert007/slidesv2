@@ -34,6 +34,7 @@ namespace Slides
 		public Orientation orientation { get; set; }
 		public Thickness margin { get; set; }
 		public Thickness padding { get; set; }
+		public float rotation { get; set; }
 		public Thickness marginAndPadding => (margin ?? new Thickness()) + (padding ?? new Thickness());
 		public Element parent { get; set; }
 		public Unit top
@@ -119,6 +120,7 @@ namespace Slides
 			orientation = Orientation.LeftTop;
 			margin = null;
 			padding = null;
+			rotation = 0;
 
 			appliedStyles = new Stack<CustomStyle>();
 
@@ -164,7 +166,7 @@ namespace Slides
 				return _width;
 			if (initWidth != null)
 				return initWidth;
-			return new Unit(0, Unit.UnitKind.Auto);
+			return null;
 		}
 
 		public Unit get_StyleHeight()
@@ -173,7 +175,7 @@ namespace Slides
 				return _height;
 			if (initHeight != null)
 				return initHeight;
-			return new Unit(100, Unit.UnitKind.Auto);
+			return null;
 		}
 	}
 }
