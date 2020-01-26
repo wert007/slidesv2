@@ -21,13 +21,15 @@ namespace Slides
 		public AnimationCall[] AnimationCalls { get; }
 		public Element[] VisualChildren { get; }
 		public object[] DataChildren { get; }
+		public string[] DataChildrenNames { get; }
 
-		public Step(string name, SlideAttributes dummy, AnimationCall[] animationCalls, Element[] visualChildren, object[] dataChildren)
+		public Step(string name, SlideAttributes dummy, AnimationCall[] animationCalls, Element[] visualChildren, object[] dataChildren, string[] dataChildrenNames)
 		{
 			Name = name;
 			AnimationCalls = animationCalls;
 			VisualChildren = visualChildren;
 			DataChildren = dataChildren;
+			DataChildrenNames = dataChildrenNames;
 		}
 	}
 

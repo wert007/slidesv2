@@ -1,6 +1,7 @@
 ﻿using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using Slides;
 
@@ -21,6 +22,9 @@ namespace HTMLWriter
 	{
 		private IndentedTextWriter _writer;
 		private IndentedTextWriter _onLoadWriter;
+
+		private static CultureInfo _usCulture = CultureInfo.CreateSpecificCulture("US-us");
+
 		private IndentedTextWriter CurrentWriter
 		{
 			get
@@ -223,15 +227,28 @@ namespace HTMLWriter
 				case bool b:
 					CurrentWriter.Write($"{b.ToString().ToLower()}");
 					break;
+				case float f:
+					//if (float.IsNaN(f))
+					//	CurrentWriter.Write("undefined");
+					CurrentWriter.Write(f.ToString(_usCulture));
+					break;
 				default:
 					CurrentWriter.Write(value.ToString());
 					break;
 			}
 		}
 
-		public void StartForLoop(string variable, string maxValue, string addition = "++")
+		public void StartForLoop(string variable, Range range)
 		{
-			CurrentWriter.WriteLine($"for(let {variable} = 0; {variable} < {maxValue}; {variable}{addition}) {{");
+			CurrentWriter.WriteLine($"for(let {variable} = {range.From}; {variable} < {range.To}; {variable} += {range.Step}) {{");
+			CurrentWriter.Indent++;
+		}
+
+
+
+		internal void StartForLoop(string variable, string from, string to, string inc)
+		{
+			CurrentWriter.WriteLine($"for(let {variable} = {from}; {variable} < {to}; {variable} += {inc}) {{");
 			CurrentWriter.Indent++;
 		}
 
@@ -262,6 +279,23 @@ namespace HTMLWriter
 		public void EndFor()
 		{
 			End();
+		}
+
+		public static string ToJSAttribute(string cssAttribute)
+		{
+			switch (cssAttribute)
+			{
+				case "font-size":
+					return "style.fontSize";
+				case "margin":
+					return "style.margin";
+				case "padding":
+					return "style.padding";
+				case "color":
+					return "style.color";
+				default:
+					throw new Exception();
+			}
 		}
 	}
 }

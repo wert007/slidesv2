@@ -21,6 +21,17 @@ namespace Minsk.CodeAnalysis.Symbols
 		public bool IsVisible { get; internal set; }
 		public bool NeedsDataFlag { get; internal set; }
 
+		private bool _hasValue;
+		public bool HasValue
+		{
+			get
+			{
+				if (Type.Type != TypeType.Nullable)
+					return true;
+				return _hasValue;
+			}
+			set { _hasValue = value; }
+		}
 
 		public override bool Equals(object obj)
 		{
@@ -43,7 +54,7 @@ namespace Minsk.CodeAnalysis.Symbols
 			return hashCode;
 		}
 
-		public override string ToString() => Name + " : " + Type.ToString() ;
+		public override string ToString() => Name + " : " + Type.ToString();
 
 		public static bool operator ==(VariableSymbol symbol1, VariableSymbol symbol2)
 		{

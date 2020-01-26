@@ -9,8 +9,8 @@ group CaptionedImage(img~: ImageSource, caption~ : string, stretching~ = ImageSt
 	image.width = 100%;
 	image.stretching = stretching~;
 	let lblCaption = new Label(caption~);
-	initWidth = 100%; 
-	initHeight = 100%; 
+	initWidth = 100%;
+	initHeight = 100%;
 	lblCaption.orientation = Vertical.Bottom | Horizontal.Left;
 endgroup
 

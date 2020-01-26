@@ -121,7 +121,9 @@ namespace HTMLWriter
 
 		private static string ToString(Color c)
 		{
-			return $"rgba({c.R}, {c.G}, {c.B}, {ToString(c.A / 255f)})";
+			if(c.IsRGBA)
+				return $"rgba({c.R}, {c.G}, {c.B}, {ToString(c.A / 255f)})";
+			return $"hsla({c.Hue}, {ToString(c.Saturation / 2.55f)}%, {ToString(c.Lightness / 2.55f)}%, {ToString(c.A / 255f)})";
 		}
 
 		private static string ToString(float f)
@@ -232,7 +234,7 @@ namespace HTMLWriter
 		public string GetAlternativeThickness(Thickness value)
 		{
 			var stringBuilder = new StringBuilder();
-			stringBuilder.Append($"{GetAlternativeUnit(value.Top, true)} {GetAlternativeUnit(value.Right, false)} {GetAlternativeUnit(value.Bottom, true)} {GetAlternativeUnit(value.Left, false)}");
+			stringBuilder.Append($"{GetAlternativeUnit(value.top, true)} {GetAlternativeUnit(value.right, false)} {GetAlternativeUnit(value.bottom, true)} {GetAlternativeUnit(value.left, false)}");
 			return stringBuilder.ToString();
 		}
 

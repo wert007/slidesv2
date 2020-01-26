@@ -305,7 +305,7 @@ namespace Minsk.CodeAnalysis.Syntax
 					ReadWhiteSpace();
 					break;
 				default:
-					if (char.IsLetter(Current))
+					if (char.IsLetter(Current) || Current == '_' || Current == '#')
 					{
 						ReadIdentifierOrKeyword();
 					}
@@ -420,7 +420,7 @@ namespace Minsk.CodeAnalysis.Syntax
 		private void ReadIdentifierOrKeyword()
 		{
 			var isFirst = true;
-			while (char.IsLetter(Current) || Current == '_' || (!isFirst && char.IsDigit(Current)))
+			while (char.IsLetter(Current) || Current == '_' || (!isFirst && char.IsDigit(Current)) || (isFirst && Current == '#'))
 			{
 				isFirst = false;
 				_position++;

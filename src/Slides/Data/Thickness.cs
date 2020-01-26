@@ -5,19 +5,19 @@ namespace Slides
 	[Serializable]
 	public class Thickness
 	{
-		public Unit Left { get; set; }
-		public Unit Top { get; set; }
-		public Unit Right { get; set; }
-		public Unit Bottom { get; set; }
-		public Unit Vertical => Top + Bottom;
-		public Unit Horizontal => Left + Right;
+		public Unit left { get; set; }
+		public Unit top { get; set; }
+		public Unit right { get; set; }
+		public Unit bottom { get; set; }
+		public Unit Vertical => top + bottom;
+		public Unit Horizontal => left + right;
 
 		public Thickness(Unit left, Unit top, Unit right, Unit bottom)
 		{
-			Left = left;
-			Top = top;
-			Right = right;
-			Bottom = bottom;
+			this.left = left;
+			this.top = top;
+			this.right = right;
+			this.bottom = bottom;
 		}
 
 		public Thickness() :this(new Unit(), new Unit(), new Unit(), new Unit())
@@ -27,12 +27,12 @@ namespace Slides
 
 		public override string ToString()
 		{
-			return $"{Top} {Right} {Bottom} {Left}";
+			return $"{top} {right} {bottom} {left}";
 		}
 
 		public static Thickness operator + (Thickness a, Thickness b)
 		{
-			return new Thickness(a.Left + b.Left, a.Top + b.Top, a.Right + b.Right, a.Bottom + b.Bottom);
+			return new Thickness(a.left + b.left, a.top + b.top, a.right + b.right, a.bottom + b.bottom);
 		}
 	}
 }

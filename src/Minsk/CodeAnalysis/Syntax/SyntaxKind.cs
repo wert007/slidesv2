@@ -140,5 +140,7 @@ namespace Minsk.CodeAnalysis.Syntax
 		RangeToken,
 		EqualsGreaterToken,
 		LambdaExpression,
+		HashMathKeyword,
+		MathExpression,
 	}
 }

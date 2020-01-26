@@ -12,6 +12,7 @@ namespace Minsk.CodeAnalysis.Binding
 
 		public BoundExpression Parent { get; }
 		public BoundVariableExpression Field { get; }
+		public bool IsReadOnly => Field.Variable.IsReadOnly;
 
 		public override TypeSymbol Type => Field.Type;
 

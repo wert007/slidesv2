@@ -660,6 +660,8 @@ namespace Minsk.CodeAnalysis.Syntax
 		{
 			ExpressionSyntax left;
 
+			if (Current.Kind == SyntaxKind.HashMathKeyword)
+				return ParseMathExpression();
 
 			var unaryOperatorPrecedence = Current.Kind.GetUnaryOperatorPrecedence();
 			if (unaryOperatorPrecedence != 0 && unaryOperatorPrecedence >= parentPrecedence)
@@ -695,6 +697,14 @@ namespace Minsk.CodeAnalysis.Syntax
 
 			return left;
 		}
+
+		private ExpressionSyntax ParseMathExpression()
+		{
+			var mathKeyword = MatchToken(SyntaxKind.HashMathKeyword);
+			var stringLiteral = ParseStringLiteral();
+			return new MathExpressionSyntax(mathKeyword, stringLiteral);
+		}
+
 		private ExpressionSyntax TryParseBinaryExpression(int parentPrecedence = 0)
 		{
 			ExpressionSyntax left = null;
@@ -944,6 +954,8 @@ namespace Minsk.CodeAnalysis.Syntax
 			}
 			else if (Peek(2).Kind == SyntaxKind.EqualsGreaterToken)
 			{
+				throw new Exception();
+				//Currently not supported and propably never will
 				var variable = ParseVariableExpression();
 				var arrowToken = MatchToken(SyntaxKind.EqualsGreaterToken);
 				var expression = ParseBinaryExpression();

@@ -63,6 +63,8 @@ namespace Minsk.CodeAnalysis.Syntax
 		{
 			switch (text)
 			{
+				case "#math":
+					return SyntaxKind.HashMathKeyword;
 				case "false":
 					return SyntaxKind.FalseKeyword;
 				case "let":
@@ -320,6 +322,8 @@ namespace Minsk.CodeAnalysis.Syntax
 					return "filter";
 				case SyntaxKind.EndFilterKeyword:
 					return "endfilter";
+				case SyntaxKind.HashMathKeyword:
+					return "#math";
 				default:
 					return null;
 			}

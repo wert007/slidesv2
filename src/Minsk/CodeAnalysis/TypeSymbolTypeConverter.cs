@@ -7,6 +7,7 @@ using Minsk.CodeAnalysis.Symbols;
 using Slides;
 using Slides.Code;
 using Slides.Filters;
+using Slides.MathExpressions;
 using Slides.MathTypes;
 
 namespace Minsk.CodeAnalysis
@@ -60,7 +61,8 @@ namespace Minsk.CodeAnalysis
 			Add(typeof(Unit.UnitKind));
 			Add(typeof(UnitAddition));
 			Add(typeof(Range), isData:true);
-			Add(typeof(LambdaFunction), isData: true);
+			Add(typeof(Polynom), isData: true);
+			Add(typeof(MathFormula), isData: true);
 
 			Add(typeof(CustomStyle), CreateEmptySymbol("Style"));
 			Add(typeof(StdStyle), CreateEmptySymbol("Style"));
@@ -139,6 +141,8 @@ namespace Minsk.CodeAnalysis
 
 			Add(typeof(Chart));
 			Add(typeof(LineChart));
+
+			Add(typeof(MathPlot));
 
 			Add(typeof(Step), CreateEmptySymbol(nameof(Step)));
 			Add(typeof(Template));

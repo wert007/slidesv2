@@ -46,6 +46,11 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 
 		public override string ToString() => Name;
 
+		//public static SplittedContainer _CreateVerticalSeperator(Unit width)
+		//{
+		//	return new SplittedContainer()
+		//}
+
 		public static TupleType CreateVerticalSeperator(Unit width)
 		{
 			//	Console.WriteLine("HEWWO!!!!!");
@@ -89,7 +94,7 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			return result;
 		}
 
-		
+
 		public bool TryLookUpFunction(string name, out FunctionSymbol[] functions)
 		{
 			functions = GlobalFunctions.Where(f => f.Name == name).ToArray();

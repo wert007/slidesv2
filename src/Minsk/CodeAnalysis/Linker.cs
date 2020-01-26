@@ -24,25 +24,27 @@ namespace Minsk.CodeAnalysis
 		private readonly Queue<Compilation> _toCollectReferences = new Queue<Compilation>();
 		private bool _completeRebuild;
 
+		private DiagnosticBag _diagnostics;
+
 		public Linker(bool completeRebuild)
 		{
 			_completeRebuild = completeRebuild;
 		}
 
 
-		private void CreateTree(string file)
-		{
-			Compilation compilation = null;
-			if (_loadedCompilations.ContainsKey(file))
-				compilation = _loadedCompilations[file];
-			else
-				compilation = Loader.LoadCompilationFromFile(file);
-			_referencedInFile.Clear();
-			CreateTree(compilation, file);
+		//private void CreateTree(string file)
+		//{
+		//	Compilation compilation = null;
+		//	if (_loadedCompilations.ContainsKey(file))
+		//		compilation = _loadedCompilations[file];
+		//	else
+		//		compilation = Loader.LoadCompilationFromFile(file);
+		//	_referencedInFile.Clear();
+		//	CreateTree(compilation, file);
 
-			_references.Add(file, _referencedInFile.ToArray());
-			_referencedInFile.Clear();
-		}
+		//	_references.Add(file, _referencedInFile.ToArray());
+		//	_referencedInFile.Clear();
+		//}
 
 		private LibrarySymbol[] Bind(TimeWatcher timewatcher)
 		{
@@ -95,6 +97,8 @@ namespace Minsk.CodeAnalysis
 
 		public LibrarySymbol[] Link(Compilation root, TimeWatcher timewatch, string fileName)
 		{
+			_diagnostics = new DiagnosticBag(fileName);
+			_diagnostics.AddRange(root.SyntaxTree.Diagnostics);
 			CreateTree(root, fileName);
 			timewatch.Record("generate linktree");
 			return Bind(timewatch);
@@ -177,9 +181,13 @@ namespace Minsk.CodeAnalysis
 					}
 					return;
 				}
-				var compilation = Loader.LoadCompilationFromFile(path);
+				var compilation = Loader.LoadCompilationFromFile(CompilationFlags.Directory, path);
 				if (compilation == null)
-					throw new Exception();
+				{
+					//This will hopefully be reported later!
+					//_diagnostics.ReportCannotFindLibrary();
+					return;
+				}
 				_toCollectReferences.Enqueue(compilation);
 
 

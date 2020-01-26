@@ -10,7 +10,7 @@ namespace Minsk.CodeAnalysis.Binding
 			Expression = expression;
 		}
 
-		public override TypeSymbol Type => TypeSymbolTypeConverter.Instance.LookSymbolUp(typeof(Slides.MathTypes.LambdaFunction));
+		public override TypeSymbol Type => TypeSymbolTypeConverter.Instance.LookSymbolUp(typeof(Slides.MathTypes.Polynom));
 
 		public override BoundNodeKind Kind => BoundNodeKind.LambdaExpression;
 

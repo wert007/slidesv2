@@ -36,9 +36,12 @@ namespace Minsk
 		}
 
 
-		private static void LoadFromFile(string fileName, string targetDirectory, bool completeRebuild)
+		private static void LoadFromFile(string path, string targetDirectory, bool completeRebuild)
 		{
-			var result = Loader.LoadFromFile(fileName, false, false, completeRebuild);
+			var fileName = Path.GetFileName(path);
+			var directory = Path.GetDirectoryName(path);
+			CompilationFlags.Init(directory, fileName, completeRebuild);
+			var result = Loader.LoadFromFile(directory, fileName, false, false, completeRebuild);
 			if(!result.Diagnostics.Any(d => d.Level == DiagnosticLevel.Error))
 			{
 				var presentation = result.Value as Presentation;

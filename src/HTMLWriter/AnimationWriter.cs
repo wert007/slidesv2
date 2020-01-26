@@ -54,7 +54,7 @@ namespace HTMLWriter
 			writer.StartFunction(animation.Name, "progress", "element");
 			writer.WriteVariableDeclarationInline("computedStyle", "getComputedStyle(element)", true);
 			writer.WriteVariableDeclarationInline("cases", GetInitializer(writer.Indent, animation.Cases));
-			writer.StartForLoop("i", "cases.length - 1");
+			writer.StartForLoop("i", "0", "cases.length - 1", "1");
 			writer.WriteVariableDeclarationInline("prev", "cases[i]", true);
 			writer.WriteVariableDeclarationInline("next", "cases[i + 1]", true);
 			writer.StartIfStatement("progress > prev.condition && progress < next.condition");
@@ -187,7 +187,7 @@ namespace HTMLWriter
 				case Unit unit:
 					return $"new StyleUnit({unit.Value}, \"{Unit.ToString(unit.Kind)}\", {GetJSValue(GetIsVertical(field))})";
 				case Thickness thickness:
-					return $"new Thickness({GetJSValue(thickness.Top)}, {GetJSValue(thickness.Right)}, {GetJSValue(thickness.Bottom)}, {GetJSValue(thickness.Left)})";
+					return $"new Thickness({GetJSValue(thickness.top)}, {GetJSValue(thickness.right)}, {GetJSValue(thickness.bottom)}, {GetJSValue(thickness.left)})";
 				case Color color:
 					return $"new Color_t('{CSSWriter.GetValue(color)}')";
 				case null:

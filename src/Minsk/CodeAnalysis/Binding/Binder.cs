@@ -10,6 +10,7 @@ using Minsk.CodeAnalysis.Text;
 using Slides;
 using Slides.Debug;
 using Slides.Filters;
+using Slides.MathExpressions;
 
 namespace Minsk.CodeAnalysis.Binding
 {
@@ -22,7 +23,9 @@ namespace Minsk.CodeAnalysis.Binding
 		private Dictionary<string, VariableSymbol> _builtInConstants;
 		private TypeSymbolTypeConverter _builtInTypes;
 
+		private Dictionary<VariableSymbol, bool> _noneableVariableSet = new Dictionary<VariableSymbol, bool>();
 		private Dictionary<VariableSymbol, BoundStatement> _declarations = new Dictionary<VariableSymbol, BoundStatement>();
+		private Dictionary<VariableSymbol, BoundMathExpression> _mathFormulas = new Dictionary<VariableSymbol, BoundMathExpression>();
 		private HashSet<VariableSymbol> _assignedVariables = new HashSet<VariableSymbol>();
 		private PresentationFlags _flags = new PresentationFlags();
 		public DiagnosticBag Diagnostics => _diagnostics;
@@ -850,12 +853,21 @@ namespace Minsk.CodeAnalysis.Binding
 				}
 			}
 
+
 			for (int i = 0; i < syntax.Variables.Length; i++)
 			{
 				var variable = syntax.Variables[i];
 				if (syntax.Variables.Length > 1)
 					type = ((TupleTypeSymbol)initializer.Type).Children[i];
 				variables.Add(CheckGlobalVariableExpression(variable, type, true));
+			}
+			if (variables.Count == 1)
+			{
+				var vs = variables.First();
+				if (vs.Type.Type == TypeType.Nullable)
+					_noneableVariableSet[vs] = initializer.Type.Type != TypeType.Nullable;
+				if (initializer is BoundMathExpression mathExpression)
+					_mathFormulas[vs] = mathExpression;
 			}
 			return new BoundVariableDeclaration(variables.ToArray(), initializer);
 		}
@@ -914,6 +926,8 @@ namespace Minsk.CodeAnalysis.Binding
 					return BindFieldAccessExpression((FieldAccessExpressionSyntax)syntax);
 				case SyntaxKind.LambdaExpression:
 					return BindLambdaExpression((LambdaExpressionSyntax)syntax);
+				case SyntaxKind.MathExpression:
+					return BindMathExpression((MathExpressionSyntax)syntax);
 				case SyntaxKind.NameExpression:
 					return new BoundErrorExpression(); //Let's hope somebody informed the diagnostics!
 				default:
@@ -986,7 +1000,35 @@ namespace Minsk.CodeAnalysis.Binding
 				}
 
 			}
-			return BindFunctionExpression(functionCall, type.Constructor.ToArray(), source);
+
+			var result = BindFunctionExpression(functionCall, type.Constructor.ToArray(), source);
+			if(result is BoundFunctionExpression functionExpression)
+			{
+				if (type == _builtInTypes.LookSymbolUp(typeof(MathPlot)))
+				{
+					if (functionExpression.Arguments[0] is BoundVariableExpression variableExpression)
+					{
+						if (_mathFormulas.TryGetValue(variableExpression.Variable, out var mathExpression))
+						{
+							int unsetValues = 0;
+							foreach (var field in mathExpression.Fields)
+							{
+								if (!_noneableVariableSet.ContainsKey(field))
+									unsetValues++;
+								else if (!_noneableVariableSet[field])
+									unsetValues++;
+							}
+							if (unsetValues != 1)
+								_diagnostics.ReportExpectedDifferentUnknownsMathExpression(functionCall.Span, mathExpression, 1, unsetValues);
+						}
+						else
+							throw new Exception();
+					}
+					else
+						throw new Exception();
+				}
+			}
+			return result;
 		}
 
 		private BoundExpression BindArrayConstructorExpression(ArrayConstructorExpressionSyntax syntax)
@@ -1388,6 +1430,8 @@ namespace Minsk.CodeAnalysis.Binding
 		{
 			if ((expression.Type == PrimitiveTypeSymbol.Integer || expression.Type == PrimitiveTypeSymbol.Float) && targetType == PrimitiveTypeSymbol.Unit)
 				return new BoundConversion(expression, targetType);
+			if (expression.Type == PrimitiveTypeSymbol.Integer && targetType == PrimitiveTypeSymbol.Float)
+				return new BoundConversion(expression, targetType);
 			return expression;
 		}
 
@@ -1401,8 +1445,8 @@ namespace Minsk.CodeAnalysis.Binding
 			var pathExpression = expression[0];
 			if (pathExpression is BoundLiteralExpression l)
 			{
-				var path = l.Value.ToString();
-
+				var fileName = l.Value.ToString();
+				var path = Path.Combine(CompilationFlags.Directory, fileName);
 				if (!File.Exists(path))
 				{
 					_diagnostics.ReportFileDoesNotExist(span, path);
@@ -1486,7 +1530,6 @@ namespace Minsk.CodeAnalysis.Binding
 			BoundExpression boundExpression = null; // BindExpression(syntax.Expression);
 			if (syntax.Variables.Length == 1)
 			{
-
 				switch (syntax.OperatorToken.Kind)
 				{
 					case SyntaxKind.PlusEqualsToken:
@@ -1514,6 +1557,12 @@ namespace Minsk.CodeAnalysis.Binding
 					_diagnostics.ReportCannotConvert(syntax.Expression.Span, boundExpression.Type, variable.Type);
 					return new BoundErrorExpression();
 				}
+
+				if (variable.Type.Type == TypeType.Nullable)
+					_noneableVariableSet[variable] = boundExpression.Type.Type != TypeType.Nullable;
+
+				if (boundExpression is BoundMathExpression mathExpression)
+					_mathFormulas[variable] = mathExpression;
 			}
 			else
 			{
@@ -1544,15 +1593,25 @@ namespace Minsk.CodeAnalysis.Binding
 		private BoundExpression BindFieldAssignmentExpression(FieldAssignmentExpressionSyntax syntax)
 		{
 			var boundField = BindFieldAccessExpression(syntax.Left);
+
+			if (boundField.IsReadOnly)
+			{
+				_diagnostics.ReportCannotAssign(syntax.Left.Span, boundField.Field.Variable.Name);
+				return new BoundErrorExpression();
+			}
+
 			var boundExpression = BindExpression(syntax.Right);
+
 
 			if (!boundExpression.Type.CanBeConvertedTo(boundField.Type))
 			{
 				_diagnostics.ReportCannotConvert(syntax.Right.Span, boundExpression.Type, boundField.Type);
-				//Maybe return BoundErrorExpression();
-				//I mean, we probably never use this feature. But yeah. Just do it 
-				//So we dont have cascading errors;
 				return new BoundErrorExpression();
+			}
+
+			if (boundField.Type.Type == TypeType.Nullable)
+			{
+				_noneableVariableSet[boundField.Field.Variable] = boundExpression.Type.Type != TypeType.Nullable;
 			}
 
 			return new BoundFieldAssignmentExpression(boundField, boundExpression);
@@ -1580,6 +1639,48 @@ namespace Minsk.CodeAnalysis.Binding
 			return new BoundLambdaExpression(variable, expression);
 		}
 
+		private BoundExpression BindMathExpression(MathExpressionSyntax syntax)
+		{
+			var boundStringLiteral = BindLiteralExpression(syntax.StringLiteral);
+			if (boundStringLiteral.Type != PrimitiveTypeSymbol.String)
+			{
+				_diagnostics.ReportCannotConvert(syntax.StringLiteral.Span, boundStringLiteral.Type, PrimitiveTypeSymbol.String);
+				return new BoundErrorExpression();
+			}
+			var expression = ((BoundLiteralExpression)boundStringLiteral).Value.ToString();
+			var variableNames = new HashSet<string>();
+			string currentVariableName = null;
+			for (int i = 0; i < expression.Length; i++)
+			{
+				if (char.IsLetter(expression[i]))
+				{
+					if (currentVariableName == null)
+						currentVariableName = expression[i].ToString();
+					else
+						currentVariableName += expression[i].ToString();
+				}
+				else if (currentVariableName != null)
+				{
+					if (!variableNames.Contains(currentVariableName))
+						variableNames.Add(currentVariableName);
+					currentVariableName = null;
+				}
+			}
+
+			if (currentVariableName != null && !variableNames.Contains(currentVariableName))
+				variableNames.Add(currentVariableName);
+			var fields = new VariableSymbolCollection();
+			foreach (var v in variableNames)
+			{
+				fields.Add(new VariableSymbol(v, false, new NullableTypeSymbol(PrimitiveTypeSymbol.Float), false));
+			}
+			fields.Seal();
+			var type = new AdvancedTypeSymbol("MathFormula", fields, FunctionSymbolCollection.Empty, FunctionSymbolCollection.Empty, _builtInTypes.LookSymbolUp(typeof(MathFormula)));
+			type.SetData(true);
+			int unknowns = 5;
+			return new BoundMathExpression(expression, type, unknowns);
+		}
+
 		private BoundExpression BindUnaryExpression(UnaryExpressionSyntax syntax)
 		{
 			var boundOperand = BindExpression(syntax.Operand);
@@ -1599,6 +1700,11 @@ namespace Minsk.CodeAnalysis.Binding
 			//TODO(Major): what to do if you have int + float or something like that???
 			var boundLeft = BindExpression(syntax.Left);
 			var boundRight = BindExpression(syntax.Right);
+			if (boundLeft.Type == PrimitiveTypeSymbol.Integer && boundRight.Type == PrimitiveTypeSymbol.Float)
+				boundLeft = BindConversion(boundLeft, PrimitiveTypeSymbol.Float);
+			else if (boundLeft.Type == PrimitiveTypeSymbol.Float && boundRight.Type == PrimitiveTypeSymbol.Integer)
+				boundRight = BindConversion(boundRight, PrimitiveTypeSymbol.Float);
+
 			var boundOperator = BoundBinaryOperator.Bind(syntax.OperatorToken.Kind, boundLeft.Type, boundRight.Type);
 
 			if (boundLeft.Type == PrimitiveTypeSymbol.Error || boundRight.Type == PrimitiveTypeSymbol.Error)

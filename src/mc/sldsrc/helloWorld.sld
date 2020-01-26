@@ -1,7 +1,7 @@
 ﻿//Imports the Google-Font "Roboto" under the name mono
 //
 //		import gfont('Roboto') as mono;
-//		^	   ^			   ^  ^
+//      ^      ^               ^  ^
 //		import keyword. This marks the start of an import
 //			   gfont function. Takes the name of the font as parameter and returns a Font
 //							   as keyword. Marks that next is the local variable name of the font
@@ -13,7 +13,7 @@ import gfont('Roboto') as mono;
 //Declares a slide with "Hello World" written on it.
 //
 //		slide helloWorld:
-//		^	  ^
+//      ^     ^
 //		slide keyword. This marks the start of the slide definition!
 //			  Identifier of this slide. So you know what this slide is 
 //			  about.
@@ -129,7 +129,7 @@ slide ~hidden:
 	//
 	//In this case we set it to the bottom_side of our lbl. 
 	//So if we move our Label, the List will move as well.
-	list.top = lbl.bottom_side; //WIP
+	list.margin.top = lbl.bottomSide;
 endslide
 
 //This is a CustomStyle. It takes the visual element as parameter
@@ -147,7 +147,7 @@ slide hoverExample:
 	//strange, if its afterwards different.
 	
 	//BIG FUCKING TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	let imgSrc~ = image('sldsrc/desert.jpg');
+	let imgSrc~ = image('desert.jpg');
 	let imgDesert = new Image(imgSrc~);
 	imgDesert.orientation = Horizontal.Stretch | Vertical.Stretch;
 	imgDesert.margin = margin(5%);

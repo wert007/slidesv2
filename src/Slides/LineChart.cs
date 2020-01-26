@@ -30,6 +30,11 @@ namespace Slides
 			showTooltip = false;
 		}
 		public abstract ChartType chartType { get; }
+
+		public Chart()
+		{
+			color = new Color(255, 0, 0, 255);
+		}
 	}
 	public class LineChart : Chart
 	{
@@ -66,7 +71,7 @@ namespace Slides
 			}
 		}
 
-		public LineChart(LambdaFunction f, Range range)
+		public LineChart(Polynom f, Range range)
 		{
 			minValueX = range.From;
 			maxValueX = range.To;

@@ -19,8 +19,9 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			return new EvaluationResult(diagnostics.ToArray(), null, new TimeWatcher());
 		}
 
-		public static Compilation LoadCompilationFromFile(string path)
+		public static Compilation LoadCompilationFromFile(string directory, string fileName)
 		{
+			var path = Path.Combine(directory, fileName);
 			Console.WriteLine($"Loading {path}...");
 			string fileContent;
 			if (!File.Exists(path))
@@ -33,25 +34,28 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 
 
 			var text = fileContent;
-			var syntaxTree = SyntaxTree.Parse(text, path);
+			var syntaxTree = SyntaxTree.Parse(text, fileName);
 			return new Compilation(syntaxTree);
 		}
 
 		//Entry Point.
-		public static EvaluationResult LoadFromFile(string path, bool showTree, bool showProgram, bool completeRebuild)
+		public static EvaluationResult LoadFromFile(string directory, string fileName, bool showTree, bool showProgram, bool completeRebuild)
 		{
 			var timewatch = new TimeWatcher();
 			timewatch.Start();
-			var compilation = LoadCompilationFromFile(path);
+			var compilation = LoadCompilationFromFile(directory, fileName);
 			timewatch.Record("load Compilation");
 			var variables = new Dictionary<VariableSymbol, object>();
 			var syntaxTree = compilation.SyntaxTree;
-			var linker = new Linker(completeRebuild);
-			timewatch.Record("initialise linker");
-			timewatch.Push();
-			compilation.References = linker.Link(compilation, timewatch, path);
-			timewatch.Pop();
 
+			if (!syntaxTree.Diagnostics.Any(d => d.Level == DiagnosticLevel.Error))
+			{
+				var linker = new Linker(completeRebuild);
+				timewatch.Record("initialise linker");
+				timewatch.Push();
+				compilation.References = linker.Link(compilation, timewatch, fileName);
+				timewatch.Pop();
+			}
 			timewatch.Record("link libraries");
 
 			if (showTree)

@@ -105,6 +105,11 @@ namespace Minsk.CodeAnalysis
 			return p[a.Length];
 		}
 
+		internal void AddRange(Diagnostic[] diagnostics)
+		{
+			_diagnostics.AddRange(diagnostics);
+		}
+
 		public void AddRange(DiagnosticBag diagnostics)
 		{
 			_diagnostics.AddRange(diagnostics._diagnostics);
@@ -417,5 +422,10 @@ namespace Minsk.CodeAnalysis
 			Report(span, message, DiagnosticLevel.Error);
 		}
 
+		internal void ReportExpectedDifferentUnknownsMathExpression(TextSpan span, BoundMathExpression mathExpression, int expected, int actual)
+		{
+			var message = $"Expected {expected} unknowns, but actually {actual} were found in '{mathExpression.Expression}'.";
+			Report(span, message, DiagnosticLevel.Error);
+		}
 	}
 }

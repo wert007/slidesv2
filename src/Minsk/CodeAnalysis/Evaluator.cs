@@ -9,6 +9,7 @@ using Slides;
 using Slides.Code;
 using Slides.Debug;
 using Slides.Filters;
+using Slides.MathExpressions;
 using Slides.MathTypes;
 
 namespace Minsk.CodeAnalysis
@@ -658,6 +659,7 @@ namespace Minsk.CodeAnalysis
 			var animationCalls = _animations.Values.ToArray();
 			_animations.Clear();
 			var dataChildren = new List<object>();
+			var dataChildrenNames = new List<string>();
 			var visualChildren = new List<Element>();
 			foreach (var value in _variables)
 			{
@@ -693,11 +695,12 @@ namespace Minsk.CodeAnalysis
 							_currentSlide.color = (Color)value.Value;
 							break;
 						default:
-							dataChildren.Add(value);
+							dataChildren.Add(value.Value);
+							dataChildrenNames.Add(value.Key.Name);
 							break;
 					}
 			}
-			var step = new Step(node.Variable?.Name, _currentSlide, animationCalls, visualChildren.ToArray(), dataChildren.ToArray());
+			var step = new Step(node.Variable?.Name, _currentSlide, animationCalls, visualChildren.ToArray(), dataChildren.ToArray(), dataChildrenNames.ToArray());
 			return step;
 		}
 
@@ -787,6 +790,10 @@ namespace Minsk.CodeAnalysis
 				{
 					e.name = variable.Name;
 				}
+				if(value is MathFormula m)
+				{
+					m.Name = variable.Name;
+				}
 			}
 			else
 			{
@@ -843,6 +850,8 @@ namespace Minsk.CodeAnalysis
 					return EvaluateFunctionAccessExpression((BoundFunctionAccessExpression)node);
 				case BoundNodeKind.Conversion:
 					return EvaluateConversion((BoundConversion)node);
+				case BoundNodeKind.MathExpression:
+					return EvaluateMathExpression((BoundMathExpression)node);
 				case BoundNodeKind.LambdaExpression:
 					return EvaluateLambdaExpression((BoundLambdaExpression)node);
 				default:
@@ -864,7 +873,14 @@ namespace Minsk.CodeAnalysis
 					default:
 						throw new NotSupportedException();
 				}
+			if (node.Type == PrimitiveTypeSymbol.Float)
+				return Convert.ToSingle(value);
 			throw new Exception();
+		}
+
+		private object EvaluateMathExpression(BoundMathExpression node)
+		{
+			return new MathFormula(node.Expression);
 		}
 
 		private object EvaluateLambdaExpression(BoundLambdaExpression node)
@@ -877,7 +893,7 @@ namespace Minsk.CodeAnalysis
 				values[i] = GetLambdaValue(node.Expression, node.Variable, i);
 			}
 
-			return new LambdaFunction(values);
+			return new Polynom(values);
 		}
 
 
@@ -1018,6 +1034,8 @@ namespace Minsk.CodeAnalysis
 			{
 				parameters[i] = args[i]?.GetType() ?? _builtInTypes.LookTypeUp(function.Function.Parameter[i].Type);
 			}
+
+
 			return EvaluateFunctionAccessCall(function.Function, parent, args);
 		}
 
@@ -1028,7 +1046,7 @@ namespace Minsk.CodeAnalysis
 				case "margin":
 					return element.margin;
 				case "margin.Top":
-					return element.margin?.Top;
+					return element.margin?.top;
 				case "background":
 					return element.background;
 				default:
@@ -1184,10 +1202,11 @@ namespace Minsk.CodeAnalysis
 			object result;
 			if (group.Body != null)
 			{
-				result = new BoxElement(group.Symbol.Name, slideValues);
+				var be = new BoxElement(group.Symbol.Name, slideValues);
 				foreach (var style in _groupAppliedStyles.Pop())
-					((BoxElement)result).applyStyle(style);
-				SetAttributes((BoxElement)result, cVariables);
+					(be).applyStyle(style);
+				SetAttributes(be, cVariables);
+				result = be;
 			}
 			else
 			{
@@ -1485,6 +1504,31 @@ namespace Minsk.CodeAnalysis
 			var parent = EvaluateExpression(node.Field.Parent);
 			var parentType = parent.GetType();
 			var fieldName = node.Field.Field.Variable.Name;
+
+			if (FormulaCreator.NeedsDependency(node.Initializer, out BoundExpression dependent))
+			{
+				FieldDependency d = null;
+				if (parent is Element e)
+				{
+					d = new FieldDependency(e, fieldName, this.CreateFunction(node.Initializer, dependent));
+					
+				}
+				else if(parent is MathFormula m)
+				{
+					d = new FieldDependency(m, fieldName, this.CreateFunction(node.Initializer, dependent));
+				}
+				if(d != null)
+				{
+					if (dependent is BoundFieldAccesExpression fieldAccess)
+					{
+						var slider = (Slider)EvaluateExpression(fieldAccess.Parent);
+						slider.add_Dependency(d);
+					}
+					else
+						throw new Exception();
+				}
+			}
+
 			if (parentType == typeof(DataObject))
 			{
 				var data = (DataObject)parent;
@@ -1492,15 +1536,12 @@ namespace Minsk.CodeAnalysis
 					throw new Exception();
 				return value;
 			}
-
-			if (FormulaCreator.NeedsDependency(node.Initializer, out BoundExpression dependent))
+			if (parentType == typeof(MathFormula))
 			{
-				var d = new FieldDependency((Element)parent, fieldName, this.CreateFunction(node.Initializer, dependent));
-				if (dependent is BoundFieldAccesExpression fieldAccess)
-				{
-					var slider = (Slider)EvaluateExpression(fieldAccess.Parent);
-					slider.add_Dependency(d);
-				}
+				var math = (MathFormula)parent;
+				if (!math.TrySet(fieldName, Convert.ToSingle(value)))
+					throw new Exception();
+				return value;
 			}
 
 			var field = parentType.GetField(fieldName);

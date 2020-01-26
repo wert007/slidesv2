@@ -41,5 +41,6 @@ namespace Minsk.CodeAnalysis.Binding
 		FilterStatement,
 		TemplateStatement,
 		LambdaExpression,
+		MathExpression,
 	}
 }

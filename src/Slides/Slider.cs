@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Slides.MathExpressions;
+using System;
 using System.Collections.Generic;
 
 namespace Slides
@@ -14,7 +15,7 @@ namespace Slides
 
 		public string Insert(string variable)
 		{
-			return F.Replace("x", variable);
+			return F.Replace("%x%", variable);
 		}
 	}
 
@@ -22,11 +23,21 @@ namespace Slides
 	{
 		public FieldDependency(Element element, string field, Formula value)
 		{
+			MathFormula = null;
 			Element = element;
 			Field = field;
 			Value = value;
 		}
 
+		public FieldDependency(MathFormula m, string field, Formula value)
+		{
+			MathFormula = m;
+			Element = null;
+			Field = field;
+			Value = value;
+		}
+
+		public MathFormula MathFormula { get; }
 		public Element Element { get; }
 		public string Field { get; }
 		public Formula Value { get; }

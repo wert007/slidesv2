@@ -1,5 +1,7 @@
-﻿using Slides;
+﻿using Minsk.CodeAnalysis;
+using Slides;
 using Slides.Code;
+using Slides.MathExpressions;
 using System;
 using System.IO;
 using System.Linq;
@@ -7,56 +9,6 @@ using System.Text;
 
 namespace HTMLWriter
 {
-
-	//TODO: Different modi.
-	//If we have height and width set, we should use div with background-image set
-	//If we have just one of those two, we should use image with the other value set to auto
-	//If we have zero???????????????????????????
-	//		Then we have to check the Orientation. 
-	//		if we have Stretch, we have two values set. -> div
-	//		else: We set the image to its original size. And set max-width, max-height -> image
-	internal enum ImageMode
-	{
-		WidthAndHeightSet,
-		WidthSet,
-		HeightSet,
-		StretchOrientationWidthSet,
-		StretchOrientationHeightSet,
-		StretchOrientationWidthAndHeightSet,
-		NoSet,
-	}
-	internal static class ImageHelper
-	{
-		public static ImageMode GetImageMode(this Image i)
-		{
-			var width = i.get_StyleWidth();
-			var height = i.get_StyleHeight();
-			if (width != null && height != null)
-				return ImageMode.WidthAndHeightSet;
-			else if (width != null)
-				return ImageMode.WidthSet;
-			else if (height != null)
-				return ImageMode.HeightSet;
-			else
-			{
-				switch (i.orientation)
-				{
-					case Orientation.LeftStretch:
-					case Orientation.CenterStretch:
-					case Orientation.RightStretch:
-						return ImageMode.StretchOrientationHeightSet;
-					case Orientation.StretchTop:
-					case Orientation.StretchCenter:
-					case Orientation.StretchBottom:
-						return ImageMode.StretchOrientationWidthSet;
-					case Orientation.Stretch:
-						return ImageMode.StretchOrientationWidthAndHeightSet;
-					default:
-						return ImageMode.NoSet;
-				}
-			}
-		}
-	}
 	public static class PresentationWriter
 	{
 		static HTMLWriter _htmlWriter;
@@ -88,12 +40,12 @@ namespace HTMLWriter
 				if (!File.Exists(targetFile))
 				{
 					Directory.CreateDirectory(Path.Combine(targetDirectory, Directory.GetParent(referencedFile).Name));
-					File.Copy(referencedFile, targetFile);
+					File.Copy(Path.Combine(CompilationFlags.Directory, referencedFile), targetFile);
 				}
 				else if (alwaysCopyEverything)
 				{
 					File.Delete(targetFile);
-					File.Copy(referencedFile, targetFile);
+					File.Copy(Path.Combine(CompilationFlags.Directory, referencedFile), targetFile);
 				}
 			}
 
@@ -129,6 +81,7 @@ namespace HTMLWriter
 						_htmlWriter.UseCSS("core.css");
 						_htmlWriter.UseJS("core.js");
 						_htmlWriter.UseJS("datatypes.js");
+						_htmlWriter.UseJS("https://cdnjs.cloudflare.com/ajax/libs/mathjs/6.2.5/math.min.js");
 						_htmlWriter.UseJS("https://cdn.jsdelivr.net/npm/apexcharts");
 						if (presentation.CodeHighlighter != CodeHighlighter.None)
 						{
@@ -214,10 +167,6 @@ namespace HTMLWriter
 
 		private static void WriteStdOverlay()
 		{
-			//< div id = "search-slide" class="invisible">
-			//        <input id = "search-slide-input" type="text"/>
-			//<ul id="search-slide-suggestions</ ul >
-			//    </div>
 			_htmlWriter.StartTag("div", "search-slide", "invisible");
 			_htmlWriter.PushAttribute("type", "text");
 			_htmlWriter.WriteTag("input", "search-slide-input");
@@ -240,7 +189,6 @@ namespace HTMLWriter
 			if (!slide.Attributes.isVisible)
 				return;
 			StyleWriter.WriteSlide(_cssWriter, slide);
-			//data-transition-id="stdTransition"
 			_htmlWriter.PushAttribute("data-transition-id", _stdTransition);
 			_htmlWriter.StartTag("section", id: slide.Name, classes: "slide");
 			foreach (var step in slide.Steps)
@@ -271,6 +219,11 @@ namespace HTMLWriter
 			{
 				WriteElement(parent.Name, element);
 			}
+			for(int i = 0; i < step.DataChildren.Length;i++)
+			{
+				if (step.DataChildren[i] is MathFormula f)
+					WriteMathFormula(parent.Name, step.DataChildrenNames[i], f);
+			}
 			foreach (var animation in step.AnimationCalls)
 			{
 				AnimationWriter.Write(_jsWriter, animation, _stepCounter, $"{parent.Name}-{animation.Element.name}");
@@ -279,66 +232,82 @@ namespace HTMLWriter
 			_stepCounter++;
 		}
 
+		private static void WriteMathFormula(string parentName, string name, MathFormula formula)
+		{
+			var variableName = $"{parentName}_{name}_scope";
+			_jsWriter.StartVariableDeclaration(variableName);
+			_jsWriter.StartObject();
+			for (int i = 0; i < formula.Variables.Length; i++)
+			{
+				_jsWriter.WriteField(formula.Variables[i], formula.Values[i]);
+			}
+			_jsWriter.EndObject();
+			_jsWriter.EndVariableDeclaration();
+		}
+
 		private static void WriteElement(string parentName, Element element, Element parent = null)
 		{
-			var id = $"{parentName}-{element.name}";
-			if (element.name == null)
-				id = null;
-			StyleWriter.WriteElement(_cssWriter, id, element, parent);
+			StyleWriter.WriteElement(_cssWriter, parentName, element, parent);
 			switch (element.type)
 			{
 				case ElementType.Image:
-					WriteImage(id, (Image)element);
+					WriteImage(parentName, (Image)element);
 					break;
 				case ElementType.BoxElement:
-					WriteBoxElement(id, (BoxElement)element);
+					WriteBoxElement(parentName, (BoxElement)element);
 					break;
 				case ElementType.Label:
-					WriteLabel(id, (Label)element);
+					WriteLabel(parentName, (Label)element);
 					break;
 				case ElementType.LineChart:
-					WriteLineChart(id, (LineChart)element);
+					WriteLineChart(parentName, (LineChart)element);
+					break;
+				case ElementType.MathPlot:
+					WriteMathPlot(parentName, (MathPlot)element);
 					break;
 				case ElementType.Rectangle:
-					WriteRectangle(id, (Rectangle)element);
+					WriteRectangle(parentName, (Rectangle)element);
 					break;
 				case ElementType.Stack:
-					WriteStack(id, (Stack)element);
+					WriteStack(parentName, (Stack)element);
 					break;
 				case ElementType.Container:
-					WriteContainer(id, (Container)element);
+					WriteContainer(parentName, (Container)element);
 					break;
 				case ElementType.List:
-					WriteList(id, (List)element);
+					WriteList(parentName, (List)element);
 					break;
 				case ElementType.CodeBlock:
-					WriteCodeBlock(id, (CodeBlock)element);
+					WriteCodeBlock(parentName, (CodeBlock)element);
 					break;
 				case ElementType.IFrame:
-					WriteIFrame(id, (IFrame)element);
+					WriteIFrame(parentName, (IFrame)element);
 					break;
 				case ElementType.Slider:
-					WriteSlider(id, (Slider)element);
+					WriteSlider(parentName, (Slider)element);
 					break;
 				default:
 					throw new Exception($"ElementType unknown: {element.type}");
 			}
 		}
 
-		private static void WriteList(string id, List element)
+		private static void WriteList(string parentName, List element)
 		{
-			string parentName = null;
-			if (id != null)
-				parentName = id.Split('-')[0];
 			var startTag = "ul";
 			if (element.isOrdered)
 				startTag = "ol";
+			var id = $"{parentName}-{element.name}";
+			if (string.IsNullOrEmpty(element.name))
+				id = null;
 			_htmlWriter.StartTag(startTag, id: id, classes: "list " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
+			var i = 0;
 			foreach (var child in element.children)
 			{
-				var childId = $"{parentName}-{child.name}";
+				//TODO(Temp)
+				child.name = i.ToString();
+				i++;
 				if (child is List subList)
-					WriteList(childId, subList);
+					WriteList(id, subList);
 				else if (child is Label label)
 					WriteListItem(label);
 				else
@@ -354,14 +323,16 @@ namespace HTMLWriter
 			_htmlWriter.EndTag();
 		}
 
-		private static void WriteCodeBlock(string id, CodeBlock element)
+		private static void WriteCodeBlock(string parentName, CodeBlock element)
 		{
+			var id = $"{parentName}-{element.name}";
 			_htmlWriter.StartTag("div", id: id, classes: "codeblock");
 			_htmlWriter.PushAttribute("data-start", element.lineStart.ToString());
 			var lineNumbersClass = "";
 			if (element.showLineNumbers)
 				lineNumbersClass = "line-numbers ";
 			_htmlWriter.StartTag("pre", classes: lineNumbersClass + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)), useNewLine: false);
+			//TODO: Use language!
 			_htmlWriter.StartTag("code", classes: $"language-clike", useNewLine: false);
 			WriteText(element.code);
 			_htmlWriter.EndTag(false);
@@ -372,8 +343,11 @@ namespace HTMLWriter
 			_htmlWriter.EndTag();
 		}
 
-		private static void WriteIFrame(string id, IFrame element)
+		private static void WriteIFrame(string parentName, IFrame element)
 		{
+			var id = $"{parentName}-{element.name}";
+			if (string.IsNullOrEmpty(element.name))
+				id = null;
 			_htmlWriter.PushAttribute("src", element.src);
 			if (element.allow != null)
 				_htmlWriter.PushAttribute("allow", element.allow);
@@ -383,10 +357,15 @@ namespace HTMLWriter
 
 		//Element.feld = <Formel->value>
 
-		private static void WriteSlider(string id, Slider element)
+		private static void WriteSlider(string parentName, Slider element)
 		{
+			var id = $"{parentName}-{element.name}";
+			if (string.IsNullOrEmpty(element.name))
+				id = null;
+			if (id == null)
+				throw new Exception();
 			var jsId = id.Replace('-', '_');
-			WriteSliderFunction(id, element);
+			WriteSliderFunction(parentName, element);
 			_htmlWriter.PushAttribute("type", "range");
 			_htmlWriter.PushAttribute("min", element.range.From.ToString());
 			_htmlWriter.PushAttribute("max", element.range.To.ToString());
@@ -398,61 +377,90 @@ namespace HTMLWriter
 			_htmlWriter.EndTag();
 		}
 
-		private static void WriteSliderFunction(string id, Slider element)
+		private static void WriteSliderFunction(string parentName, Slider element)
 		{
+			var id = $"{parentName}-{element.name}";
 			var jsId = id.Replace('-', '_');
-			var parentName = id.Split('-')[0];
 			_jsWriter.StartFunction($"oninput_{jsId}");
 			_jsWriter.WriteVariableDeclarationInline("slider", $"document.getElementById('{id}')");
 			foreach (var d in element.get_Dependencies())
 			{
-				_jsWriter.WriteVariableDeclarationInline(d.Element.name, $"document.getElementById('{parentName}-{d.Element.name}')");
-				_jsWriter.WriteAssignment($"{d.Element.name}.{StyleWriter.ToCssAttribute(d.Field)}", d.Value.Insert("slider.value"));
+				if(d.Element != null) 
+				{
+					_jsWriter.WriteVariableDeclarationInline(d.Element.name, $"document.getElementById('{parentName}-{d.Element.name}')");
+					_jsWriter.WriteAssignment($"{d.Element.name}.{JavaScriptWriter.ToJSAttribute(StyleWriter.ToCssAttribute(d.Field))}", d.Value.Insert("slider.value"));
+				}
+				else if(d.MathFormula != null)
+				{
+					//TODO: Use of parentName is hacky. But! 
+					//The slider should be on the same slide as the math expression
+					_jsWriter.WriteAssignment($"{parentName}_{d.MathFormula.Name}_scope.{d.Field}", d.Value.Insert("slider.value"));
+					_jsWriter.WriteFunctionCall($"recalculate_{parentName}_{d.MathFormula.Name}_scope");
+				}
 			}
 			_jsWriter.EndFunction();
 		}
 
-		private static void WriteContainer(string id, Container element)
+		private static void WriteContainer(string parentName, Container element)
 		{
+			var id = $"{parentName}-{element.name}";
+			if (string.IsNullOrEmpty(element.name))
+				id = null;
 			_htmlWriter.StartTag("div", id: id, classes: "container " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
-			string parentName = null;
-			if (id != null)
-				parentName = id.Split('-')[0];
-			WriteElement(parentName, element.child, element);
+			WriteElement(id, element.child, element);
 			_htmlWriter.EndTag();
 		}
 
-		private static void WriteStack(string id, Stack stack)
+		private static void WriteStack(string parentName, Stack stack)
 		{
+			var id = $"{parentName}-{stack.name}";
+			if (string.IsNullOrEmpty(stack.name))
+				id = null;
 			_htmlWriter.StartTag("div", id: id, classes: "stack " + string.Join(" ", stack.get_AppliedStyles().Select(s => s.Name)));
-			string parentName = null;
-			if (id != null)
-				parentName = id.Split('-')[0];
+			var i = 0;
 			foreach (var element in stack.children)
 			{
 				//TODO(Debate): They don't have an id.
 				//So we need to set a name
 				//e.g. stackChild0, stackChild1, stackChild2...
-				WriteElement(parentName, element, stack);
+
+				//TODO(Temp)
+				element.name = i.ToString();
+				i++;
+				WriteElement(id, element, stack);
 			}
 			_htmlWriter.EndTag();
 		}
 
-		private static void WriteRectangle(string id, Rectangle element)
+		private static void WriteRectangle(string parentName, Rectangle element)
 		{
+			var id = $"{parentName}-{element.name}";
 			_htmlWriter.StartTag("div", id: id, classes: "rect " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
 			_htmlWriter.EndTag();
 		}
 
-		private static void WriteLineChart(string id, LineChart element)
+		private static void WriteLineChart(string parentName, LineChart element)
 		{
+			var id = $"{parentName}-{element.name}";
 			_htmlWriter.StartTag("div", id: id, classes: "lineChart " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
 			ChartWriter.WriteChart(_jsWriter, id, element);
 			_htmlWriter.EndTag();
 		}
 
-		private static void WriteLabel(string id, Label element)
+		private static void WriteMathPlot(string parentName, MathPlot element)
 		{
+			var id = $"{parentName}-{element.name}";
+			_htmlWriter.StartTag("div", id: id, classes: "mathPlot " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
+			ChartWriter.WritePlot(_jsWriter, parentName, element);
+			_htmlWriter.EndTag();
+
+		}
+
+		private static void WriteLabel(string parentName, Label element)
+		{
+			var id = $"{parentName}-{element.name}";
+			if (string.IsNullOrEmpty(element.name))
+				id = null;
 			_htmlWriter.StartTag("p", id: id, classes: "label " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)), useNewLine: false);
 			WriteFormattedText(element.text);
 			_htmlWriter.EndTag();
@@ -589,47 +597,39 @@ namespace HTMLWriter
 				_htmlWriter.EndTag(false);
 		}
 
-		private static void WriteBoxElement(string id, BoxElement element)
+		private static void WriteBoxElement(string parentName, BoxElement element)
 		{
+			var id = $"{parentName}-{element.name}";
+			if (string.IsNullOrEmpty(element.name))
+				id = null;
 			_htmlWriter.StartTag("div", id: id, classes: element.TypeName + " " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
-			string parentName = null;
-			if (id != null) parentName = id.Split('-')[0];
+			int i = 0;
 			foreach (var child in element.Children)
 			{
 				//TODO(Debate): They don't have an id.
 				//So we need to set a name
 				//e.g. groupChild0, groupChild1, groupChild2...
 				//Or maybe try to get the name from the group-body..
-				WriteElement(parentName, child, element);
+
+				//TODO(Temp)
+				if (child.name == null)
+					child.name = i.ToString();
+				i++;
+				WriteElement(id, child, element);
 			}
 			_htmlWriter.EndTag();
 		}
 
-		private static void WriteImage(string id, Image element)
+		private static void WriteImage(string parentName, Image element)
 		{
-			switch (element.GetImageMode())
-			{
-				case ImageMode.WidthAndHeightSet:
-				case ImageMode.StretchOrientationWidthAndHeightSet:
-				case ImageMode.NoSet:
-					//if (element.alt != string.Empty)
-					//	_htmlWriter.PushAttribute("aria-label", element.alt);
-					//_htmlWriter.PushAttribute("role", "img");
-					//_htmlWriter.StartTag("div", id: id, classes: "image " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
-					//_htmlWriter.EndTag();
-					//break;
-				case ImageMode.WidthSet:
-				case ImageMode.HeightSet:
-				case ImageMode.StretchOrientationWidthSet:
-				case ImageMode.StretchOrientationHeightSet:
-					_htmlWriter.PushAttribute("src", element.source.Path);
-					if (element.alt != string.Empty)
-						_htmlWriter.PushAttribute("alt", element.alt);
-					_htmlWriter.WriteTag("img", id: id, needsEnding: false, classes: "image " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
-					break;
-				default:
-					throw new Exception();
-			}
+			_htmlWriter.PushAttribute("src", element.source.Path);
+			if (element.alt != string.Empty)
+				_htmlWriter.PushAttribute("alt", element.alt);
+			var id = $"{parentName}-{element.name}";
+			if (string.IsNullOrEmpty(element.name))
+				id = null;
+			_htmlWriter.WriteTag("img", id: id, needsEnding: false, classes: "image " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
+
 		}
 	}
 }

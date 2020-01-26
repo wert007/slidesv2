@@ -10,7 +10,10 @@ let steps;
 
 let playingTransition;
 
+let plots;
+
 function load() {
+    plots = [];
     index = 0;
     stepIndex = 0;
     transitionDone = false;
@@ -29,7 +32,7 @@ function load() {
     }
     loadSlides();
     showSlides();
-
+    loadInner();
     initAnimations();
 }
 
@@ -124,6 +127,16 @@ function initAnimations()
         const element = animations[i].element_id;
         init_elements[element] = document.getElementById(element);
     }
+}
+
+function getPlot(id)
+{
+    for(let i = 0; i < plots.length; i++)
+    {
+        if(plots[i].id == id)
+            return plots[i].value;
+	}
+    return undefined;
 }
 
 function revertAnimation(element)

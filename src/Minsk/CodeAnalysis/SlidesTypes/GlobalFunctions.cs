@@ -37,8 +37,9 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			return new Range(r.From, r.To, step);
 		}
 
-		public static ImageSource image(string path)
+		public static ImageSource image(string fileName)
 		{
+			var path = Path.Combine(CompilationFlags.Directory, fileName);
 			var result = new ImageSource(path);
 			using (var image = new MagickImage(path))
 			{
@@ -48,8 +49,9 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			return result;
 		}
 
-		public static ImageSource svg(string path)
+		public static ImageSource svg(string fileName)
 		{
+			var path = Path.Combine(CompilationFlags.Directory, fileName);
 			var result = new ImageSource(path, true);
 			using (var image = new MagickImage(path))
 			{
@@ -76,6 +78,15 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 		public static void print(string message)
 		{
 			Console.WriteLine(message);
+		}
+
+		public static Color hsl(int hue, int sat, int light)
+		{
+			return Color.FromHSLA(hue, (byte)sat, (byte)light, 255);
+		}
+		public static Color hsla(int hue, int sat, int light, int alpha)
+		{
+			return Color.FromHSLA(hue, (byte)sat, (byte)light, (byte)alpha);
 		}
 
 		public static Color rgb(int r, int g, int b)

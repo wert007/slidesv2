@@ -17,7 +17,8 @@ namespace Slides
 		List,
 		CodeBlock,
 		IFrame,
-		Slider
+		Slider,
+		MathPlot
 	}
 
 	public abstract class Element : IFilterInput
@@ -35,46 +36,32 @@ namespace Slides
 		public Thickness margin { get; set; }
 		public Thickness padding { get; set; }
 		public float rotation { get; set; }
-		public Thickness marginAndPadding => (margin ?? new Thickness()) + (padding ?? new Thickness());
+		public Thickness marginAndPadding => margin + padding;
 		public Element parent { get; set; }
 		public Unit top
 		{
-			get { return margin?.Top; }
-			set
-			{
-				if (margin == null) margin = new Thickness();
-				margin.Top = value;
-			}
+			get { return margin.top; }
 		}
 		public Unit left
 		{
-			get { return margin?.Left; }
-			set
-			{
-				if (margin == null) margin = new Thickness();
-				margin.Left = value;
-			}
+			get { return margin.left; }
 		}
 		public Unit bottom
 		{
-			get { return margin?.Bottom; }
-			set
-			{
-				if (margin == null) margin = new Thickness();
-				margin.Bottom = value;
-			}
+			get { return margin.bottom; }
 		}
 		public Unit right
 		{
-			get { return margin?.Right; }
-			set
-			{
-				if (margin == null) margin = new Thickness();
-				margin.Right = value;
-			}
+			get { return margin.right; }
 		}
-		public Unit right_side => left == null ? get_ActualWidth() : left + get_ActualWidth();
-		public Unit bottom_side => top == null ? get_ActualHeight() : top + get_ActualHeight();
+		public Unit rightSide
+		{
+			get { return left + get_ActualWidth(); }
+		}
+		public Unit bottomSide
+		{
+			get { return top + get_ActualHeight(); }
+		}
 		public Unit width
 		{
 			get
@@ -110,23 +97,26 @@ namespace Slides
 		public CustomStyle hover { get; set; }
 		private Stack<CustomStyle> appliedStyles;
 
+		private static int index = 0;
+
 		public Element()
 		{
 			borderColor = null;
-			borderThickness = null;
+			borderThickness = new Thickness();
 			borderStyle = BorderStyle.Initial;
 			background = null;
 			color = null;
 			orientation = Orientation.LeftTop;
-			margin = null;
-			padding = null;
+			margin = new Thickness();
+			padding = new Thickness();
 			rotation = 0;
 
 			appliedStyles = new Stack<CustomStyle>();
 
 			width = null;
 			height = null;
-			name = null;
+			name = index.ToString();
+			index++;
 		}
 
 		public void applyStyle(CustomStyle style)

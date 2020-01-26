@@ -1,10 +1,10 @@
 ﻿namespace Slides.MathTypes
 {
-	public class LambdaFunction
+	public class Polynom
 	{
 		public float[] Values { get; }
 
-		public LambdaFunction(float[] values)
+		public Polynom(float[] values)
 		{
 			Values = values;
 		}

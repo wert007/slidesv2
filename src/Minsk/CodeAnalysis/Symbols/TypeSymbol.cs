@@ -12,36 +12,28 @@ namespace Minsk.CodeAnalysis.Symbols
 		Primitive,
 		Advanced,
 		Nullable,
-		Tuple
+		Tuple,
+		VariableType
 	}
 
-	public class TupleTypeSymbol : TypeSymbol
+	public class VariableTypeSymbol : TypeSymbol
 	{
-		public TupleTypeSymbol(TypeSymbol[] children) : base($"Tuple({string.Join<TypeSymbol>(", ", children)})")
+		public VariableTypeSymbol(TypeSymbol child, int variable)
+			: base($"{child.Name}<{variable}>")
 		{
-			Children = children;
-			Length = Children.Length;
+			Child = child;
+			Variable = variable;
 		}
+		public override TypeType Type => TypeType.VariableType;
 
-		public override TypeType Type => TypeType.Tuple;
+		public override bool IsData => Child.IsData;
 
-		//TODO(Debate): Huh?!
-		//I mean it's kinda data type. 
-		//On the other hand, if you have two container
-		//in it, then those will be added to the slide
-		//No questions asked.
+		//TODO: Debateable. What value does variable have, if it is
+		//None? 0? Idk.
+		public override bool AllowsNone => Child.AllowsNone;
 
-		//Actually completely depends on the fact, if
-		//you can store a tuple into a variable.
-		//As of now you can't. So it doesn't matter..
-		public override bool IsData => true;
-
-		public override bool AllowsNone => false;
-
-		public int Length { get; }
-		public TypeSymbol[] Children { get; }
-
-
+		public TypeSymbol Child { get; }
+		public int Variable { get; }
 	}
 
 	[Serializable]

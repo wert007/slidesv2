@@ -11,9 +11,10 @@ namespace Slides
 		public byte B { get; }
 		public byte A { get; }
 
-		public static Color Transparent => new Color(0, 0, 0, 0);
-		public static Color White => new Color(1f, 1f, 1f, 1f);
-		public static Color Black => new Color(0, 0, 0, 1f);
+		public int Hue { private set; get; }
+		public byte Saturation { private set; get; }
+		public byte Lightness { private set; get; }
+		public bool IsRGBA { get; private set; } = true;
 
 		public Color(float r, float g, float b, float a)
 		{
@@ -29,6 +30,16 @@ namespace Slides
 			G = g; 
 			B = b;
 			A = a;
+		}
+
+		public static Color FromHSLA(int hue, byte saturation, byte light, byte alpha)
+		{
+			var result = new Color(0, 0, 0, alpha);
+			result.Hue = hue;
+			result.Saturation = saturation;
+			result.Lightness = light;
+			result.IsRGBA = false;
+			return result;
 		}
 
 		public string ToHex()

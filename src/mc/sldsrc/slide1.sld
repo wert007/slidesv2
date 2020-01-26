@@ -1,12 +1,16 @@
-﻿import lib('sldsrc/lib1.sld') as basics;
-import lib('sldsrc/lib2.sld') as custom;
+﻿import lib('lib1.sld') as basics;
+import lib('lib2.sld') as custom;
 import gfont('Quicksand') as quicksand;
 
+//TODO
+//import css('myStyle.css');
+
 //Possible Features:
-// - Support sliders, so that you can change graphes for example.
-//   or maybe textboxes as well.
-// - support github code in javascript!
+// - Binder needs to warn when a empty style is found
+// - Seperator Library needs a SplittedContainer Type.
 // - offline compile flag (--offline). With warnings when using youtube() or such!
+// - support github code in javascript!
+// - Support textboxes maybe? idk why but maybe.
 
 template pagenumber(child: Slide):
 	let text~ = $'{child.index + 1}/{slideCount}';
@@ -17,10 +21,8 @@ template pagenumber(child: Slide):
 
 	let progress~ = float(child.index) / float(slideCount - 1);
 	let rect = new Rectangle(progress~, 5px);
-	rect.fill = cyan;
+	rect.fill = rgb(int(255f * progress~), 0, int(255f * (1f - progress~)));
 	rect.orientation = Vertical.Bottom | Horizontal.Left;
-
-	child.background = rgb(int(255f * progress~), 0, int(255f * (1f - progress~)));
 endtemplate
 
 style std:
@@ -51,9 +53,12 @@ endfilter
 animation quoteGoesUp(element: any, duration~: Time):
 	case init:
 		interpolation = Interpolation.Linear;
+		element.background = alpha(white, 0.7f);
 	case done:
-		element.margin = margin(200%, 0, 0, 0); //200% -> -100%
-		//TODO(bug): Doesn't work. Turns black instead.
+		//element.margin = margin(-100%, 0, 0, 0);
+		//TODO(hacky): Doesn't work. Turns black instead.
+		//needs a initial value. otherwise it won't 
+		//turn. So maybe say default color is transparent?
 		element.background = red;
 endanimation
 
@@ -70,17 +75,47 @@ animation unblur(element: any, duration~: Time):
 		//			blur(exp(progress));
 		//
 		//But do we need this? We can set the interpolation and say what value we want when.
-		//idk.
-
+		//idk. 
 		element.filter = blur(0);
 endanimation
+
+slide ~destroySlideCount:
+	//TODO: This slide shouldn't be counted.
+	//Neither in slideCount nor in slide.index!
+endslide
+
+slide mathTwo:
+	let sld = new Slider(1..7);
+	sld.orientation = Horizontal.Center | Vertical.Top;
+	let f~ = #math 'b * x^2 + a * c';
+	//TODO: Less keywords. Use this one instead.
+	//let f~ = new MathExpression('b * x^2 + a * c');
+
+	f~.a = 2;
+	f~.b = sld.value;
+	f~.c = 2 * sld.value;
+
+	//TODO!
+	//let expression = new MathExpression(f~);
+	
+	let plot = new MathPlot(f~, -12..13);
+	plot.orientation = Orientation.Stretch;
+	plot.margin = margin(sld.bottomSide, 5%, 5%, 5%);
+endslide
 
 slide a < pagenumber:
 	let lbl = new Label('Hello World!');
 	lbl.color = black;
-	lbl.fontsize = 80pt;
-	lbl.orientation = Vertical.Center | Horizontal.Stretch;
+	let sld = new Slider(1..255);
+	lbl.fontsize = 90pt;
+	//TODO it does work, but because we set top and margin at
+	//different locations and this formula always just sets
+	//the margin, there is confusion.
+	//	lbl.margin = margin(pct(sld.value * 10), 0, 0, 0);
+	lbl.color = hsl(sld.value, 100, 50);
+	lbl.orientation = Vertical.Top | Horizontal.Stretch;
 	lbl.align = Alignment.Center;
+
 endslide
 
 slide cityDevelopment < pagenumber:
@@ -96,10 +131,6 @@ slide cityDevelopment < pagenumber:
 			'Filmindustrie'
 		]
 	];
-
-	//I don't know for what I needed it. But now we have it. Cheers!
-	let typeofInt~ = int;
-
 	
 	let args~ = new custom.cityDevelopmentParameter();
 	args~.header~ = titleText~;
@@ -144,7 +175,7 @@ slide cityDevelopment < pagenumber:
 endslide
 
 slide introduction:
-	background = image(@'sldsrc\city\los-angeles-picture.jpg');
+	background = image(@'city\los-angeles-picture.jpg');
 	let losAngeles = new Label('Los Angeles');
 	losAngeles.applyStyle(custom.imgLabel);
 
@@ -153,25 +184,18 @@ slide introduction:
 	//This not:
 	let actuallyUnusedAsWell~ = 5;
 	actuallyUnusedAsWell~ = 42;
-	//TODO: Doesn't work
-	//let a = 5 + 0.5f;
 
 
 	let source = new Label('(c) pixabay');
 	source.applyStyle(custom.imgLabel);
 	source.orientation = Horizontal.Right | Vertical.Top;
 
-	let quote~ = 'Los Angeles is **72 suburbs** in search of a city';
+	let quote~ = 'Los Angeles is 72 suburbs in search of a city';
 	let author~ = 'Dorothy Parker';
 	let quoteBox = new custom.introductingQuote(quote~, author~);
-	//quoteBox.background = alpha(black, 0.7f);
-
-	//filter = myFilter~;
 
 	step:
-		//quoteGoesUp.play(quoteBox, 2s);
-		//quoteBox.filter = myFilter~;
-		unblur.play(quoteBox, 2s);
+		quoteGoesUp.play(quoteBox, 10s);
 endslide
 
 slide title:
@@ -180,11 +204,10 @@ slide title:
 	let title = new basics.MainTitle(main~, sub~);
 	title.orientation = Vertical.Center | Horizontal.Stretch;
 	title.background = alpha(antiquewhite, 0.45f);
-	background = image(@'sldsrc\city\night.jpg');
+	background = image(@'city\night.jpg');
 endslide
 
 slide traits < pagenumber:
-	//background = black;
 	let titleText~ = 'Merkmale einer anglo-amerikanischen Stadt';
 	let contents~ = [
 		'Schachbrettmuster des Straßenverlaufs',
@@ -199,32 +222,31 @@ slide traits < pagenumber:
 	let list = new List(contents~);
 	list.fontsize = 24pt;
 	list.isOrdered = true;
-	list.margin = margin(10%, 0, 0, 0); //==title.fontsize
+	list.margin.top = title.bottomSide;
 	padding = padding(5%);
 endslide
 
 slide city < pagenumber:
-	//background = black;
 	let titleText~ = 'Allgemeines zu Los Angeles';
 	let title = new basics.Title(titleText~);
 
-	let logo~ = image(@'sldsrc\city\logo.png');
-	let imgLogo = new Image(logo~);// new basics.CaptionedImage(logo~, captionLogo~);
+	let logo~ = image(@'city\logo.png');
+	let imgLogo = new Image(logo~);
 	imgLogo.height = title.height;
 	imgLogo.width = imgLogo.height;
 
-	title.margin = margin(0, 0, 0, imgLogo.right_side);
+	title.margin = margin(0, 0, 0, imgLogo.rightSide);
 	
 	let captionLogo~ = '(c) City of Los Angeles';
 	let imgLogoCaption = new Label(captionLogo~);
 	imgLogoCaption.orientation = Horizontal.Left | Vertical.Top;
-	imgLogoCaption.margin = margin(title.bottom_side, 0, 0, 0);
+	imgLogoCaption.margin = margin(title.bottomSide, 0, 0, 0);
 	imgLogoCaption.fontsize = 8pt;
 
 	let map = new custom.map();
 	map.width = 50%;
 	map.orientation = Vertical.Top | Horizontal.Right;
-	map.margin = margin(title.bottom_side, 0, 0, 0);
+	map.margin = margin(title.bottomSide, 0, 0, 0);
 
 	let contents~ = [
 		'Zweitgrößte Stadt der USA',
@@ -235,18 +257,20 @@ slide city < pagenumber:
 	];
 	let list = new List(contents~);
 	list.fontsize = 24pt;
-	list.margin = margin(imgLogoCaption.bottom_side, 0, 0, 0);
+	list.margin = margin(imgLogoCaption.bottomSide, 0, 0, 0);
 	padding = padding(5%);
 endslide
 
 slide overview:
-	let la~ = image(@'sldsrc\city\los-angeles-picture.jpg');
+	let la~ = image(@'city\los-angeles-picture.jpg');
 	let imgBackground = new Image(la~);
 	imgBackground.filter = blur(5);
+	imgBackground.orientation = Orientation.Stretch;
+	imgBackground.stretching = ImageStretching.Cover;
 	let whitePane = new Rectangle(100%, 100%);
 	whitePane.fill = argb(160, 255, 255, 255);
 
-	let map~ = image(@'sldsrc\city\map.png'); //TODO: Change image
+	let map~ = image(@'city\map.png'); //TODO: Change image
 	let imgMap = new Image(map~);
 	imgMap.orientation = Horizontal.Center | Vertical.Center;
 	imgMap.width = 50%;
@@ -254,9 +278,10 @@ slide overview:
 
 	//TODO: This feature would be like super cool.
 	step:
-		let svgSrc~ = svg(@'sldsrc\city\overlay.svg');
-		let imgSvg = new Image(svgSrc~);
 		//filter = grayscale(1);
+
+		let svgSrc~ = svg(@'city\overlay.svg');
+		let imgSvg = new Image(svgSrc~);
 endslide
 
 
@@ -285,17 +310,6 @@ endslide
 
 
 
-//Doesn't work. I don't know..
-//slide moarSliders < pagenumber:
-//	//print($'{y~}'); //TODO: Support " as well!
-//	let f~ = x~ => -1f * x~ + 3f - 1f * x~^2;
-//	//let f~ = x~ => 2f * 3f * x~ - 4f * x~^2;
-////	let fTwo~ = x~, y~ => 2 * y~ * x~ - 4 * x~^2 - y~;
-//	let plot = new LineChart(f~, -5..5);
-//	//plot.showXAxis = false;
-//	plot.color = red;
-//	plot.orientation = Orientation.Stretch;
-//endslide
 //
 //slide github < pagenumber:
 //	let sldEnd = new Slider(5..50);
