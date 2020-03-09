@@ -11,6 +11,7 @@ using Slides.Debug;
 using Slides.Filters;
 using Slides.MathExpressions;
 using Slides.MathTypes;
+using Slides.SVG;
 
 namespace Minsk.CodeAnalysis
 {
@@ -35,8 +36,10 @@ namespace Minsk.CodeAnalysis
 		private List<Transition> _transitions = new List<Transition>();
 		private List<CustomFilter> _filters = new List<CustomFilter>();
 		private List<Step> _steps = new List<Step>();
+		private List<FieldDependency> _dependencies = new List<FieldDependency>();
 		private readonly BoundBlockStatement _root;
 		private VariableValueCollection _variables;
+		private int _invisibleSlideCount = 0;
 		private readonly Dictionary<VariableSymbol, Slide> _slides = new Dictionary<VariableSymbol, Slide>();
 		private readonly Dictionary<TypeSymbol, BodySymbol> _customTypes = new Dictionary<TypeSymbol, BodySymbol>();
 		private readonly Dictionary<VariableSymbol, Style> _styles = new Dictionary<VariableSymbol, Style>();
@@ -48,7 +51,9 @@ namespace Minsk.CodeAnalysis
 		public static PresentationFlags Flags = new PresentationFlags();
 
 		private object _lastValue;
-		private Stack<List<Element>> _groupChildren = new Stack<List<Element>>();
+		private Stack<Dictionary<VariableSymbol, Element>> _groupChildren = new Stack<Dictionary<VariableSymbol, Element>>();
+		private Stack<Dictionary<VariableSymbol, SVGElement>> _svggroupChildren = new Stack<Dictionary<VariableSymbol, SVGElement>>();
+		private bool _isInSVGGroup;
 		private Stack<List<CustomStyle>> _groupAppliedStyles = new Stack<List<CustomStyle>>();
 		private readonly TypeSymbolTypeConverter _builtInTypes = TypeSymbolTypeConverter.Instance;
 
@@ -60,11 +65,13 @@ namespace Minsk.CodeAnalysis
 			_declarations = declarations;
 			foreach (var declaration in _declarations)
 			{
-				if (declaration.Key.Type == _builtInTypes.LookSymbolUp(typeof(SlideAttributes)))
+				if (declaration.Key.Type == _builtInTypes.LookSymbolUp(typeof(SlideAttributes))
+					&& declaration.Key.IsVisible)
 					slideCount++;
 			}
 			_variables = new VariableValueCollection(variables);
 			_variables.Add(new VariableSymbol("slideCount", true, PrimitiveTypeSymbol.Integer, false), slideCount);
+			_variables.Add(new VariableSymbol("totalTime", true, _builtInTypes.LookSymbolUp(typeof(Time)), false), new Time(42.1234f, Time.TimeUnit.Hours));
 			if (!variables.Any())
 			{
 				//TODO: This needs to be calculated in js!
@@ -121,7 +128,7 @@ namespace Minsk.CodeAnalysis
 					libraries[i] = new Library(_referenced[i].Name, _referenced[i].Libraries?.Select(l => new Library(l.Name, null, l.Styles)).ToArray(), _referenced[i].Styles);
 					_imports.AddRange(_referenced[i].Imports);
 				}
-				presentation = new Presentation(_slides.Values.ToArray(), _styles.Values.ToArray(), _filters.ToArray(), _transitions.ToArray(), libraries, _imports.ToArray(), _referencedFiles.ToArray(), Flags.CodeHighlighter);
+				presentation = new Presentation(_slides.Values.ToArray(), _styles.Values.ToArray(), _filters.ToArray(), _transitions.ToArray(), libraries, _dependencies.ToArray(), _imports.ToArray(), _referencedFiles.ToArray(), Flags.CodeHighlighter);
 				_lastValue = presentation;
 			}
 
@@ -158,6 +165,9 @@ namespace Minsk.CodeAnalysis
 					break;
 				case BoundNodeKind.GroupStatement:
 					EvaluateGroupStatement((BoundGroupStatement)node);
+					break;
+				case BoundNodeKind.SVGGroupStatement:
+					EvaluateSVGGroupStatement((BoundSVGGroupStatement)node);
 					break;
 				case BoundNodeKind.LibraryStatement:
 					EvaluateLibrarySymbolStatement((BoundLibraryStatement)node);
@@ -249,7 +259,7 @@ namespace Minsk.CodeAnalysis
 			var parent = expression.Field.Parent;
 			while (parent.Kind == BoundNodeKind.FieldAccessExpression)
 			{
-				var fieldExpression = (BoundFieldAccesExpression)parent;
+				var fieldExpression = (BoundFieldAccessExpression)parent;
 				field = fieldExpression.Field.Variable.Name + "." + field;
 				parent = fieldExpression.Parent;
 			}
@@ -399,7 +409,7 @@ namespace Minsk.CodeAnalysis
 		private List<TypedModifications> CollectStyleFields(BoundAssignmentExpression expression)
 		{
 			//TODO(Time): Maybe hacky
-			var field = expression.Variables[0].Name;
+			var field = expression.Variables[0].Variable.Name;
 			var value = EvaluateExpression(expression.Expression);
 			var fields = new Dictionary<string, object>();
 			fields.Add(field, value);
@@ -584,7 +594,24 @@ namespace Minsk.CodeAnalysis
 			_declarations.Remove(new VariableSymbol(node.Type.Name, true, node.Type, false));
 		}
 
+		private void EvaluateSVGGroupStatement(BoundSVGGroupStatement node)
+		{
+			if (!Flags.GroupsAllowed)
+				throw new Exception();
+			var parameters = new List<VariableSymbol>();
+			foreach (var parameter in node.Parameters.Statements)
+			{
+				parameters.Add(parameter.Variable);
+			}
+
+			var group = new BodySymbol(node.Type, node.Body);
+			_customTypes.Add(node.Type, group);
+			_declarations.Remove(new VariableSymbol(node.Type.Name, true, node.Type, false));
+		}
+
 		//TODO(Major): galore! Everythings missing. It's a wonder it's working!
+		//Thank you, that is really helpful! I see that this is a rather short function
+		//but is that your only problem with it? Is there something, that isn't working??
 		private void EvaluateTemplateStatement(BoundTemplateStatement node)
 		{
 			if (!_declarations.ContainsKey(node.Variable))
@@ -609,7 +636,9 @@ namespace Minsk.CodeAnalysis
 			if (Flags.IsLibrarySymbol)
 				throw new Exception();
 			_variables = _variables.Push();
-			_currentSlide = new SlideAttributes(node.Variable.Name, _slides.Count, node.Variable.IsVisible);
+			_currentSlide = new SlideAttributes(node.Variable.Name, _slides.Count - _invisibleSlideCount, node.Variable.IsVisible);
+			if (!node.Variable.IsVisible)
+				_invisibleSlideCount++;
 
 			_steps = new List<Step>();
 			foreach (var statement in node.Statements)
@@ -632,7 +661,8 @@ namespace Minsk.CodeAnalysis
 					if (value.Key.IsVisible && value.Value is Element e)
 					{
 						e.name = value.Key.Name;
-						visualChildren.Add(e);
+						if(e.isVisible)
+							visualChildren.Add(e);
 					}
 					else
 						switch (value.Key.Name)
@@ -782,15 +812,14 @@ namespace Minsk.CodeAnalysis
 			if (node.Variables.Length == 1)
 			{
 				var variable = node.Variables[0];
-				if (_groupChildren.Count > 0 && variable.IsVisible && !variable.Type.IsData)
-					_groupChildren.Peek().Add((Element)value);
+				TryAddChildren(value, new BoundVariableExpression(variable, null, variable.Type));
 				_variables[variable] = value;
 				_lastValue = value;
 				if (value is Element e)
 				{
 					e.name = variable.Name;
 				}
-				if(value is MathFormula m)
+				if (value is MathFormula m)
 				{
 					m.Name = variable.Name;
 				}
@@ -801,8 +830,9 @@ namespace Minsk.CodeAnalysis
 				for (int i = 0; i < node.Variables.Length; i++)
 				{
 					var variable = node.Variables[i];
-					if (_groupChildren.Count > 0 && variable.IsVisible && !variable.Type.IsData)
-						_groupChildren.Peek().Add((Element)tuple[i]);
+					//TupleType gets less and less supported. Lets see what the future will bring
+					//if (_groupChildren.Count > 0 && variable.IsVisible && !variable.Type.IsData)
+					//	_groupChildren.Peek().Add(variable, (Element)tuple[i]);
 					_variables[variable] = tuple[i];
 					_lastValue = value;
 					if (tuple[i] is Element e)
@@ -810,6 +840,82 @@ namespace Minsk.CodeAnalysis
 						e.name = variable.Name;
 					}
 				}
+			}
+		}
+
+		private void TryAddChildren(object value, BoundVariableExpression variable)
+		{
+			if (_isInSVGGroup)
+				TryAddSVGGroupChildren(value, variable);
+			else
+				TryAddGroupChildren(value, variable);
+		}
+
+		private void TryAddGroupChildren(object value, BoundVariableExpression variable)
+		{
+			if (!(value is Element || value is object[]))
+				return;
+			if (_groupChildren.Count > 0 && variable.Variable.IsVisible && !variable.Type.IsData)
+			{
+				if (variable.Type.Type != TypeType.Array)
+				{
+					if (value is Element element && element.isVisible)
+					{
+						if (variable.BoundArrayIndex == null)
+							_groupChildren.Peek().Add(variable.Variable, element);
+						else
+						{
+							var i = (int)EvaluateExpression(variable.BoundArrayIndex.BoundIndex);
+							var v = new VariableSymbol($"{variable.Variable.Name}#{i}", variable.Variable.IsReadOnly, variable.Type, variable.Variable.NeedsDataFlag);
+							_groupChildren.Peek().Add(v, element);
+						}
+					}
+				}
+				else
+					for (int i = 0; i < ((object[])value).Length; i++)
+					{
+						var e = ((object[])value)[i];
+						if (e is Element element && element.isVisible)
+						{
+							var t = ((ArrayTypeSymbol)variable.Variable.Type).Child;
+							var variableArray = new VariableSymbol($"{variable.Variable.Name}#{i}", variable.Variable.IsReadOnly, t, variable.Variable.NeedsDataFlag);
+							_groupChildren.Peek().Add(variableArray, element);
+						}
+					}
+			}
+		}
+
+		private void TryAddSVGGroupChildren(object value, BoundVariableExpression variable)
+		{
+			if (!(value is SVGElement || value is object[]))
+				return;
+			if (_svggroupChildren.Count > 0 && variable.Variable.IsVisible && !variable.Type.IsData)
+			{
+				if (variable.Type.Type != TypeType.Array)
+				{
+					if (value is SVGElement element && element.isVisible)
+					{
+						if (variable.BoundArrayIndex == null)
+							_svggroupChildren.Peek().Add(variable.Variable, element);
+						else
+						{
+							var i = (int)EvaluateExpression(variable.BoundArrayIndex.BoundIndex);
+							var v = new VariableSymbol($"{variable.Variable.Name}#{i}", variable.Variable.IsReadOnly, variable.Type, variable.Variable.NeedsDataFlag);
+							_svggroupChildren.Peek().Add(v, element);
+						}
+					}
+				}
+				else
+					for (int i = 0; i < ((object[])value).Length; i++)
+					{
+						var e = ((object[])value)[i];
+						if (e is SVGElement element && element.isVisible)
+						{
+							var t = ((ArrayTypeSymbol)variable.Variable.Type).Child;
+							var variableArray = new VariableSymbol($"{variable.Variable.Name}#{i}", variable.Variable.IsReadOnly, t, variable.Variable.NeedsDataFlag);
+							_svggroupChildren.Peek().Add(variableArray, element);
+						}
+					}
 			}
 		}
 
@@ -838,14 +944,14 @@ namespace Minsk.CodeAnalysis
 					return EvaluateBinaryExpression((BoundBinaryExpression)node);
 				case BoundNodeKind.FunctionExpression:
 					return EvaluateFunctionExpression((BoundFunctionExpression)node);
+				case BoundNodeKind.EmptyArrayConstructorExpression:
+					return EvaluateEmptyArrayConstructorExpression((BoundEmptyArrayConstructorExpression)node);
 				case BoundNodeKind.ArrayExpression:
 					return EvaluateArrayExpression((BoundArrayExpression)node);
 				case BoundNodeKind.EnumExpression:
 					return EvaluateEnumExpression((BoundEnumExpression)node);
 				case BoundNodeKind.FieldAccessExpression:
-					return EvaluateFieldAccessExpression((BoundFieldAccesExpression)node);
-				case BoundNodeKind.StaticFieldAccessExpression:
-					return EvaluateStaticFieldAccessExpression((BoundStaticFieldAccesExpression)node);
+					return EvaluateFieldAccessExpression((BoundFieldAccessExpression)node);
 				case BoundNodeKind.FunctionAccessExpression:
 					return EvaluateFunctionAccessExpression((BoundFunctionAccessExpression)node);
 				case BoundNodeKind.Conversion:
@@ -875,6 +981,13 @@ namespace Minsk.CodeAnalysis
 				}
 			if (node.Type == PrimitiveTypeSymbol.Float)
 				return Convert.ToSingle(value);
+			if(node.Expression.Type.Type == TypeType.Nullable &&
+				((NullableTypeSymbol)node.Expression.Type).BaseType == node.Type)
+			{
+				if (value == null)
+					throw new Exception();
+				return value;
+			}
 			throw new Exception();
 		}
 
@@ -1098,7 +1211,7 @@ namespace Minsk.CodeAnalysis
 					return ((ICollection<object>)obj).Count;
 				default:
 					var type = obj.GetType();
-					var parameters = args.Select(a => a.GetType()).ToArray();
+					var parameters = function.Parameter.Select(p => _builtInTypes.LookTypeUp(p.Type)).ToArray();
 					var method = type.GetMethod(function.Name, parameters);
 					return MethodInvoke(method, obj, args);
 			}
@@ -1115,7 +1228,7 @@ namespace Minsk.CodeAnalysis
 			throw new Exception();
 		}
 
-		private object EvaluateFieldAccessExpression(BoundFieldAccesExpression node)
+		private object EvaluateFieldAccessExpression(BoundFieldAccessExpression node)
 		{
 			var parent = EvaluateExpression(node.Parent);
 			var type = parent.GetType();
@@ -1126,21 +1239,29 @@ namespace Minsk.CodeAnalysis
 					throw new Exception();
 				return value;
 			}
-			return type.GetProperty(node.Field.Variable.Name).GetValue(parent);
+			var v = type.GetProperty(node.Field.Variable.Name).GetValue(parent);
+			if (node.Field.BoundArrayIndex == null)
+				return v;
+			return EvaluateArrayIndexAccess((object[])v, node.Field.BoundArrayIndex);
 		}
 
-		private object EvaluateStaticFieldAccessExpression(BoundStaticFieldAccesExpression node)
+		private object EvaluateEmptyArrayConstructorExpression(BoundEmptyArrayConstructorExpression node)
 		{
-			var type = _builtInTypes.LookTypeUp(node.BaseType);
-			return type.GetProperty(node.Field.Name).GetValue(null);
+			var length = (int)EvaluateExpression(node.Length);
+			var result = new object[length];
+			for (int i = 0; i < length; i++)
+			{
+				result[i] = ((ArrayTypeSymbol)node.Type).Child.DefaultValue;
+			}
+			return result;
 		}
 
 		private object EvaluateArrayExpression(BoundArrayExpression node)
 		{
-			var result = new object[node.BoundExpressions.Length];
+			var result = new object[node.Expressions.Length];
 			for (int i = 0; i < result.Length; i++)
 			{
-				result[i] = EvaluateExpression(node.BoundExpressions[i]);
+				result[i] = EvaluateExpression(node.Expressions[i]);
 			}
 			return result;
 		}
@@ -1150,6 +1271,8 @@ namespace Minsk.CodeAnalysis
 			if (!(group.Symbol.Type is AdvancedTypeSymbol advanced))
 				throw new Exception();
 
+			var isSVGGroup = group.Symbol.Type.CanBeConvertedTo(_builtInTypes.LookSymbolUp(typeof(SVGElement)));
+			_isInSVGGroup = isSVGGroup;
 			var cVariables = _variables.Push();
 			var constructor = advanced.Constructor.FirstOrDefault(c => c.Parameter.Count == arguments.Length);
 			var args = new object[constructor.Parameter.Count];
@@ -1165,6 +1288,9 @@ namespace Minsk.CodeAnalysis
 				//group a(f : float):
 				//	print(f);
 				//endgroup
+				//
+				//Probably not, because why should we? Seems like quite
+				//an edge case
 				cVariables.Add(constructor.Parameter[i], args[i]);
 			}
 
@@ -1172,10 +1298,17 @@ namespace Minsk.CodeAnalysis
 			_variables = _variables.Push();
 			var oldReferenced = _currentReferenced;
 			_currentReferenced = group.Source;
-			_libraryUsed[_currentReferenced.Name] = true;
-
-			_groupChildren.Push(new List<Element>());
-			_groupAppliedStyles.Push(new List<CustomStyle>());
+			if (_currentReferenced != null)
+				_libraryUsed[_currentReferenced.Name] = true;
+			if (isSVGGroup)
+			{
+				_svggroupChildren.Push(new Dictionary<VariableSymbol, SVGElement>());
+			}
+			else
+			{
+				_groupChildren.Push(new Dictionary<VariableSymbol, Element>());
+				_groupAppliedStyles.Push(new List<CustomStyle>());
+			}
 			if (group.Body != null)
 				Evaluate(group.Body);
 
@@ -1195,22 +1328,36 @@ namespace Minsk.CodeAnalysis
 
 			//As of now they are included in the _groupChildren. You just need to give them
 			//a better name!
-			var slideValues = _groupChildren.Pop().ToArray();
-
+			SVGElement[] svgValues = null ;
+			Element[] groupValues = null;
+			if (isSVGGroup)
+			{
+				svgValues = _svggroupChildren.Pop().Select(c => c.Value).Where(c => c.isVisible).ToArray();
+			}
+			else
+			{
+				groupValues = _groupChildren.Pop().Select(c => c.Value).Where(c => c.isVisible).ToArray();
+			}
 			_variables = _variables.Pop(out cVariables);
 			_variables = _variables.Pop(out var _);
 			object result;
-			if (group.Body != null)
+			if (group.Body == null)
 			{
-				var be = new BoxElement(group.Symbol.Name, slideValues);
+				result = new DataObject(advanced, args);
+			}
+			else if (isSVGGroup)
+			{
+				var initWidth = (int)cVariables.FirstOrDefault(v => v.Key.Name == "width").Value;
+				var initHeight = (int)cVariables.FirstOrDefault(v => v.Key.Name == "height").Value;
+				result = new SVGGroup(svgValues, initWidth, initHeight);
+			}
+			else
+			{
+				var be = new BoxElement(group.Symbol.Name, groupValues);
 				foreach (var style in _groupAppliedStyles.Pop())
 					(be).applyStyle(style);
 				SetAttributes(be, cVariables);
 				result = be;
-			}
-			else
-			{
-				result = new DataObject(advanced, args);
 			}
 			return result;
 		}
@@ -1318,6 +1465,9 @@ namespace Minsk.CodeAnalysis
 				_libraryUsed[expression.Source.Name] = true;
 			}
 			else
+				//Ok. Shit just happened here. I introduce Multiline Comments in the Lexer
+				//And out of nowhere returns this LookMethodInfoUp for 'image(source: string) : ImageSource'
+				//the fucking csv function! Obv you need to look into it. Unbelievable
 				method = GlobalFunctionsConverter.Instance.LookMethodInfoUp(expression.Function);
 			if (expression.Function.Name == "image")
 			{
@@ -1488,12 +1638,28 @@ namespace Minsk.CodeAnalysis
 				array = (object[])value;
 			for (int i = 0; i < a.Variables.Length; i++)
 			{
+				TryAddChildren(value, a.Variables[i]);
 				if (a.Variables.Length == 1)
 				{
-					_variables[a.Variables[i]] = value;
+					if (a.Variables[i].BoundArrayIndex == null)
+						_variables[a.Variables[i].Variable] = value;
+					else
+					{
+						var currentArrayIndex = a.Variables[i].BoundArrayIndex;
+						var arr = (object[])_variables[a.Variables[i].Variable];
+						while (currentArrayIndex != null)
+						{
+							int index = (int)EvaluateExpression(currentArrayIndex.BoundIndex);
+							currentArrayIndex = currentArrayIndex.BoundChild;
+							if (currentArrayIndex != null)
+								arr = (object[])arr[index];
+							else
+								arr[index] = value;
+						}
+					}
 					return value;
 				}
-				_variables[a.Variables[i]] = array[i];
+				_variables[a.Variables[i].Variable] = array[i];
 			}
 			return value;
 		}
@@ -1511,22 +1677,27 @@ namespace Minsk.CodeAnalysis
 				if (parent is Element e)
 				{
 					d = new FieldDependency(e, fieldName, this.CreateFunction(node.Initializer, dependent));
-					
+
 				}
-				else if(parent is MathFormula m)
+				else if (parent is MathFormula m)
 				{
 					d = new FieldDependency(m, fieldName, this.CreateFunction(node.Initializer, dependent));
 				}
-				if(d != null)
+				if (d != null)
 				{
-					if (dependent is BoundFieldAccesExpression fieldAccess)
+					_dependencies.Add(d);/*
+					if (dependent is BoundFieldAccessExpression fieldAccess)
 					{
 						var slider = (Slider)EvaluateExpression(fieldAccess.Parent);
 						slider.add_Dependency(d);
 					}
+					else if (dependent is BoundVariableExpression variable)
+					{
+
+					}
 					else
 						throw new Exception();
-				}
+				*/}
 			}
 
 			if (parentType == typeof(DataObject))
@@ -1594,7 +1765,7 @@ namespace Minsk.CodeAnalysis
 			switch (b.Op.Kind)
 			{
 				case BoundBinaryOperatorKind.Addition:
-					if (left.GetType() == typeof(Unit) && right.GetType() == typeof(Unit))
+					if (left is Unit && right is Unit)
 						return (Unit)left + (Unit)right;
 					if (left.GetType() == typeof(float) && right.GetType() == typeof(float))
 						return (float)left + (float)right;
@@ -1602,7 +1773,7 @@ namespace Minsk.CodeAnalysis
 				case BoundBinaryOperatorKind.Concatination:
 					return left.ToString() + right.ToString();
 				case BoundBinaryOperatorKind.Subtraction:
-					if (left.GetType() == typeof(Unit) && right.GetType() == typeof(Unit))
+					if (left is Unit && right is Unit)
 						return (Unit)left - (Unit)right;
 					if (left.GetType() == typeof(float) && right.GetType() == typeof(float))
 						return (float)left - (float)right;

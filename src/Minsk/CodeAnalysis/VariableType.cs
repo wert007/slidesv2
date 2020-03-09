@@ -9,6 +9,7 @@
 		Void,
 		Error,
 		Undefined,
+		AnonymFor,
 
 		Unit,
 		Object,

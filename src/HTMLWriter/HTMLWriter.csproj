@@ -52,6 +52,7 @@
     <Compile Include="PresentationWriter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StyleWriter.cs" />
+    <Compile Include="SVGWriter.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Minsk\Minsk.csproj">

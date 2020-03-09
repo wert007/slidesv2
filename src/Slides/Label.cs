@@ -27,13 +27,12 @@ namespace Slides
 				return font;
 			foreach (var style in get_AppliedStyles().Reverse())
 			{
-				if(style.ModifiedFields.ContainsKey("font"))
+				if (style.ModifiedFields.ContainsKey("font"))
 				{
 					return (Font)style.ModifiedFields["font"];
 				}
 			}
-			//TODO: std stylemb.,jhjbmbgqwertzuiopü+asdfghjklöäyxcvbm,
-			//Sorry?
+			//TODO: use font used in std style.
 			return stdFont;
 		}
 

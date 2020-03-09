@@ -6,13 +6,14 @@ namespace Minsk.CodeAnalysis.Symbols
 	[Serializable]
 	public sealed class VariableSymbol
 	{
-		public VariableSymbol(string name, bool isReadOnly, TypeSymbol type, bool needsDataFlag)
+		public VariableSymbol(string name, bool isReadOnly, TypeSymbol type, bool needsDataFlag, int arrayIndicesCount = 0)
 		{
 			Name = name;
 			IsReadOnly = isReadOnly;
 			Type = type;
 			IsVisible = true;
 			NeedsDataFlag = needsDataFlag;
+			ArrayIndicesCount = arrayIndicesCount;
 		}
 
 		public string Name { get; }
@@ -20,6 +21,7 @@ namespace Minsk.CodeAnalysis.Symbols
 		public TypeSymbol Type { get; internal set; }
 		public bool IsVisible { get; internal set; }
 		public bool NeedsDataFlag { get; internal set; }
+		public int ArrayIndicesCount { get; }
 
 		private bool _hasValue;
 		public bool HasValue

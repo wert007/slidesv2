@@ -15,5 +15,11 @@ namespace Minsk.CodeAnalysis.Binding
 
 		public BoundExpression Expression { get; }
 		public override TypeSymbol Type { get; }
+
+		public override bool EqualsBoundExpression(BoundExpression expression)
+		{
+			var e = (BoundConversion)expression;
+			return Expression.EqualsBoundExpression(e.Expression);
+		}
 	}
 }

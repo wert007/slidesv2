@@ -7,46 +7,6 @@ using System.Threading.Tasks;
 
 namespace Slides.MathExpressions
 {
-	public class MathPlot : Chart
-	{
-		public MathPlot(MathFormula graph, Range range)
-		{
-			Graph = graph;
-			InputVariable = "x";
-			for (int i = 0; i < graph.Variables.Length; i++)
-			{
-				if (graph.IsUnknown(graph.Variables[i]))
-				{
-					InputVariable = graph.Variables[i];
-					break;
-				}
-			}
-			Range = range;
-			color = new Color(255, 0, 0, 255);
-			showGrid = true;
-			showTooltip = true;
-			showXAxis = true;
-			showYAxis = true;
-		}
-
-		public MathFormula Graph { get; }
-		public Range Range { get; }
-		public string InputVariable { get; }
-
-		public override ElementType type => ElementType.MathPlot;
-
-		public override ChartType chartType => ChartType.LineChart;
-
-		protected override Unit get_InitialHeight()
-		{
-			return new Unit(480, Unit.UnitKind.Pixel);
-		}
-
-		protected override Unit get_InitialWidth()
-		{
-			return new Unit(640, Unit.UnitKind.Pixel);
-		}
-	}
 	public class MathFormula
 	{
 		public string[] Variables { get; }

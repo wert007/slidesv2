@@ -20,5 +20,22 @@ namespace Minsk.CodeAnalysis.Binding
 		public BoundExpression[] Arguments { get; }
 		public LibrarySymbol Source { get; }
 
+		public override bool EqualsBoundExpression(BoundExpression expression)
+		{
+			var e = (BoundFunctionExpression)expression;
+			if (!Function.Equals(e.Function))
+				return false;
+			if (!Source.Equals(e.Source))
+				return false;
+			if (Arguments.Length != e.Arguments.Length)
+				return false;
+			for (int i = 0; i < Arguments.Length; i++)
+			{
+				if (!Arguments[i].EqualsBoundExpression(e.Arguments[i]))
+					return false;
+			}
+			return true;
+		}
+
 	}
 }

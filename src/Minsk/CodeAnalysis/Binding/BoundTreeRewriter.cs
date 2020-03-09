@@ -3,7 +3,8 @@ using System.Collections.Generic;
 
 namespace Minsk.CodeAnalysis.Binding
 {
-    internal abstract class BoundTreeRewriter
+
+   internal abstract class BoundTreeRewriter
     {        
         public virtual BoundStatement RewriteStatement(BoundStatement node)
         {

@@ -1,5 +1,6 @@
 ﻿namespace Slides
 {
+
 	public enum BorderStyle
 	{
 		None,
@@ -12,7 +13,6 @@
 		Ridge,
 		Inset,
 		Outset,
-		Initial,
-		Inherit,
+		Unset,
 	}
 }

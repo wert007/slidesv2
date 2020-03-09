@@ -57,11 +57,11 @@ namespace HTMLWriter
 			writer.StartForLoop("i", "0", "cases.length - 1", "1");
 			writer.WriteVariableDeclarationInline("prev", "cases[i]", true);
 			writer.WriteVariableDeclarationInline("next", "cases[i + 1]", true);
-			writer.StartIfStatement("progress > prev.condition && progress < next.condition");
+			writer.StartIfStatement("progress >= prev.condition && progress < next.condition");
 			writer.WriteVariableDeclarationInline("caseprogress", "(progress - prev.condition) / (next.condition - prev.condition)");
 			foreach (var field in animation.ChangedFields)
 			{
-				var cssField = StyleWriter.ToCssAttribute(field);
+				var cssField = CSSWriter.ToCssAttribute(field);
 
 				//Check every case for the first value this field gets set to. 
 				//So you can determine the actual type of the field.
@@ -134,12 +134,12 @@ namespace HTMLWriter
 				stringBuilder.Append($"{ new string('\t', indent + 1) }{{ condition: {c.Condition}");
 				foreach (var field in c.ChangedFields)
 				{
-					stringBuilder.Append($", {StyleWriter.ToCssAttribute(field.Key)}_value: {GetJSValue(field.Value, field.Key)}");
+					stringBuilder.Append($", {CSSWriter.ToCssAttribute(field.Key)}_value: {GetJSValue(field.Value, field.Key)}");
 					initializedFields[field.Key] = field.Value;
 				}
 				foreach (var field in c.UnchangedFields)
 				{
-						stringBuilder.Append($", {StyleWriter.ToCssAttribute(field)}_value: ");
+						stringBuilder.Append($", {CSSWriter.ToCssAttribute(field)}_value: ");
 					if (initializedFields.ContainsKey(field))
 						stringBuilder.Append(GetJSValue(initializedFields[field], field));
 					else
@@ -153,7 +153,7 @@ namespace HTMLWriter
 
 		private static string GetInitializer(string field)
 		{
-			var cssField = StyleWriter.ToCssAttribute(field);
+			var cssField = CSSWriter.ToCssAttribute(field);
 			var fieldType = GetTypeForField(field);
 			if(fieldType == typeof(Unit))
 			{
@@ -188,6 +188,10 @@ namespace HTMLWriter
 					return $"new StyleUnit({unit.Value}, \"{Unit.ToString(unit.Kind)}\", {GetJSValue(GetIsVertical(field))})";
 				case Thickness thickness:
 					return $"new Thickness({GetJSValue(thickness.top)}, {GetJSValue(thickness.right)}, {GetJSValue(thickness.bottom)}, {GetJSValue(thickness.left)})";
+				case Brush brush:
+					if (brush.Mode == Brush.BrushMode.SolidColor)
+						return GetJSValue(brush.Color, field);
+					return GetJSValue(null, field);
 				case Color color:
 					return $"new Color_t('{CSSWriter.GetValue(color)}')";
 				case null:

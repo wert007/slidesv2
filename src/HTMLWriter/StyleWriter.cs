@@ -1,13 +1,15 @@
 ﻿using Slides;
 using Slides.Code;
 using Slides.Debug;
+using Slides.SVG;
 using System;
+using System.Linq;
+using System.Text;
 
 namespace HTMLWriter
 {
 	public static class StyleWriter
 	{
-		private static string _currentTransform = null;
 		private static string TypeSymbolToCSSClass(string type)
 		{
 			switch (type)
@@ -23,12 +25,11 @@ namespace HTMLWriter
 		}
 		private static void WriteTypedModification(CSSWriter writer, TypedModifications typedModifications)
 		{
-			//TODO: TypeSymbol to CSS-Class Converter
 			writer.StartClass(TypeSymbolToCSSClass(typedModifications.Type));
 
 			foreach (var modifiedField in typedModifications.ModifiedFields)
 			{
-				writer.WriteAttribute(ToCssAttribute(modifiedField.Key), modifiedField.Value);
+				writer.WriteAttribute(CSSWriter.ToCssAttribute(modifiedField.Key), modifiedField.Value);
 			}
 			writer.EndSelector();
 		}
@@ -45,7 +46,7 @@ namespace HTMLWriter
 						toWrite = (Transition)modifiedField.Value;
 						break;
 					default:
-						writer.WriteAttribute(ToCssAttribute(modifiedField.Key), modifiedField.Value);
+						writer.WriteAttribute(CSSWriter.ToCssAttribute(modifiedField.Key), modifiedField.Value);
 						break;
 				}
 			}
@@ -77,8 +78,15 @@ namespace HTMLWriter
 					case "transition":
 						toWrite = (Transition)modifiedField.Value;
 						break;
+					case "orientation":
+						//This is no css attribute. we set it in the element.
+					case "margin":
+						//We ignore margin, because we write it per element
+						//and mostly just use left, top, right, bottom and
+						//not the actual margin.
+						break;
 					default:
-						writer.WriteAttribute(ToCssAttribute(modifiedField.Key), modifiedField.Value);
+						writer.WriteAttribute(CSSWriter.ToCssAttribute(modifiedField.Key), modifiedField.Value);
 						break;
 				}
 			}
@@ -125,28 +133,6 @@ namespace HTMLWriter
 			writer.WriteAttribute("animation-fill-mode", "forwards");
 			writer.WriteAttribute("z-index", 10);
 			writer.EndSelector();
-		}
-
-		public static string ToCssAttribute(string field)
-		{
-			switch (field)
-			{
-				case "font":
-					return "font-family";
-				case "fontsize":
-					return "font-size";
-				case "text":
-					return "innerHTML"; //TODO: Hacky
-				case "padding":
-				case "color":
-				case "background":
-				case "filter":
-				case "margin":
-					return field;
-				default:
-					Logger.LogUnmatchedCSSField(field);
-					return field;
-			}
 		}
 
 		public static void WriteTransition(CSSWriter writer, Transition transition)
@@ -197,32 +183,27 @@ namespace HTMLWriter
 
 		public static void WriteElement(CSSWriter writer, string parentName, Element element, Element parent = null)
 		{
-			_currentTransform = "";
 			if (element.name == null)
 				return;
 			var id = $"{parentName}-{element.name}";
+			//if (element.type == ElementType.SVGShape)
+			//	id += "-container";
 			writer.StartId(id);
 			WriteBrush(writer, element.background);
-			writer.WriteAttributeIfValue("border-color", element.borderColor);
-			writer.WriteAttribute("border-style", element.borderStyle);
-			writer.WriteAttributeIfValue("border-thickness", element.borderThickness);
-			writer.WriteAttributeIfValue("color", element.color);
+			writer.WriteAttributeIfNotDefault("border-color", element.borderColor, new Color(0, 0, 0, 0));
+			writer.WriteAttributeIfNotDefault("border-style", element.borderStyle, BorderStyle.Unset);
+			writer.WriteAttributeIfNotDefault("border-width", element.borderThickness, new Thickness());
+			writer.WriteAttributeIfNotDefault("color", element.color, new Color(0, 0, 0, 0));
 			writer.WriteAttributeIfValue("filter", element.filter);
 
 			WriteOrientation(writer, element, parent);
 
-			writer.WriteAttributeIfValue("padding", element.padding);
+			if(element.padding != new Thickness())
+				writer.WriteAttribute("padding", element.padding);
 			if (element.parent != null && element.parent.name != null)
 				writer.WriteAttribute("parent", element.parent.name);
 
-			if (element.rotation % 360 != 0)
-				_currentTransform += $"rotate({CSSWriter.GetValue(element.rotation)}deg) ";
-
-			if (!string.IsNullOrEmpty(_currentTransform))
-			{
-				writer.WriteAttribute("transform", _currentTransform);
-				_currentTransform = "";
-			}
+			WriteTransform(writer, element.get_Transforms());
 
 			switch (element)
 			{
@@ -252,6 +233,9 @@ namespace HTMLWriter
 				case Image i:
 					writer.WriteAttribute("object-fit", i.stretching);
 					break;
+				case Table t:
+					writer.WriteAttribute("border-collapse", "collapse");
+					break;
 				default:
 					break;
 			}
@@ -263,15 +247,19 @@ namespace HTMLWriter
 			writer.StartId(id, pseudoClass: "hover");
 			foreach (var modifiedField in element.hover.ModifiedFields)
 			{
-				writer.WriteAttribute(ToCssAttribute(modifiedField.Key), modifiedField.Value);
+				writer.WriteAttribute(CSSWriter.ToCssAttribute(modifiedField.Key), modifiedField.Value);
 			}
 			writer.EndSelector();
 		}
+
+
+
 
 		//TODO(Next Thing): Think about differences between margin and padding.
 		//In CSS and in Slides. 
 		private static void WriteOrientation(CSSWriter writer, Element element, Element parent = null)
 		{
+			var appliedStyles = element.get_AppliedStyles();
 			if (element.position == null)
 			{
 				if (parent != null && parent is Stack)
@@ -281,16 +269,20 @@ namespace HTMLWriter
 			}
 			else
 				writer.WriteAttribute("position", element.position);
-			var margin = element.margin ?? new Thickness();
-			if (element.padding != null)
-				margin += element.padding;
+
+
+			var m = (Thickness)appliedStyles.FirstOrDefault(s => s.ModifiedFields.ContainsKey("margin"))?.ModifiedFields["margin"] ?? new Thickness();
+			if (element.margin != new Thickness())
+				m = element.margin;
+
+			var margin = m + element.padding;
 			if (parent != null && parent.padding != null)
 			{
 				margin += parent.padding;
 			}
 
 			//writer.WriteAttributeIfValue("margin", element.margin);
-			writer.WriteAttributeIfValue("padding", element.padding);
+			//writer.WriteAttributeIfValue("padding", element.padding);
 
 
 			var unit100Percent = new Unit(100, Unit.UnitKind.Percent);
@@ -327,7 +319,9 @@ namespace HTMLWriter
 				else
 					writer.WriteAttributeIfValue("width", element.get_StyleWidth());
 			}
-			WriteOrientation_(writer, element, element.margin ?? new Thickness());
+			
+			
+			WriteOrientation_(writer, element, m);
 		}
 
 		private static void WriteOrientation_(CSSWriter writer, Element element, Thickness margin)
@@ -351,7 +345,8 @@ namespace HTMLWriter
 				case Orientation.CenterTop:
 					writer.WriteAttribute("left", unit50Percent + marginHorizontalOffset);
 					writer.WriteAttribute("top", margin.top);
-					_currentTransform += "translate(-50%, 0) ";
+//					_currentTransform += "translate(-50%, 0) ";
+					element.translate(new Unit(-50, Unit.UnitKind.Percent), new Unit());
 					break;
 				case Orientation.RightTop:
 					writer.WriteAttribute("right", margin.right);
@@ -360,23 +355,24 @@ namespace HTMLWriter
 				case Orientation.LeftCenter:
 					writer.WriteAttribute("left", margin.left);
 					writer.WriteAttribute("top", unit50Percent + marginVerticalOffset);
-					_currentTransform += "translate(0, -50%) ";
+					element.translate(new Unit(), new Unit(-50, Unit.UnitKind.Percent));
+
 					break;
 				case Orientation.StretchCenter:
 					writer.WriteAttribute("left", margin.left);
 					writer.WriteAttribute("right", margin.right);
 					writer.WriteAttribute("top", unit50Percent + marginVerticalOffset);
-					_currentTransform += "translate(0, -50%) ";
+					element.translate(new Unit(), new Unit(-50, Unit.UnitKind.Percent));
 					break;
 				case Orientation.Center:
 					writer.WriteAttribute("left", unit50Percent + marginHorizontalOffset);
 					writer.WriteAttribute("top", unit50Percent + marginVerticalOffset);
-					_currentTransform += "translate(-50%, -50%) ";
+					element.translate(new Unit(-50, Unit.UnitKind.Percent), new Unit(-50, Unit.UnitKind.Percent));
 					break;
 				case Orientation.RightCenter:
 					writer.WriteAttribute("right", margin.right);
 					writer.WriteAttribute("top", unit50Percent + marginVerticalOffset);
-					_currentTransform += "translate(0, -50%) ";
+					element.translate(new Unit(), new Unit(-50, Unit.UnitKind.Percent));
 					break;
 				case Orientation.LeftStretch:
 					writer.WriteAttribute("left", margin.left);
@@ -393,7 +389,7 @@ namespace HTMLWriter
 					writer.WriteAttribute("left", unit50Percent + marginHorizontalOffset);
 					writer.WriteAttribute("top", margin.top);
 					writer.WriteAttribute("bottom", margin.bottom);
-					_currentTransform += "translate(-50%, 0) ";
+					element.translate(new Unit(-50, Unit.UnitKind.Percent), new Unit());
 					break;
 				case Orientation.RightStretch:
 					writer.WriteAttribute("right", margin.right);
@@ -412,7 +408,7 @@ namespace HTMLWriter
 				case Orientation.CenterBottom:
 					writer.WriteAttribute("left", unit50Percent + marginHorizontalOffset);
 					writer.WriteAttribute("bottom", margin.bottom);
-					_currentTransform += "translate(-50%, 0) ";
+					element.translate(new Unit(-50, Unit.UnitKind.Percent), new Unit());
 					break;
 				case Orientation.RightBottom:
 					writer.WriteAttribute("right", margin.right);
@@ -421,6 +417,29 @@ namespace HTMLWriter
 				default:
 					throw new Exception();
 			}
+		}
+
+		private static void WriteTransform(CSSWriter writer, Transform[] transforms)
+		{
+			if (transforms.Length == 0)
+				return;
+			var builder = new StringBuilder();
+			foreach (var t in transforms)
+			{
+				var functionName = Transform.GetFunctionName(t.Type);
+				switch (t)
+				{
+					case SingleValueTransform singleValue:
+						builder.Append($"{functionName}({CSSWriter.GetValue(singleValue.Value)}) ");
+						break;
+					case RotationTransform rotation:
+						builder.Append($"{functionName}({CSSWriter.GetValue(rotation.Value)}deg) ");
+						break;
+					default:
+						break;
+				}
+			}
+			writer.WriteAttribute("transform", builder.ToString());
 		}
 
 		private static void WriteBrush(CSSWriter writer, Brush background)

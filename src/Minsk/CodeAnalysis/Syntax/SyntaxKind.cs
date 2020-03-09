@@ -142,5 +142,10 @@ namespace Minsk.CodeAnalysis.Syntax
 		LambdaExpression,
 		HashMathKeyword,
 		MathExpression,
+		SVGGroupKeyword,
+		EndSVGGroupKeyword,
+		SVGGroupStatement,
+		EmptyArrayConstructorExpression,
+		AnonymForExpression,
 	}
 }

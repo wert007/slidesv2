@@ -213,28 +213,25 @@ namespace HTMLWriter
 
 		public void WriteValue(object value)
 		{
+			CurrentWriter.Write(ValueToString(value));
+		}
+
+		public static string ValueToString(object value)
+		{
 			switch (value)
 			{
 				case string s:
-					CurrentWriter.Write($"'{s}'");
-					break;
+					return $"'{s}'";
 				case Color c:
-					CurrentWriter.Write($"'{CSSWriter.GetValue(c)}'");
-					break;
+					return $"'{CSSWriter.GetValue(c)}'";
 				case int i:
-					CurrentWriter.Write($"{i}");
-					break;
+					return $"{i}";
 				case bool b:
-					CurrentWriter.Write($"{b.ToString().ToLower()}");
-					break;
+					return $"{b.ToString().ToLower()}";
 				case float f:
-					//if (float.IsNaN(f))
-					//	CurrentWriter.Write("undefined");
-					CurrentWriter.Write(f.ToString(_usCulture));
-					break;
+					return f.ToString(_usCulture);
 				default:
-					CurrentWriter.Write(value.ToString());
-					break;
+					return value.ToString();
 			}
 		}
 

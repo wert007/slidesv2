@@ -2,9 +2,9 @@
 
 namespace Minsk.CodeAnalysis.Binding
 {
-	internal class BoundFieldAccesExpression : BoundExpression
+	internal class BoundFieldAccessExpression : BoundExpression
 	{
-		public BoundFieldAccesExpression(BoundExpression parent, BoundVariableExpression field)
+		public BoundFieldAccessExpression(BoundExpression parent, BoundVariableExpression field)
 		{
 			Parent = parent;
 			Field = field;
@@ -17,6 +17,14 @@ namespace Minsk.CodeAnalysis.Binding
 		public override TypeSymbol Type => Field.Type;
 
 		public override BoundNodeKind Kind => BoundNodeKind.FieldAccessExpression;
+
+		public override bool EqualsBoundExpression(BoundExpression expression)
+		{
+			var e = (BoundFieldAccessExpression)expression;
+			if (!Parent.EqualsBoundExpression(e.Parent))
+				return false;
+			return Field.EqualsBoundExpression(e.Field);
+		}
 
 	}
 }

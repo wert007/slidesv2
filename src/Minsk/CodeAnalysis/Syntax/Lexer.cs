@@ -117,6 +117,13 @@ namespace Minsk.CodeAnalysis.Syntax
 						}
 						_kind = SyntaxKind.CommentToken;
 					}
+					else if(Current == '*')
+					{
+						_position++;
+						while (!(Current == '*' && Peek(1) == '/')) _position++;
+						_position+= 2;
+						_kind = SyntaxKind.CommentToken;
+					}
 					else if (Current == '=')
 					{
 						_position++;

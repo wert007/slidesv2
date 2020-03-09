@@ -6,6 +6,7 @@ namespace Slides
 	[Serializable]
 	public class Color
 	{
+		public static readonly Color Transparent = new Color(0, 0, 0, 0);
 		public byte R { get; }
 		public byte G { get; }
 		public byte B { get; }
@@ -40,6 +41,22 @@ namespace Slides
 			result.Lightness = light;
 			result.IsRGBA = false;
 			return result;
+		}
+
+		public override bool Equals(object obj)
+		{
+			if(obj is Color c)
+			{
+				if (A != c.A)
+					return false;
+				if (A == 0)
+					return true;
+
+				if(c.IsRGBA == IsRGBA)
+					return c.R == R && c.G == G && c.B == B;
+				return c.Hue == Hue && c.Lightness == Lightness && c.Saturation == Saturation;
+			}
+			return false;
 		}
 
 		public string ToHex()

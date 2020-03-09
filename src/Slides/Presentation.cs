@@ -11,17 +11,19 @@ namespace Slides
 		public CustomFilter[] CustomFilter { get; }
 		public Transition[] Transitions { get; }
 		public Library[] Libraries { get; }
+		public FieldDependency[] Dependencies { get; }
 		public string[] Imports { get; }
 		public string[] ReferencedFiles { get; }
 		public CodeHighlighter CodeHighlighter { get; }
 
-		public Presentation(Slide[] slides, Style[] styles, CustomFilter[] customFilter, Transition[] transitions, Library[] libraries, string[] imports, string[] referencedFiles, CodeHighlighter codeHighlighter)
+		public Presentation(Slide[] slides, Style[] styles, CustomFilter[] customFilter, Transition[] transitions, Library[] libraries, FieldDependency[] dependencies, string[] imports, string[] referencedFiles, CodeHighlighter codeHighlighter)
 		{
 			Slides = slides;
 			Styles = styles;
 			CustomFilter = customFilter;
 			Transitions = transitions;
 			Libraries = libraries;
+			Dependencies = dependencies;
 			Imports = imports;
 			ReferencedFiles = referencedFiles;
 			CodeHighlighter = codeHighlighter;

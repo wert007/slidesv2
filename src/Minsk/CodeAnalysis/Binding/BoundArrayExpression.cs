@@ -6,10 +6,10 @@ namespace Minsk.CodeAnalysis.Binding
 	internal class BoundArrayExpression : BoundExpression
 	{
 
-		public BoundArrayExpression(BoundExpression[] boundExpressions)
+		public BoundArrayExpression(BoundExpression[] expressions)
 		{
-			BoundExpressions = boundExpressions;
-			_type = new ArrayTypeSymbol(BoundExpressions[0].Type);
+			Expressions = expressions;
+			_type = new ArrayTypeSymbol(Expressions[0].Type);
 		}
 
 		private TypeSymbol _type;
@@ -17,7 +17,20 @@ namespace Minsk.CodeAnalysis.Binding
 
 		public override BoundNodeKind Kind => BoundNodeKind.ArrayExpression;
 
-		public BoundExpression[] BoundExpressions { get; }
+		public BoundExpression[] Expressions { get; }
+		public int Length => Expressions.Length;
 
+		public override bool EqualsBoundExpression(BoundExpression expression)
+		{
+			var e = (BoundArrayExpression)expression;
+			if (Length != e.Length)
+				return false;
+			for (int i = 0; i < Length; i++)
+			{
+				if (!Expressions[i].EqualsBoundExpression(e.Expressions[i]))
+					return false;
+			}
+			return true;
+		}
 	}
 }

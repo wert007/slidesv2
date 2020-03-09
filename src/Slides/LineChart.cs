@@ -11,6 +11,8 @@ namespace Slides
 	{
 		public bool showXAxis { get; set; } = true;
 		public bool showYAxis { get; set; } = true;
+		public int xTickAmount { get; set; } = 10;
+		public int yTickAmount { get; set; } = 10;
 		public bool showLegend { get; set; } = false;
 		public bool showDownload { get; set; } = false;
 		public bool showGrid { get; set; } = true;
@@ -38,7 +40,6 @@ namespace Slides
 	}
 	public class LineChart : Chart
 	{
-
 		public LineChart(CSVFile data)
 		{
 			Data = data;

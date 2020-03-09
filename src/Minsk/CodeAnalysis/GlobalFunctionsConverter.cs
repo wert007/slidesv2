@@ -37,7 +37,7 @@ namespace Minsk.CodeAnalysis
 
 		private void Init()
 		{
-			var functions = typeof(GlobalFunctions).GetMethods().Concat(typeof(GlobalThicknessFunctions).GetMethods()).Concat(typeof(GlobalFilterFunctions).GetMethods());
+			var functions = typeof(GlobalFunctions).GetMethods().Concat(typeof(GlobalThicknessFunctions).GetMethods()).Concat(typeof(GlobalFilterFunctions).GetMethods()).Concat(typeof(GlobalSVGFunctions).GetMethods());
 			foreach (var function in functions)
 			{
 				var name = function.Name;
@@ -112,7 +112,8 @@ namespace Minsk.CodeAnalysis
 		}
 		public MethodInfo LookMethodInfoUp(FunctionSymbol symbol)
 		{
-			return _toMethod[symbol];
+			var result = _toMethod[symbol];
+			return result;
 		}
 
 		public bool TryGetSymbol(string name, out FunctionSymbol[] function)

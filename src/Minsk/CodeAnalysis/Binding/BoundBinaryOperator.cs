@@ -69,9 +69,11 @@ namespace Minsk.CodeAnalysis.Binding
 				new BoundBinaryOperator(SyntaxKind.GreaterToken, BoundBinaryOperatorKind.Greater, PrimitiveTypeSymbol.Integer, PrimitiveTypeSymbol.Bool),
 				new BoundBinaryOperator(SyntaxKind.GreaterOrEqualsToken, BoundBinaryOperatorKind.GreaterOrEquals, PrimitiveTypeSymbol.Integer, PrimitiveTypeSymbol.Bool),
 
+				new BoundBinaryOperator(SyntaxKind.EqualsEqualsToken, BoundBinaryOperatorKind.Equals, PrimitiveTypeSymbol.String, PrimitiveTypeSymbol.Bool),
+				new BoundBinaryOperator(SyntaxKind.BangEqualsToken, BoundBinaryOperatorKind.NotEquals, PrimitiveTypeSymbol.String, PrimitiveTypeSymbol.Bool),
+
 				new BoundBinaryOperator(SyntaxKind.AmpersandAmpersandToken, BoundBinaryOperatorKind.LogicalAnd, PrimitiveTypeSymbol.Bool),
 				new BoundBinaryOperator(SyntaxKind.PipePipeToken, BoundBinaryOperatorKind.LogicalOr, PrimitiveTypeSymbol.Bool),
-				new BoundBinaryOperator(SyntaxKind.HatToken, BoundBinaryOperatorKind.BitwiseXor, PrimitiveTypeSymbol.Bool),
 				new BoundBinaryOperator(SyntaxKind.EqualsEqualsToken, BoundBinaryOperatorKind.Equals, PrimitiveTypeSymbol.Bool),
 				new BoundBinaryOperator(SyntaxKind.BangEqualsToken, BoundBinaryOperatorKind.NotEquals, PrimitiveTypeSymbol.Bool),
 

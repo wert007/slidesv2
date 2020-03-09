@@ -152,5 +152,15 @@ namespace Minsk.CodeAnalysis.Binding
                 return writer.ToString();
             }
         }
-    }
+
+      public override bool Equals(object obj)
+      {
+         if (obj is BoundNode b)
+         {
+            return b.ToString() == ToString();
+         }
+         else
+            return false;
+      }
+   }
 }

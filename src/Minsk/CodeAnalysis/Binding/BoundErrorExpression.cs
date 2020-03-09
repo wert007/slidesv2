@@ -7,5 +7,7 @@ namespace Minsk.CodeAnalysis.Binding
 		public override TypeSymbol Type => PrimitiveTypeSymbol.Error;
 
 		public override BoundNodeKind Kind => BoundNodeKind.ErrorExpression;
+
+		public override bool EqualsBoundExpression(BoundExpression expression) => true;
 	}
 }

@@ -11,9 +11,9 @@ namespace Minsk.CodeAnalysis.Syntax
 		}
 
 		public override SyntaxKind Kind => SyntaxKind.AssignmentExpression;
-		public SyntaxToken OperatorToken { get; }
-		public ExpressionSyntax Expression { get; }
 		public VariableExpressionSyntax[] Variables { get; }
 		public SyntaxToken[] Commas { get; }
+		public SyntaxToken OperatorToken { get; }
+		public ExpressionSyntax Expression { get; }
 	}
 }

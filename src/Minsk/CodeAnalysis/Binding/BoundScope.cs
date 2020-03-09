@@ -11,6 +11,7 @@ namespace Minsk.CodeAnalysis.Binding
 		private SymbolCollection<VariableSymbol> _variables = new SymbolCollection<VariableSymbol>();
 		private Dictionary<string, TypeSymbol> _customTypes = new Dictionary<string, TypeSymbol>();
 		private Dictionary<string, FunctionSymbol> _functions = new Dictionary<string, FunctionSymbol>();
+		internal List<BoundVariableExpression> SafeVariables { get; } = new List<BoundVariableExpression>();
 		private TypeSymbol _type;
 
 
@@ -22,13 +23,52 @@ namespace Minsk.CodeAnalysis.Binding
 			Parent = parent;
 		}
 
-		public BoundScope(BoundScope parent, AdvancedTypeSymbol type)
-		{
-			Parent = parent;
+		public BoundScope Parent { get; }
 
+		internal void CheckIfVariablesAreUnsafe(BoundVariableExpression dependent)
+		{
+			for (int i = SafeVariables.Count - 1; i >= 0; i--)
+			{
+				var arrayIndex = SafeVariables[i].BoundArrayIndex;
+				while(arrayIndex != null)
+				{
+					if(arrayIndex.BoundIndex.Contains(dependent))
+					{
+						MakeUnsafe(SafeVariables[i]);
+						break;
+					}
+					arrayIndex = arrayIndex.BoundChild;
+				}
+			}
 		}
 
-		public BoundScope Parent { get; }
+		internal void MakeSave(BoundVariableExpression boundVariable)
+		{
+			SafeVariables.Add(boundVariable);
+		}
+
+		internal void MakeUnsafe(VariableSymbol variable)
+		{
+			for (int i = SafeVariables.Count - 1; i >= 0; i--)
+			{
+				if (SafeVariables[i].Variable == variable)
+				{
+					SafeVariables.RemoveAt(i);
+				}
+			}
+		}
+
+		internal void MakeUnsafe(BoundVariableExpression boundVariable)
+		{
+			for (int i = SafeVariables.Count - 1; i >= 0; i--)
+			{
+				if (SafeVariables[i] == boundVariable)
+				{
+					SafeVariables.RemoveAt(i);
+					return;
+				}
+			}
+		}
 
 		public bool TryDeclare(VariableSymbol variable, TextSpan? span = null)
 		{
@@ -57,7 +97,7 @@ namespace Minsk.CodeAnalysis.Binding
 
 			if (_builtInTypes.ContainsSymbol(type))
 				return false;
-			
+
 			_customTypes.Add(type.Name, type);
 			return true;
 		}

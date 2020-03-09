@@ -41,6 +41,8 @@ namespace Minsk.CodeAnalysis.Symbols
 		public override TypeType Type => TypeType.Advanced;
 		public override bool IsData => _isData;
 		public override bool AllowsNone => false;
+		public override bool HasDefaultValue => false;
+		public override object DefaultValue => null;
 
 		public VariableSymbolCollection StaticFields { get; }
 		public VariableSymbolCollection Fields { get; }
@@ -48,6 +50,7 @@ namespace Minsk.CodeAnalysis.Symbols
 		public FunctionSymbolCollection Functions { get; }
 		public TypeSymbol Parent { get; }
 		public TypeSymbol[] CanBeCastedTo { get; }
+
 
 		//private static TypeSymbol _size = null;
 		//public static TypeSymbol Size

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 
 namespace Slides
@@ -6,6 +7,7 @@ namespace Slides
 	[Serializable]
 	public class Unit
 	{
+		private static CultureInfo _usCulture = CultureInfo.CreateSpecificCulture("US-us");
 		public float Value { get; }
 		public UnitKind Kind { get; }
 
@@ -18,6 +20,8 @@ namespace Slides
 			Addition,
 			CharacterWidth,
 			Subtraction,
+			HorizontalPercent,
+			VerticalPercent,
 		}
 
 		public Unit(float value, UnitKind kind)
@@ -29,14 +33,14 @@ namespace Slides
 		public Unit()
 		{
 			Value = 0;
-			Kind = UnitKind.Point;
+			Kind = UnitKind.Pixel;
 		}
 
 		public override string ToString()
 		{
 			if (Kind == UnitKind.Auto)
 				return "auto";
-			return $"{Value}{ToString(Kind)}";
+			return $"{Value.ToString(_usCulture)}{ToString(Kind)}";
 		}
 
 		public string ToString(IFormatProvider formatProvider)
@@ -60,6 +64,10 @@ namespace Slides
 					return "auto";
 				case UnitKind.CharacterWidth:
 					return "ch";
+				case UnitKind.HorizontalPercent:
+					return "vw";
+				case UnitKind.VerticalPercent:
+					return "vh";
 				default:
 					return kind.ToString();
 			}
@@ -73,18 +81,29 @@ namespace Slides
 				return b;
 			if (b.Value == 0 && b.Kind != UnitKind.Auto)
 				return a;
+			
 			return new UnitAddition(a, b);
 		}
 
 		public static Unit operator -(Unit a, Unit b)
 		{
-			if (a.Kind == b.Kind)
+			if (a.Kind == b.Kind && a.Kind != UnitKind.Subtraction && a.Kind != UnitKind.Addition)
 				return new Unit(a.Value - b.Value, a.Kind);
 			if (a.Value == 0 && a.Kind != UnitKind.Auto)
 				return b;
 			if (b.Value == 0 && b.Kind != UnitKind.Auto)
 				return a;
 			return new UnitSubtraction(a, b);
+		}
+
+		public static bool operator ==(Unit left, Unit right)
+		{
+			return EqualityComparer<Unit>.Default.Equals(left, right);
+		}
+
+		public static bool operator !=(Unit left, Unit right)
+		{
+			return !(left == right);
 		}
 
 		public static bool TryParse(string text, IFormatProvider formatProvider, out Unit unitResult)
@@ -118,6 +137,12 @@ namespace Slides
 			return TryParse(text, CultureInfo.CurrentCulture, out unitResult);
 		}
 
+
+		public static Unit Abs(Unit unit)
+		{
+			return new Unit(Math.Abs(unit.Value), unit.Kind);
+		}
+
 		private static UnitKind? ToUnitKind(string v)
 		{
 			switch (v)
@@ -130,9 +155,12 @@ namespace Slides
 					return UnitKind.Pixel;
 				case "auto":
 					return UnitKind.Auto;
-
 				case "ch":
 					return UnitKind.CharacterWidth;
+				case "vw":
+					return UnitKind.HorizontalPercent;
+				case "vh":
+					return UnitKind.VerticalPercent;
 				default:
 					return null;
 			}
@@ -147,6 +175,14 @@ namespace Slides
 			if (value is int i)
 				return new Unit(i, UnitKind.Pixel);
 			return new Unit(-1, UnitKind.Auto);
+		}
+
+		public override bool Equals(object obj)
+		{
+			return obj is Unit unit &&
+					 Value == unit.Value &&
+					                     //Not always true. Like auto
+					 (Kind == unit.Kind || Value == 0);
 		}
 	}
 }

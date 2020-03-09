@@ -102,7 +102,7 @@ namespace Minsk.CodeAnalysis
 					Logger.LogUnexpectedErrorExpression(typeof(Serializer));
 					break;
 				case BoundNodeKind.FieldAccessExpression:
-					result = SerializeFieldAccessExpression((BoundFieldAccesExpression)expression);
+					result = SerializeFieldAccessExpression((BoundFieldAccessExpression)expression);
 					break;
 				case BoundNodeKind.FieldAssignmentExpression:
 					result = SerializeFieldAssignmentExpression((BoundFieldAssignmentExpression)expression);
@@ -118,9 +118,6 @@ namespace Minsk.CodeAnalysis
 					break;
 				case BoundNodeKind.LiteralExpression:
 					result = SerializeLiteralExpression((BoundLiteralExpression)expression);
-					break;
-				case BoundNodeKind.StaticFieldAccessExpression:
-					result = SerializeStaticFieldAccessExpression((BoundStaticFieldAccesExpression)expression);
 					break;
 				case BoundNodeKind.StringExpression:
 					result = SerializeStringExpression((BoundStringExpression)expression);
@@ -236,14 +233,14 @@ namespace Minsk.CodeAnalysis
 
 
 		private static string SerializeArrayExpression(BoundArrayExpression expression)
-			=> $"{string.Join(",", expression.BoundExpressions.Select(e => Serialize(e)))}";
+			=> $"{string.Join(",", expression.Expressions.Select(e => Serialize(e)))}";
 		private static string SerializeAssignmentExpression(BoundAssignmentExpression expression)
-			=> $"({string.Join(",", expression.Variables.Select(v => SerializeMin(v)))})={Serialize(expression.Expression)}";
+			=> $"({string.Join(",", expression.Variables.Select(v => SerializeMin(v.Variable)))})={Serialize(expression.Expression)}";
 		private static string SerializeBinaryExpression(BoundBinaryExpression expression)
 			=> $"{Serialize(expression.Left)}{Serialize(expression.Op)}{Serialize(expression.Right)}";
 		private static string SerializeConversion(BoundConversion conversion) => $"{Serialize(conversion.Expression)}:{conversion.Type}";
 		private static string SerializeEnumExpression(BoundEnumExpression expression) => $"{expression.Type}.{expression.Value}";
-		private static string SerializeFieldAccessExpression(BoundFieldAccesExpression expression)
+		private static string SerializeFieldAccessExpression(BoundFieldAccessExpression expression)
 			=> $"{Serialize(expression.Parent)}.{Serialize(expression.Field)}";
 		private static string SerializeFieldAssignmentExpression(BoundFieldAssignmentExpression expression)
 			=> $"{Serialize(expression.Field)}={Serialize(expression.Initializer)}";
@@ -278,8 +275,6 @@ namespace Minsk.CodeAnalysis
 			return value.ToString();
 		}
 
-		private static string SerializeStaticFieldAccessExpression(BoundStaticFieldAccesExpression expression)
-			=> $"{expression.BaseType}.{SerializeMin(expression.Field)}";
 		private static string SerializeStringExpression(BoundStringExpression expression)
 			=> $"{string.Join(",", expression.Expressions.Select(e => Serialize(e)))}";
 		private static string SerializeUnaryExpression(BoundUnaryExpression expression)

@@ -21,5 +21,11 @@ namespace Minsk.CodeAnalysis.Binding
 		public override BoundNodeKind Kind => BoundNodeKind.LiteralExpression;
 		public override TypeSymbol Type => _type;
 		public object Value { get; }
+
+		public override bool EqualsBoundExpression(BoundExpression expression)
+		{
+			var e = (BoundLiteralExpression)expression;
+			return Value.Equals(e.Value);
+		}
 	}
 }

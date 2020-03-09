@@ -47,14 +47,6 @@ namespace Slides
 		public Range range { get; }
 		public int value { get; }
 
-		private List<FieldDependency> _dependencies = new List<FieldDependency>();
-		public List<FieldDependency> get_Dependencies() => _dependencies;
-
-		public void add_Dependency(FieldDependency d)
-		{
-			_dependencies.Add(d);
-		}
-
 		public Slider(Range range)
 		{
 			this.range = range;

@@ -111,6 +111,10 @@ namespace Minsk.CodeAnalysis.Syntax
 					return SyntaxKind.GroupKeyword;
 				case "endgroup":
 					return SyntaxKind.EndGroupKeyword;
+				case "svggroup":
+					return SyntaxKind.SVGGroupKeyword;
+				case "endsvggroup":
+					return SyntaxKind.EndSVGGroupKeyword;
 				case "data":
 					return SyntaxKind.DataKeyword;
 				case "enddata":
@@ -178,6 +182,8 @@ namespace Minsk.CodeAnalysis.Syntax
 					return SyntaxKind.EndLibraryKeyword;
 				case SyntaxKind.GroupKeyword:
 					return SyntaxKind.EndGroupKeyword;
+				case SyntaxKind.SVGGroupKeyword:
+					return SyntaxKind.EndSVGGroupKeyword;
 				case SyntaxKind.DataKeyword:
 					return SyntaxKind.EndDataKeyword;
 				case SyntaxKind.ForKeyword:

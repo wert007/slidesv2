@@ -4,6 +4,7 @@ using System.Text;
 
 namespace Slides
 {
+
 	public enum ElementType
 	{
 		Image,
@@ -18,9 +19,11 @@ namespace Slides
 		CodeBlock,
 		IFrame,
 		Slider,
-		MathPlot
+		MathPlot,
+		SVGContainer,
+		Table,
+		TableChild
 	}
-
 	public abstract class Element : IFilterInput
 	{
 		//Maybe temporary. Could be that we need to support all css attributes. 
@@ -35,7 +38,6 @@ namespace Slides
 		public Orientation orientation { get; set; }
 		public Thickness margin { get; set; }
 		public Thickness padding { get; set; }
-		public float rotation { get; set; }
 		public Thickness marginAndPadding => margin + padding;
 		public Element parent { get; set; }
 		public Unit top
@@ -92,10 +94,14 @@ namespace Slides
 		Unit _height = null;
 		public Unit initWidth { get; set; }
 		public Unit initHeight { get; set; }
-		public abstract ElementType type { get; }
 		public string name { get; set; }
+		public bool isVisible { get; set; }
 		public CustomStyle hover { get; set; }
+		public abstract ElementType type { get; }
 		private Stack<CustomStyle> appliedStyles;
+
+
+		private Stack<Transform> _transforms = new Stack<Transform>();
 
 		private static int index = 0;
 
@@ -103,14 +109,13 @@ namespace Slides
 		{
 			borderColor = null;
 			borderThickness = new Thickness();
-			borderStyle = BorderStyle.Initial;
+			borderStyle = BorderStyle.Unset;
 			background = null;
-			color = null;
+			color = new Color(0, 0, 0, 0);
 			orientation = Orientation.LeftTop;
 			margin = new Thickness();
 			padding = new Thickness();
-			rotation = 0;
-
+			isVisible = true;
 			appliedStyles = new Stack<CustomStyle>();
 
 			width = null;
@@ -124,9 +129,25 @@ namespace Slides
 			appliedStyles.Push(style);
 		}
 
+		public void translate(Unit x, Unit y)
+		{
+			_transforms.Push(new SingleValueTransform(TransformType.TranslateX, x));
+			_transforms.Push(new SingleValueTransform(TransformType.TranslateY, y));
+		}
+
+		public void rotate(float degree)
+		{
+			_transforms.Push(new RotationTransform(TransformType.RotateZ, degree));
+		}
+
 		public CustomStyle[] get_AppliedStyles()
 		{
 			return appliedStyles.ToArray();
+		}
+
+		public Transform[] get_Transforms()
+		{
+			return _transforms.ToArray();
 		}
 
 		protected abstract Unit get_InitialWidth();

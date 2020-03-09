@@ -6,7 +6,7 @@ namespace Minsk.CodeAnalysis.Binding
 {
 	internal sealed class BoundAssignmentExpression : BoundExpression
 	{
-		public BoundAssignmentExpression(VariableSymbol[] variables, BoundExpression expression)
+		public BoundAssignmentExpression(BoundVariableExpression[] variables, BoundExpression expression)
 		{
 			Variables = variables;
 			Expression = expression;
@@ -15,7 +15,22 @@ namespace Minsk.CodeAnalysis.Binding
 		public override BoundNodeKind Kind => BoundNodeKind.AssignmentExpression;
 		public override TypeSymbol Type => Expression.Type;
 		public BoundExpression Expression { get; }
-		public VariableSymbol[] Variables { get; }
+		public BoundVariableExpression[] Variables { get; }
+
+		public override bool EqualsBoundExpression(BoundExpression expression)
+		{
+			var e = (BoundAssignmentExpression)expression;
+			if (Variables.Length != e.Variables.Length)
+				return false;
+			if (!Expression.EqualsBoundExpression(e.Expression))
+				return false;
+			for (int i = 0; i < Variables.Length; i++)
+			{
+				if (!Variables[i].EqualsBoundExpression(e.Variables[i]))
+					return false;
+			}
+			return true;
+		}
 
 	}
 }

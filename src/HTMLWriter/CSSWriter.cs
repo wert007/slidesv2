@@ -5,6 +5,7 @@ using System;
 using System.CodeDom.Compiler;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace HTMLWriter
@@ -69,10 +70,50 @@ namespace HTMLWriter
 			EndSelector();
 		}
 
+		public void WriteAttributeIfNotDefault(string name, object value, object defaultValue)
+		{
+			if (value == null)
+				return;
+			if (value.Equals(defaultValue))
+				return;
+			WriteAttribute(name, value);
+		}
+
 		public void WriteAttributeIfValue(string name, object value)
 		{
 			if (value != null)
 				WriteAttribute(name, value);
+		}
+
+		public static string ToCssAttribute(string field)
+		{
+			switch (field)
+			{
+				case "font":
+					return "font-family";
+				case "fontsize":
+					return "font-size";
+				case "align":
+					return "text-align";
+				case "borderWidth":
+				case "borderThickness":
+					return "border-width";
+				case "borderColor":
+					return "border-color";
+				case "borderStyle":
+					return "border-style";
+				case "text":
+					return "innerHTML"; //TODO: Hacky
+				case "padding":
+				case "color":
+				case "background":
+				case "filter":
+				case "margin":
+					return field;
+				default:
+					Logger.LogUnmatchedCSSField(field);
+					return field;
+			}
 		}
 
 		internal void WriteAttribute(string name, object value)
@@ -97,6 +138,9 @@ namespace HTMLWriter
 					break;
 				case ImageStretching stretching:
 					WriteImageStretching(stretching);
+					break;
+				case UnitSubtraction unitSubtraction:
+					_writer.Write($"calc({unitSubtraction})");
 					break;
 				case UnitAddition unitAddition:
 					_writer.Write($"calc({unitAddition})");
@@ -133,7 +177,7 @@ namespace HTMLWriter
 
 		private void WriteFilter(Filter filter)
 		{
-			string parameters = "";
+			string parameters;
 			switch (filter)
 			{
 				case BlurFilter blur:
@@ -185,6 +229,7 @@ namespace HTMLWriter
 		{
 			switch (a)
 			{
+				case Alignment.Unset:
 				case Alignment.Left:
 					_writer.Write("left");
 					break;
@@ -261,6 +306,8 @@ namespace HTMLWriter
 					return $"url(\"{i.Path.Replace('\\', '/')}\")";
 				case UnitAddition unitAddition:
 					return $"calc({unitAddition})";
+				case UnitSubtraction unitSubtraction:
+					return $"calc({unitSubtraction})";
 				case Unit unit:
 					return unit.ToString();
 				case Font font:
@@ -270,6 +317,8 @@ namespace HTMLWriter
 				case Filter filter:
 					throw new NotImplementedException();
 				//return ToString(filter);
+				case float f:
+					return f.ToString(_usCulture);
 				default:
 					return value.ToString();
 			}

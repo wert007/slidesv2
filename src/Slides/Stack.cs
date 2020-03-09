@@ -3,20 +3,21 @@ using System.Collections.Generic;
 
 namespace Slides
 {
-	public class Stack : Element
-	{
-		private List<Element> _children = new List<Element>();
-
-		public Element[] children => _children.ToArray();
-		public StackOrientation StackFlow { get; }
-
-		public enum StackOrientation
+		public enum FlowAxis
 		{
 			Horizontal,
 			Vertical
 		}
 
-		public Stack(StackOrientation orientation)
+	public class Stack : Element
+	{
+		private List<Element> _children = new List<Element>();
+
+		public Element[] children => _children.ToArray();
+		public FlowAxis StackFlow { get; }
+
+
+		public Stack(FlowAxis orientation)
 		{
 			StackFlow = orientation;
 		}
@@ -31,14 +32,14 @@ namespace Slides
 		{
 			switch (StackFlow)
 			{
-				case StackOrientation.Horizontal:
+				case FlowAxis.Horizontal:
 					var result = children[0].width;
 					for (int i = 1; i < children.Length; i++)
 					{
 						result += children[i].width;
 					}
 					return result;
-				case StackOrientation.Vertical:
+				case FlowAxis.Vertical:
 
 					var max = children[0].width;
 					for (int i = 1; i < children.Length; i++)
@@ -59,14 +60,14 @@ namespace Slides
 		{
 			switch (StackFlow)
 			{
-				case StackOrientation.Vertical:
+				case FlowAxis.Vertical:
 					var result = children[0].height;
 					for (int i = 1; i < children.Length; i++)
 					{
 						result += children[i].height;
 					}
 					return result;
-				case StackOrientation.Horizontal:
+				case FlowAxis.Horizontal:
 					var max = children[0].height;
 					for (int i = 1; i < children.Length; i++)
 					{

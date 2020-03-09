@@ -2,6 +2,7 @@
 using Slides;
 using Slides.Code;
 using Slides.MathExpressions;
+using Slides.SVG;
 using System;
 using System.IO;
 using System.Linq;
@@ -219,7 +220,7 @@ namespace HTMLWriter
 			{
 				WriteElement(parent.Name, element);
 			}
-			for(int i = 0; i < step.DataChildren.Length;i++)
+			for (int i = 0; i < step.DataChildren.Length; i++)
 			{
 				if (step.DataChildren[i] is MathFormula f)
 					WriteMathFormula(parent.Name, step.DataChildrenNames[i], f);
@@ -247,6 +248,12 @@ namespace HTMLWriter
 
 		private static void WriteElement(string parentName, Element element, Element parent = null)
 		{
+			//This is totally wrong!
+			foreach (var style in element.get_AppliedStyles())
+			{
+				if (style.ModifiedFields.ContainsKey("orientation"))
+					element.orientation = (Orientation)style.ModifiedFields["orientation"];
+			}
 			StyleWriter.WriteElement(_cssWriter, parentName, element, parent);
 			switch (element.type)
 			{
@@ -285,6 +292,15 @@ namespace HTMLWriter
 					break;
 				case ElementType.Slider:
 					WriteSlider(parentName, (Slider)element);
+					break;
+				case ElementType.SVGContainer:
+					WriteSVGContainer(parentName, (SVGContainer)element);
+					break;
+				case ElementType.Table:
+					WriteTable(parentName, (Table)element);
+					break;
+				case ElementType.TableChild:
+					WriteTableChild(parentName, (TableChild)element);
 					break;
 				default:
 					throw new Exception($"ElementType unknown: {element.type}");
@@ -365,7 +381,6 @@ namespace HTMLWriter
 			if (id == null)
 				throw new Exception();
 			var jsId = id.Replace('-', '_');
-			WriteSliderFunction(parentName, element);
 			_htmlWriter.PushAttribute("type", "range");
 			_htmlWriter.PushAttribute("min", element.range.From.ToString());
 			_htmlWriter.PushAttribute("max", element.range.To.ToString());
@@ -377,28 +392,49 @@ namespace HTMLWriter
 			_htmlWriter.EndTag();
 		}
 
-		private static void WriteSliderFunction(string parentName, Slider element)
+		private static void WriteSVGContainer(string parentName, SVGContainer element)
 		{
 			var id = $"{parentName}-{element.name}";
-			var jsId = id.Replace('-', '_');
-			_jsWriter.StartFunction($"oninput_{jsId}");
-			_jsWriter.WriteVariableDeclarationInline("slider", $"document.getElementById('{id}')");
-			foreach (var d in element.get_Dependencies())
+			if (string.IsNullOrEmpty(element.name))
+				id = null;
+
+			var child = element.Element;
+
+			_htmlWriter.PushAttribute("viewBox", $"{child.x} {child.y} {child.width} {child.height}");
+			_htmlWriter.StartTag("svg", id: id, classes: "svgcontainer " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
+			SVGWriter.Write(_htmlWriter, child);
+			_htmlWriter.EndTag();
+		}
+
+		private static void WriteTable(string parentName, Table element)
+		{
+			var id = $"{parentName}-{element.name}";
+			if (string.IsNullOrEmpty(element.name))
+				id = null;
+			_htmlWriter.StartTag("table", id: id, classes: "table " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
+			var cellStyle = element.get_TableChildStyle(parentName);
+			StyleWriter.Write(_cssWriter, cellStyle, out _);
+			for (int r = 0; r < element.rows; r++)
 			{
-				if(d.Element != null) 
+				_htmlWriter.StartTag("tr");
+				for (int c = 0; c < element.columns; c++)
 				{
-					_jsWriter.WriteVariableDeclarationInline(d.Element.name, $"document.getElementById('{parentName}-{d.Element.name}')");
-					_jsWriter.WriteAssignment($"{d.Element.name}.{JavaScriptWriter.ToJSAttribute(StyleWriter.ToCssAttribute(d.Field))}", d.Value.Insert("slider.value"));
+					element[r, c].applyStyle(cellStyle);
+					WriteElement(id, element[r, c], element);
 				}
-				else if(d.MathFormula != null)
-				{
-					//TODO: Use of parentName is hacky. But! 
-					//The slider should be on the same slide as the math expression
-					_jsWriter.WriteAssignment($"{parentName}_{d.MathFormula.Name}_scope.{d.Field}", d.Value.Insert("slider.value"));
-					_jsWriter.WriteFunctionCall($"recalculate_{parentName}_{d.MathFormula.Name}_scope");
-				}
+				_htmlWriter.EndTag();
 			}
-			_jsWriter.EndFunction();
+			_htmlWriter.EndTag();
+		}
+
+		private static void WriteTableChild(string parentName, TableChild element)
+		{
+			var id = $"{parentName}-{element.name}";
+			if (string.IsNullOrEmpty(element.name))
+				id = null;
+			_htmlWriter.StartTag("td", id: id, classes: "tablecell " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
+			_htmlWriter.Write(element.content);
+			_htmlWriter.EndTag();
 		}
 
 		private static void WriteContainer(string parentName, Container element)

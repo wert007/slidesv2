@@ -85,6 +85,8 @@ namespace Minsk.CodeAnalysis.Syntax
 					return ParseTemplateStatement();
 				case SyntaxKind.GroupKeyword:
 					return ParseGroupStatement();
+				case SyntaxKind.SVGGroupKeyword:
+					return ParseSVGGroupStatement();
 				case SyntaxKind.StyleKeyword:
 					return ParseStyleStatement();
 				case SyntaxKind.AnimationKeyword:
@@ -431,7 +433,11 @@ namespace Minsk.CodeAnalysis.Syntax
 		private ArrayIndexExpressionSyntax ParseIndexedArrayExpression()
 		{
 			var openBracketToken = MatchToken(SyntaxKind.OpenBracketToken);
-			var index = ParseBinaryExpression();
+			ExpressionSyntax index = null;
+			if (Current.Kind == SyntaxKind.PeriodPeriodToken)
+				index = new AnonymForExpressionSyntax(MatchToken(SyntaxKind.PeriodPeriodToken));
+			else
+				index = ParseBinaryExpression();
 			var closeBracketToken = MatchToken(SyntaxKind.CloseBracketToken);
 			ArrayIndexExpressionSyntax child = null;
 			if (Current.Kind == SyntaxKind.OpenBracketToken)
@@ -575,6 +581,18 @@ namespace Minsk.CodeAnalysis.Syntax
 			var endGroupKeyword = MatchToken(SyntaxKind.EndGroupKeyword);
 
 			return new GroupStatementSyntax(groupKeyword, identifier, parameterStatement, colonToken, body, endGroupKeyword);
+		}
+
+		private SVGGroupStatementSyntax ParseSVGGroupStatement()
+		{
+			var svgGroupKeyword = MatchToken(SyntaxKind.SVGGroupKeyword);
+			var identifier = MatchToken(SyntaxKind.IdentifierToken);
+			var parameterStatement = ParseParameterBlockStatement();
+			var colonToken = MatchToken(SyntaxKind.ColonToken);
+			var body = ParseBlockStatement(SyntaxKind.SVGGroupKeyword);
+			var endSVGGroupKeyword = MatchToken(SyntaxKind.EndSVGGroupKeyword);
+
+			return new SVGGroupStatementSyntax(svgGroupKeyword, identifier, parameterStatement, colonToken, body, endSVGGroupKeyword);
 		}
 
 		private BlockStatementSyntax ParseBlockStatement(SyntaxKind starter)
@@ -772,7 +790,7 @@ namespace Minsk.CodeAnalysis.Syntax
 					return ParseNoneLiteral();
 
 				case SyntaxKind.OpenBracketToken:
-					return ParseArrayConstructorExpression();
+					return ParseArrayExpression();
 
 				case SyntaxKind.NewKeyword:
 					return ParseConstructorExpression();
@@ -809,7 +827,7 @@ namespace Minsk.CodeAnalysis.Syntax
 					return ParseNoneLiteral();
 
 				case SyntaxKind.OpenBracketToken:
-					return ParseArrayConstructorExpression();
+					return ParseArrayExpression();
 
 				case SyntaxKind.NewKeyword:
 					return ParseConstructorExpression();
@@ -996,6 +1014,13 @@ namespace Minsk.CodeAnalysis.Syntax
 			return new ConstructorExpressionSyntax(newKeyword, functionCall);
 		}
 
+		private ExpressionSyntax ParseArrayExpression()
+		{
+			if (Peek(1).Kind == SyntaxKind.ColonToken)
+				return ParseEmptyArrayConstructorExpression();
+			return ParseArrayConstructorExpression();
+		}
+
 		private ExpressionSyntax ParseArrayConstructorExpression()
 		{
 			var openBracketToken = MatchToken(SyntaxKind.OpenBracketToken);
@@ -1015,6 +1040,17 @@ namespace Minsk.CodeAnalysis.Syntax
 			var closeBracketToken = MatchToken(SyntaxKind.CloseBracketToken);
 
 			return new ArrayConstructorExpressionSyntax(openBracketToken, expressions.ToArray(), closeBracketToken);
+		}
+
+		private ExpressionSyntax ParseEmptyArrayConstructorExpression()
+		{
+			var openBracketToken = MatchToken(SyntaxKind.OpenBracketToken);
+			var typeDeclaration = TryParseTypeDeclaration();
+			var semicolonToken = MatchToken(SyntaxKind.SemicolonToken);
+			var lengthExpression = ParseExpression();
+			var closeBracketToken = MatchToken(SyntaxKind.CloseBracketToken);
+
+			return new EmptyArrayConstructorExpressionSyntax(openBracketToken, typeDeclaration, semicolonToken, lengthExpression, closeBracketToken);
 		}
 
 		private ExpressionSyntax ParseParenthesizedExpression()

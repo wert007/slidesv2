@@ -143,11 +143,11 @@ namespace Minsk.CodeAnalysis
 			Report(span, message, DiagnosticLevel.Error);
 		}
 
-		public void ReportBadTopLevelStatement(SyntaxToken token)
+		public void ReportBadTopLevelStatement(SyntaxNode node)
 		{
 			//TODO(Improvement): Maybe say, which Tokens (Keywords) are expected/allowed..
-			var message = $"Bad top level token: '{token}'";
-			Report(token.Span, message, DiagnosticLevel.Error);
+			var message = $"Bad top level token: '{node}'";
+			Report(node.Span, message, DiagnosticLevel.Error);
 		}
 
 		public void ReportMissingCharacter(int position, char givenCharacter, char missingCharacter)
@@ -200,7 +200,8 @@ namespace Minsk.CodeAnalysis
 			if (parent is AdvancedTypeSymbol advanced)
 			{
 				var mostSimiliarOnes = SimiliarValues(advanced.Fields.Select(v => v.Name).ToArray(), name);
-				message += $" Maybe try {Join(mostSimiliarOnes, "'", "'")}.";
+				if(mostSimiliarOnes.Length > 0)
+					message += $" Maybe try {Join(mostSimiliarOnes, "'", "'")}.";
 			}
 			Report(span, message, DiagnosticLevel.Error);
 		}
@@ -426,6 +427,12 @@ namespace Minsk.CodeAnalysis
 		{
 			var message = $"Expected {expected} unknowns, but actually {actual} were found in '{mathExpression.Expression}'.";
 			Report(span, message, DiagnosticLevel.Error);
+		}
+
+		internal void ReportEmptyStyle(TextSpan span, string name)
+		{
+			var message = $"Style '{name}' has no body.";
+			Report(span, message, DiagnosticLevel.Warning);
 		}
 	}
 }

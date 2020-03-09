@@ -1,5 +1,9 @@
 ﻿namespace Slides
 {
+	//TODO: Get rid of it! We have SVG Rect! 
+	//We don't need to versions of the same
+	//thing. Especially if one of those is
+	//just a div!
 	public class Rectangle : Element
 	{
 

@@ -18,5 +18,18 @@ namespace Minsk.CodeAnalysis.Binding
 		public BoundBinaryOperator Op { get; }
 		public BoundExpression Right { get; }
 
+		public override bool EqualsBoundExpression(BoundExpression expression)
+		{
+			var e = (BoundBinaryExpression)expression;
+			if (e.Op.SyntaxKind != Op.SyntaxKind)
+				return false;
+			if (e.Op.Kind != Op.Kind)
+				return false;
+			if (!Left.EqualsBoundExpression(e.Left))
+				return false;
+			if (!Right.EqualsBoundExpression(e.Right))
+				return false;
+			return true;
+		}
 	}
 }

@@ -61,8 +61,10 @@ let options_{plot.name} = {{
 			curve: 'straight',
 		}},
 		xaxis: {{
+			tickAmount: {plot.xTickAmount},
 			labels: {{
 				show: {showXAxis},
+				hideOverlappingLabels: true,
 			}},
 			axisBorder: {{
 				show: {showXAxis},
@@ -78,6 +80,7 @@ let options_{plot.name} = {{
 			}},
 		}},
 		yaxis: {{
+			tickAmount: {plot.yTickAmount},
 			labels: {{
 				show: {showYAxis},
 			}},
@@ -121,15 +124,15 @@ let options_{plot.name} = {{
 			writer.EndArray();
 			writer.EndVariableDeclaration();
 
-			//TODO
-			var x = "x";
-			writer.StartForLoop("i", plot.Range);
-			writer.WriteAssignment($"{scope}.{x}", "i");
+			writer.WriteVariableDeclarationInline("i", "0");
+			writer.StartForLoop("x", plot.Range.From.ToString(), plot.Range.To.ToString(), JavaScriptWriter.ValueToString(plot.Step));
+			writer.WriteAssignment($"{scope}.{plot.InputVariable}", $"x");
 			writer.WriteAssignment($"data[i]", "{}");
-			writer.WriteAssignment($"data[i].x", "i");
+			writer.WriteAssignment($"data[i].x", $"x");
 			writer.WriteAssignment($"data[i].y", $"math.evaluate('{plot.Graph.Expression}', {scope})");
+			writer.WriteLine("i++;");
 			writer.EndFor();
-			writer.WriteAssignment($"{scope}.{x}", "NaN");
+			writer.WriteAssignment($"{scope}.{plot.InputVariable}", "NaN");
 
 			writer.WriteVariableDeclarationInline("plot", $"getPlot('{parentName}-{plot.name}')");
 			//let z = [{
@@ -171,9 +174,11 @@ let options_{chart.name} = {{
 			curve: 'smooth',
 		}},
 		xaxis: {{
+			tickAmount: {chart.xTickAmount},
 			categories: [{string.Join(", ", c.values[0].Select(f => f.ToString("0.00", _usCulture)))}],
 			labels: {{
 				show: {showXAxis},
+				hideOverlappingLabels: true,
 			}},
 			axisBorder: {{
 				show: {showXAxis},
@@ -189,6 +194,7 @@ let options_{chart.name} = {{
 			}},
 		}},
 		yaxis: {{
+			tickAmount: {chart.yTickAmount},
 			labels: {{
 				show: {showYAxis},
 			}},

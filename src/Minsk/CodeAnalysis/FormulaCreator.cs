@@ -10,10 +10,18 @@ namespace Minsk.CodeAnalysis
 	{
 		public static bool NeedsDependency(BoundExpression expression, out BoundExpression dependent)
 		{
-			if (expression is BoundFieldAccesExpression fieldAccess)
+			if (expression is BoundFieldAccessExpression fieldAccess)
 			{
 				if (fieldAccess.Parent.Type == TypeSymbolTypeConverter.Instance.LookSymbolUp(typeof(Slider)) &&
 					fieldAccess.Field.Variable.Name == "value")
+				{
+					dependent = expression;
+					return true;
+				}
+			}
+			else if(expression is BoundVariableExpression variable)
+			{
+				if(variable.Variable.Name == "totalTime")
 				{
 					dependent = expression;
 					return true;

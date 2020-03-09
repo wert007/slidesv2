@@ -9,7 +9,7 @@ namespace Minsk.CodeAnalysis.Symbols
 	public class ArrayTypeSymbol : TypeSymbol
 	{
 		public TypeSymbol Child { get; private set; }
-		public ArrayTypeSymbol(TypeSymbol child) : base(child.Name + "[]")
+		public ArrayTypeSymbol(TypeSymbol child) : base($"{child.Name}[]")
 		{
 			Child = child;
 		}
@@ -34,6 +34,21 @@ namespace Minsk.CodeAnalysis.Symbols
 		public override bool IsData => Child.IsData;
 
 		public override bool AllowsNone => false;
+
+		//How long is our default value? 
+		//Probably 0, but then we don't 
+		//depend on the child...
+		//so idk
+		public override bool HasDefaultValue => true; // Child.HasDefaultValue;
+		public override object DefaultValue
+		{
+			get
+			{
+				var result = new object[0];
+				return result;
+			}
+		}
+
 
 		public override bool InnerCanBeConvertedTo(TypeSymbol to)
 		{

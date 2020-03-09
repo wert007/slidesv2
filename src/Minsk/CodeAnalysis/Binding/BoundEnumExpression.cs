@@ -16,5 +16,11 @@ namespace Minsk.CodeAnalysis.Binding
 
 		public override BoundNodeKind Kind => BoundNodeKind.EnumExpression;
 
+		public override bool EqualsBoundExpression(BoundExpression expression)
+		{
+			var e = (BoundEnumExpression)expression;
+			return Value.Equals(e.Value);
+		}
+
 	}
 }

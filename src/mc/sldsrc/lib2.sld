@@ -26,7 +26,8 @@ group introductingQuote(quote~: string, author~: string):
 	lblAuthor.font = quoteFont~;
 	lblAuthor.orientation = Horizontal.Right | Vertical.Bottom;
 
-	applyStyle(transparentWhiteBackground);
+	//applyStyle(transparentWhiteBackground);
+	background = argb(127, 236, 236, 236);
 	orientation = Horizontal.Center | Vertical.Center;
 
 	initWidth = 50%;

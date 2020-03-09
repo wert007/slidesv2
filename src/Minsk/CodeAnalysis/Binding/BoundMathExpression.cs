@@ -23,5 +23,11 @@ namespace Minsk.CodeAnalysis.Binding
 		public VariableSymbol[] Fields { get; }
 
 		public override BoundNodeKind Kind => BoundNodeKind.MathExpression;
+
+		public override bool EqualsBoundExpression(BoundExpression expression)
+		{
+			var e = (BoundMathExpression)expression;
+			return Expression == e.Expression;
+		}
 	}
 }

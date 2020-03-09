@@ -14,6 +14,20 @@ namespace Slides
 		public Unit A { get; }
 		public Unit B { get; }
 
+		public Unit Add(Unit u)
+		{
+			if (A.Kind == u.Kind)
+				return new UnitAddition(A + u, B);
+			return new UnitAddition(A, B + u);
+		}
+		//TODO: Precedence
+		public Unit Subtract(Unit u)
+		{
+			if (A.Kind == u.Kind)
+				return new UnitAddition(A - u, B);
+			return new UnitAddition(A, B - u);
+		}
+
 		public override string ToString()
 		{
 			return $"{A} + {B}";
@@ -31,8 +45,24 @@ namespace Slides
 		public Unit A { get; }
 		public Unit B { get; }
 
+		public Unit Add(Unit u)
+		{
+			if (A.Kind == u.Kind)
+				return new UnitSubtraction(A + u, B);
+			return new UnitSubtraction(A, B + u);
+		}
+		//TODO: Precedence
+		public Unit Subtract(Unit u)
+		{
+			if (A.Kind == u.Kind)
+				return new UnitSubtraction(A - u, B);
+			return new UnitSubtraction(A, B - u);
+		}
 		public override string ToString()
 		{
+			if(B.Kind == UnitKind.Subtraction ||
+				B.Kind == UnitKind.Addition)
+				return $"{A} - ({B})";
 			return $"{A} - {B}";
 		}
 	}

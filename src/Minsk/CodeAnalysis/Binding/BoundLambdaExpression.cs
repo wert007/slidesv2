@@ -2,6 +2,7 @@
 
 namespace Minsk.CodeAnalysis.Binding
 {
+	//TODO: Not really supported!
 	internal class BoundLambdaExpression : BoundExpression
 	{
 		public BoundLambdaExpression(VariableSymbol variable, BoundExpression expression)
@@ -16,5 +17,10 @@ namespace Minsk.CodeAnalysis.Binding
 
 		public VariableSymbol Variable { get; }
 		public BoundExpression Expression { get; }
+
+		public override bool EqualsBoundExpression(BoundExpression expression)
+		{
+			return false;
+		}
 	}
 }

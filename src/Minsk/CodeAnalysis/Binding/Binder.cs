@@ -11,6 +11,7 @@ using Slides;
 using Slides.Debug;
 using Slides.Filters;
 using Slides.MathExpressions;
+using Slides.SVG;
 
 namespace Minsk.CodeAnalysis.Binding
 {
@@ -22,6 +23,9 @@ namespace Minsk.CodeAnalysis.Binding
 		private BoundScope _scope;
 		private Dictionary<string, VariableSymbol> _builtInConstants;
 		private TypeSymbolTypeConverter _builtInTypes;
+		private bool _isInSVGGroup = false;
+
+		private Stack<BoundExpression> _noneableIfConditions = new Stack<BoundExpression>();
 
 		private Dictionary<VariableSymbol, bool> _noneableVariableSet = new Dictionary<VariableSymbol, bool>();
 		private Dictionary<VariableSymbol, BoundStatement> _declarations = new Dictionary<VariableSymbol, BoundStatement>();
@@ -33,16 +37,23 @@ namespace Minsk.CodeAnalysis.Binding
 		public Binder(BoundScope parent, LibrarySymbol[] references, string fileName)
 		{
 			_scope = new BoundScope(parent);
-			_references = references.Concat(new LibrarySymbol[]
+			if (references != null)
+				_references = references.Concat(new LibrarySymbol[]
+					{
+						LibrarySymbol.Seperator,
+						LibrarySymbol.Code,
+					}).ToArray();
+			else
+				_references = new LibrarySymbol[]
 				{
 					LibrarySymbol.Seperator,
 					LibrarySymbol.Code,
-				}).ToArray();
+				};
 			_diagnostics = new DiagnosticBag(fileName);
 
 			_builtInTypes = TypeSymbolTypeConverter.Instance;
 			_builtInConstants = new Dictionary<string, VariableSymbol>();
-			_builtInConstants.Add("elapsedTime", new VariableSymbol("elapsedTime", true, _builtInTypes.LookSymbolUp(typeof(float)), false));
+			_builtInConstants.Add("totalTime", new VariableSymbol("totalTime", true, _builtInTypes.LookSymbolUp(typeof(Time)), false));		//	_builtInConstants.Add("elapsedTime", new VariableSymbol("elapsedTime", true, _builtInTypes.LookSymbolUp(typeof(float)), false));
 
 			_builtInConstants.Add("seperator", new VariableSymbol("seperator", true, _builtInTypes.LookSymbolUp(typeof(LibrarySymbol)), false));
 			_builtInConstants.Add("code", new VariableSymbol("code", true, _builtInTypes.LookSymbolUp(typeof(LibrarySymbol)), false));
@@ -111,6 +122,9 @@ namespace Minsk.CodeAnalysis.Binding
 				case SyntaxKind.GroupStatement:
 					CollectDeclarations((GroupStatementSyntax)syntax);
 					break;
+				case SyntaxKind.SVGGroupStatement:
+					CollectDeclarations((SVGGroupStatementSyntax)syntax);
+					break;
 				case SyntaxKind.DataStatement:
 					CollectDeclarations((DataStatementSyntax)syntax);
 					break;
@@ -139,7 +153,8 @@ namespace Minsk.CodeAnalysis.Binding
 					//your code. So we don't collect them from anywhere else.
 					break;
 				default:
-					throw new Exception();
+					_diagnostics.ReportBadTopLevelStatement(syntax);
+					return;
 			}
 		}
 
@@ -162,6 +177,23 @@ namespace Minsk.CodeAnalysis.Binding
 			constructor.Add(new FunctionSymbol("constructor", fields, null));
 			constructor.Seal();
 			var type = new AdvancedTypeSymbol(name, fields, constructor, FunctionSymbolCollection.Empty, _builtInTypes.LookSymbolUp(typeof(Element)));
+			constructor[0].Type = type;
+
+			if (!_scope.TryDeclare(type))
+				_diagnostics.ReportTypeAlreadyDeclared(syntax.Identifier.Span, name);
+			_declarations.Add(new VariableSymbol(name, true, type, false), null);
+		}
+		private void CollectDeclarations(SVGGroupStatementSyntax syntax)
+		{
+			var name = syntax.Identifier.Text;
+			_scope = new BoundScope(_scope);
+			var boundParameters = BindParameterBlockStatement(syntax.ParameterStatement);
+			_scope = _scope.Parent;
+			var fields = new VariableSymbolCollection(boundParameters.Statements.Select(p => p.Variable));
+			var constructor = new FunctionSymbolCollection();
+			constructor.Add(new FunctionSymbol("constructor", fields, null));
+			constructor.Seal();
+			var type = new AdvancedTypeSymbol(name, fields, constructor, FunctionSymbolCollection.Empty, _builtInTypes.LookSymbolUp(typeof(SVGGroup)));
 			constructor[0].Type = type;
 
 			if (!_scope.TryDeclare(type))
@@ -265,7 +297,11 @@ namespace Minsk.CodeAnalysis.Binding
 				_diagnostics.ReportVariableAlreadyDeclared(syntax.Identifier.Span, name);
 
 			//TODO: What to do, when we have multiple elements with the same name? We need to throw a diagnostic here!
-			_declarations.Add(variable, null);
+			//Great. Now thats done, we need to improve the diagnostic!
+			if(_declarations.ContainsKey(variable))
+				_diagnostics.ReportVariableAlreadyDeclared(syntax.Identifier.Span, name);
+			else
+				_declarations.Add(variable, null);
 		}
 
 		private BoundStatement BindStatement(StatementSyntax syntax)
@@ -282,6 +318,8 @@ namespace Minsk.CodeAnalysis.Binding
 					return BindSlideStatement((SlideStatementSyntax)syntax);
 				case SyntaxKind.GroupStatement:
 					return BindGroupStatement((GroupStatementSyntax)syntax);
+				case SyntaxKind.SVGGroupStatement:
+					return BindSVGGroupStatement((SVGGroupStatementSyntax)syntax);
 				case SyntaxKind.StyleStatement:
 					return BindStyleStatement((StyleStatementSyntax)syntax);
 				case SyntaxKind.AnimationStatement:
@@ -318,8 +356,9 @@ namespace Minsk.CodeAnalysis.Binding
 			var name = syntax.Variable.Identifier.Text;
 			var boundCollection = BindExpression(syntax.Collection);
 			var isRange = boundCollection.Type == _builtInTypes.LookSymbolUp(typeof(Range));
-			if (boundCollection.Type.Type != TypeType.Array && !isRange)
+			if (boundCollection.Type.Type != TypeType.Array && !isRange && boundCollection.Type != PrimitiveTypeSymbol.Error)
 			{
+				var boundArrayConstructor = (BoundArrayExpression)boundCollection;
 				_diagnostics.ReportCannotConvert(syntax.Collection.Span, boundCollection.Type, new ArrayTypeSymbol(boundCollection.Type));
 				return new BoundExpressionStatement(new BoundErrorExpression());
 			}
@@ -328,7 +367,7 @@ namespace Minsk.CodeAnalysis.Binding
 			{
 				variable = CheckGlobalVariableExpression(syntax.Variable, PrimitiveTypeSymbol.Integer, true);
 			}
-			else
+			else if(boundCollection.Type != PrimitiveTypeSymbol.Error)
 			{
 				var type = boundCollection.Type as ArrayTypeSymbol;
 				variable = CheckGlobalVariableExpression(syntax.Variable, type.Child, true);
@@ -398,12 +437,15 @@ namespace Minsk.CodeAnalysis.Binding
 		private BoundStatement BindIfStatement(IfStatementSyntax syntax)
 		{
 			var boundCondition = BindExpression(syntax.Condition);
-			VariableSymbol variableSymbol = null;
-			if (boundCondition.Type is NullableTypeSymbol n)
+			if(boundCondition.Kind == BoundNodeKind.Conversion)
 			{
-				variableSymbol = ExtractVariableSymbol(boundCondition);
-				variableSymbol.Type = n.BaseType;
+				var conv = (BoundConversion)boundCondition;
+				if(conv.Expression.Type.Type == TypeType.Nullable)
+					boundCondition = conv.Expression;
 			}
+			var isNoneable = boundCondition.Type.Type == TypeType.Nullable;
+			if (isNoneable)
+				_noneableIfConditions.Push(boundCondition);
 			else if (boundCondition.Type != PrimitiveTypeSymbol.Bool)
 			{
 				var toTypes = new TypeSymbol[]
@@ -414,13 +456,11 @@ namespace Minsk.CodeAnalysis.Binding
 				_diagnostics.ReportCannotConvert(syntax.Condition.Span, boundCondition.Type, toTypes);
 				boundCondition = new BoundErrorExpression();
 			}
-			var boundBody = BindStatement(syntax.Body);
-			if (variableSymbol != null)
-			{
-				variableSymbol.Type = new NullableTypeSymbol(variableSymbol.Type);
-			}
+			var body = BindStatement(syntax.Body);
+			if (isNoneable)
+				_noneableIfConditions.Pop();
 			var boundElse = BindElseClause(syntax.ElseClause);
-			return new BoundIfStatement(boundCondition, boundBody, boundElse);
+			return new BoundIfStatement(boundCondition, body, boundElse);
 		}
 
 		private BoundStatement BindElseClause(ElseClauseSyntax syntax)
@@ -441,7 +481,7 @@ namespace Minsk.CodeAnalysis.Binding
 					//Maybe hacky?
 					//Right now we only call this function, when we only CAN have one 
 					//variable (the if-extraction, and the library-accessor).
-					variableSymbol = ae.Variables[0];
+					variableSymbol = ae.Variables[0].Variable;
 
 					break;
 				case BoundNodeKind.VariableExpression:
@@ -449,7 +489,7 @@ namespace Minsk.CodeAnalysis.Binding
 					variableSymbol = ve.Variable;
 					break;
 				case BoundNodeKind.FieldAccessExpression:
-					var facc = (BoundFieldAccesExpression)boundCondition;
+					var facc = (BoundFieldAccessExpression)boundCondition;
 					variableSymbol = facc.Field.Variable;
 					break;
 				case BoundNodeKind.FieldAssignmentExpression:
@@ -610,8 +650,13 @@ namespace Minsk.CodeAnalysis.Binding
 				_scope.TryDeclare(new VariableSymbol("Label", false, _builtInTypes.LookSymbolUp(typeof(Label)), false));
 				_scope.TryDeclare(new VariableSymbol("Image", false, _builtInTypes.LookSymbolUp(typeof(Image)), false));
 			}
+			_assignedVariables.Clear();
 			var boundBody = BindBlockStatement(syntax.Body);
 			CheckUnusedSymbols(_scope);
+			if(!boundBody.Statements.Any())
+			{
+				_diagnostics.ReportEmptyStyle(syntax.Span, syntax.Identifier.Text);
+			}
 			_scope = _scope.Parent;
 			var name = syntax.Identifier.Text;
 			VariableSymbol variable = null;
@@ -708,12 +753,12 @@ namespace Minsk.CodeAnalysis.Binding
 			var boundBody = BindBlockStatement(syntax.Body);
 			if (!_assignedVariables.Any(a => a.Name == "initWidth"))
 			{
-				var variable = _assignedVariables.FirstOrDefault(a => a.Name == "initWidth");
+				//var variable = _assignedVariables.FirstOrDefault(a => a.Name == "initWidth");
 				_diagnostics.ReportVariableMustBeAssigned(syntax.Identifier.Span, "initWidth");
 			}
 			if (!_assignedVariables.Any(a => a.Name == "initHeight"))
 			{
-				var variable = _assignedVariables.FirstOrDefault(a => a.Name == "initHeight");
+				//var variable = _assignedVariables.FirstOrDefault(a => a.Name == "initHeight");
 				_diagnostics.ReportVariableMustBeAssigned(syntax.Identifier.Span, "initHeight");
 			}
 
@@ -725,6 +770,51 @@ namespace Minsk.CodeAnalysis.Binding
 			_scope.TryLookup(name, out TypeSymbol type);
 
 			var result = new BoundGroupStatement(type, boundParameters, boundBody);
+			_declarations[new VariableSymbol(name, true, type, false)] = result;
+			return result;
+		}
+
+		private BoundStatement BindSVGGroupStatement(SVGGroupStatementSyntax syntax)
+		{
+			var name = syntax.Identifier.Text;
+
+			_scope = new BoundScope(_scope);
+			var boundParameters = BindParameterBlockStatement(syntax.ParameterStatement);
+			_scope = new BoundScope(_scope);
+			foreach (var field in ((AdvancedTypeSymbol)_builtInTypes.LookSymbolUp(typeof(SVGGroup))).Fields)
+			{
+				//Throw no warnings
+				//Erm.. i think we don't?
+
+				_scope.Declare(field, true);
+			}
+			foreach (var function in ((AdvancedTypeSymbol)_builtInTypes.LookSymbolUp(typeof(SVGGroup))).Functions)
+			{
+				_scope.TryDeclare(function);
+			}
+			_assignedVariables.Clear();
+			_isInSVGGroup = true;
+			var boundBody = BindBlockStatement(syntax.Body);
+			_isInSVGGroup = false;
+			if (!_assignedVariables.Any(a => a.Name == "width"))
+			{
+				//var variable = _assignedVariables.FirstOrDefault(a => a.Name == "initWidth");
+				_diagnostics.ReportVariableMustBeAssigned(syntax.Identifier.Span, "width");
+			}
+			if (!_assignedVariables.Any(a => a.Name == "height"))
+			{
+				//var variable = _assignedVariables.FirstOrDefault(a => a.Name == "initHeight");
+				_diagnostics.ReportVariableMustBeAssigned(syntax.Identifier.Span, "height");
+			}
+
+			CheckUnusedSymbols(_scope);
+			CheckUnusedSymbols(_scope.Parent);
+			_scope = _scope.Parent.Parent;
+
+			//Already declared while collecting declarations.
+			_scope.TryLookup(name, out TypeSymbol type);
+
+			var result = new BoundSVGGroupStatement((AdvancedTypeSymbol)type, boundParameters, boundBody);
 			_declarations[new VariableSymbol(name, true, type, false)] = result;
 			return result;
 		}
@@ -753,10 +843,11 @@ namespace Minsk.CodeAnalysis.Binding
 		{
 			var name = syntax.Identifier.Text;
 			_scope.TryLookup(name, out VariableSymbol variable);
-
+			_scope = new BoundScope(_scope);
 			var parameter = BindParameterStatement(syntax.ParameterStatement.ParameterStatement, _builtInTypes.LookSymbolUp(typeof(SlideAttributes)), false);
 			_scope.TryDeclare(new VariableSymbol("slideCount", true, PrimitiveTypeSymbol.Integer, false));
 			var body = BindBlockStatement(syntax.Body);
+			_scope = _scope.Parent;
 			var result = new BoundTemplateStatement(variable, parameter, body);
 			_declarations[variable] = result;
 			return result;
@@ -853,6 +944,15 @@ namespace Minsk.CodeAnalysis.Binding
 				}
 			}
 
+			if(_isInSVGGroup)
+			{
+				var svgElementType = _builtInTypes.LookSymbolUp(typeof(SVGElement));
+				if (type.CanBeConvertedTo(_builtInTypes.LookSymbolUp(typeof(Element))) && !type.CanBeConvertedTo(svgElementType))
+				{
+					_diagnostics.ReportCannotConvert(syntax.Span, type, svgElementType);
+				}
+			}
+
 
 			for (int i = 0; i < syntax.Variables.Length; i++)
 			{
@@ -863,11 +963,10 @@ namespace Minsk.CodeAnalysis.Binding
 			}
 			if (variables.Count == 1)
 			{
-				var vs = variables.First();
-				if (vs.Type.Type == TypeType.Nullable)
-					_noneableVariableSet[vs] = initializer.Type.Type != TypeType.Nullable;
+				if (variables.First().Type.Type == TypeType.Nullable)
+					_noneableVariableSet[variables.First()] = initializer.Type.Type != TypeType.Nullable;
 				if (initializer is BoundMathExpression mathExpression)
-					_mathFormulas[vs] = mathExpression;
+					_mathFormulas[variables.First()] = mathExpression;
 			}
 			return new BoundVariableDeclaration(variables.ToArray(), initializer);
 		}
@@ -875,7 +974,64 @@ namespace Minsk.CodeAnalysis.Binding
 		private BoundStatement BindExpressionStatement(ExpressionStatementSyntax syntax)
 		{
 			var expression = BindExpression(syntax.Expression);
+			//TODO: Would be a nice feature
+			//		a[..] = b[..]
+			if(false && expression.Contains(new BoundAnonymForExpression()))
+			{
+				var variable = new VariableSymbol("#anonymFor", false, PrimitiveTypeSymbol.Integer, true);
+				Stack<BoundExpression> useCases = FindUsesOfAnonymFor(expression);
+				useCases.Peek().Type.TryLookUpFunction("len", out var lenFunctions);
+				BoundExpression right = new BoundFunctionAccessExpression(useCases.Pop(), new BoundFunctionExpression(lenFunctions[0], new BoundExpression[0], null));
+				while(useCases.Any())
+				{
+					useCases.Peek().Type.TryLookUpFunction("len", out lenFunctions);
+					GlobalFunctionsConverter.Instance.TryGetSymbol("min", out var minFunctions);
+					var lenFunctionCall = new BoundFunctionExpression(lenFunctions[0], new BoundExpression[0], null);
+					var arguments = new BoundExpression[] { 
+						right, 
+						new BoundFunctionAccessExpression(useCases.Pop(), lenFunctionCall) 
+					};
+					right = new BoundFunctionExpression(minFunctions[0], arguments, null);
+				}
+				GlobalFunctionsConverter.Instance.TryGetSymbol("int", out var intFunctions);
+				right = new BoundFunctionExpression(intFunctions[0], new BoundExpression[] { right }, null);
+				var collection = new BoundBinaryExpression(new BoundLiteralExpression(0), BoundBinaryOperator.Bind(SyntaxKind.PeriodPeriodToken, PrimitiveTypeSymbol.Integer, PrimitiveTypeSymbol.Integer), right);
+				//var bodyExpression = expression.Replace(new BoundAnonymForExpression(), new BoundVariableExpression(variable, null, PrimitiveTypeSymbol.Integer));
+				var body = new BoundBlockStatement(new BoundStatement[]
+				{
+					new BoundExpressionStatement(expression),
+				});
+				return new BoundForStatement(variable, collection, body);
+			}
 			return new BoundExpressionStatement(expression);
+		}
+
+		//TODO: Doesnt work. Think maybe more about, how AnonymForVariables can only
+		//occur in the BoundArrayIndecies of VariableExpressions, and look for those
+		//And if the contain one, then cut that BoundArrayIndex of.
+		private Stack<BoundExpression> FindUsesOfAnonymFor(BoundExpression expression)
+		{
+			if (expression.Equals(new BoundAnonymForExpression()))
+				return null;
+			if (!expression.Contains(new BoundAnonymForExpression()))
+				return new Stack<BoundExpression>();
+			var result = new Stack<BoundExpression>();
+			foreach (var node in expression.GetChildren())
+			{
+				if (!(node is BoundExpression exp))
+					continue;
+				var expResult = FindUsesOfAnonymFor(exp);
+				if(expResult == null)
+				{
+					result.Push(exp);
+					continue;
+				}
+				foreach (var u in FindUsesOfAnonymFor(exp))
+				{
+					result.Push(u);
+				}
+			}
+			return result;
 		}
 
 		private BoundExpression BindExpression(ExpressionSyntax syntax, TypeSymbol targetType)
@@ -896,43 +1052,71 @@ namespace Minsk.CodeAnalysis.Binding
 
 		private BoundExpression BindExpression(ExpressionSyntax syntax)
 		{
+			BoundExpression result = new BoundErrorExpression();
 			switch (syntax.Kind)
 			{
 				case SyntaxKind.ParenthesizedExpression:
-					return BindParenthesizedExpression((ParenthesizedExpressionSyntax)syntax);
+					result = BindParenthesizedExpression((ParenthesizedExpressionSyntax)syntax);
+					break;
 				case SyntaxKind.StringExpression:
-					return BindStringExpression((StringExpressionSyntax)syntax);
+					result = BindStringExpression((StringExpressionSyntax)syntax);
+					break;
 				case SyntaxKind.LiteralExpression:
-					return BindLiteralExpression((LiteralExpressionSyntax)syntax);
+					result = BindLiteralExpression((LiteralExpressionSyntax)syntax);
+					break;
 				case SyntaxKind.VariableExpression:
-					return BindGlobalVariableExpression((VariableExpressionSyntax)syntax);
+					result = BindGlobalVariableExpression((VariableExpressionSyntax)syntax);
+					break;
 				case SyntaxKind.AssignmentExpression:
-					return BindAssignmentExpression((AssignmentExpressionSyntax)syntax);
+					result = BindAssignmentExpression((AssignmentExpressionSyntax)syntax);
+					break;
 				case SyntaxKind.FieldAssignmentExpression:
-					return BindFieldAssignmentExpression((FieldAssignmentExpressionSyntax)syntax);
+					result = BindFieldAssignmentExpression((FieldAssignmentExpressionSyntax)syntax);
+					break;
 				case SyntaxKind.UnaryExpression:
-					return BindUnaryExpression((UnaryExpressionSyntax)syntax);
+					result = BindUnaryExpression((UnaryExpressionSyntax)syntax);
+					break;
 				case SyntaxKind.BinaryExpression:
-					return BindBinaryExpression((BinaryExpressionSyntax)syntax);
+					result = BindBinaryExpression((BinaryExpressionSyntax)syntax);
+					break;
 				case SyntaxKind.FunctionExpression:
-					return BindGlobalFunctionExpression((FunctionExpressionSyntax)syntax);
+					result = BindGlobalFunctionExpression((FunctionExpressionSyntax)syntax);
+					break;
+				case SyntaxKind.EmptyArrayConstructorExpression:
+					result = BindEmptyArrayConstructorExpression((EmptyArrayConstructorExpressionSyntax)syntax);
+					break;
 				case SyntaxKind.ArrayConstructorExpression:
-					return BindArrayConstructorExpression((ArrayConstructorExpressionSyntax)syntax);
+					result = BindArrayConstructorExpression((ArrayConstructorExpressionSyntax)syntax);
+					break;
 				case SyntaxKind.ConstructorExpression:
-					return BindConstructorExpression((ConstructorExpressionSyntax)syntax);
+					result = BindConstructorExpression((ConstructorExpressionSyntax)syntax);
+					break;
 				case SyntaxKind.MemberAccessExpression:
-					return BindMemberAccessExpression((MemberAccessExpressionSyntax)syntax);
+					result = BindMemberAccessExpression((MemberAccessExpressionSyntax)syntax);
+					break;
 				case SyntaxKind.FieldAccessExpression:
-					return BindFieldAccessExpression((FieldAccessExpressionSyntax)syntax);
+					result = BindFieldAccessExpression((FieldAccessExpressionSyntax)syntax);
+					break;
 				case SyntaxKind.LambdaExpression:
-					return BindLambdaExpression((LambdaExpressionSyntax)syntax);
+					result = BindLambdaExpression((LambdaExpressionSyntax)syntax);
+					break;
 				case SyntaxKind.MathExpression:
-					return BindMathExpression((MathExpressionSyntax)syntax);
+					result = BindMathExpression((MathExpressionSyntax)syntax);
+					break;
+				case SyntaxKind.AnonymForExpression:
+					result = BindAnonymForExpression((AnonymForExpressionSyntax)syntax);
+					break;
 				case SyntaxKind.NameExpression:
-					return new BoundErrorExpression(); //Let's hope somebody informed the diagnostics!
+					result = new BoundErrorExpression(); //Let's hope somebody informed the diagnostics!
+					break;
 				default:
 					throw new Exception($"Unexpected syntax {syntax.Kind}");
 			}
+			if(_noneableIfConditions.Contains(result))
+				return new BoundConversion(result, ((NullableTypeSymbol)result.Type).BaseType);
+			if(_scope.SafeVariables.Contains(result))
+				return new BoundConversion(result, ((NullableTypeSymbol)result.Type).BaseType);
+			return result;
 		}
 
 		private BoundExpression BindConstructorExpression(ConstructorExpressionSyntax syntax)
@@ -1031,6 +1215,18 @@ namespace Minsk.CodeAnalysis.Binding
 			return result;
 		}
 
+		private BoundExpression BindEmptyArrayConstructorExpression(EmptyArrayConstructorExpressionSyntax syntax)
+		{
+			var boundLength = BindExpression(syntax.LengthExpression, PrimitiveTypeSymbol.Integer);
+			var boundType = BindTypeDeclaration(syntax.TypeDeclaration);
+			if(!boundType.HasDefaultValue)
+			{
+				_diagnostics.ReportEmptyArray(syntax.TypeDeclaration.Type.Span);
+				return new BoundErrorExpression();
+			}
+			return new BoundEmptyArrayConstructorExpression(boundLength, boundType);
+		}
+
 		private BoundExpression BindArrayConstructorExpression(ArrayConstructorExpressionSyntax syntax)
 		{
 			if (syntax.Contents.Length <= 0)
@@ -1059,9 +1255,10 @@ namespace Minsk.CodeAnalysis.Binding
 
 			}
 			var boundIndex = BindExpression(syntax.Index);
-			if (boundIndex.Type != PrimitiveTypeSymbol.Integer)
+			if (boundIndex.Type != PrimitiveTypeSymbol.Integer && boundIndex.Type != PrimitiveTypeSymbol.AnonymFor)
+			{
 				_diagnostics.ReportCannotConvert(syntax.Span, boundIndex.Type, PrimitiveTypeSymbol.Integer);
-
+			}
 			BoundArrayIndex boundChild = null;
 			if (syntax.ArrayIndex != null)
 			{
@@ -1096,7 +1293,7 @@ namespace Minsk.CodeAnalysis.Binding
 			else if (syntax.Member.Kind == SyntaxKind.VariableExpression)
 			{
 				boundMember = BindMemberVariableExpression((VariableExpressionSyntax)syntax.Member, boundExpression.Type);
-				return new BoundFieldAccesExpression(boundExpression, (BoundVariableExpression)boundMember);
+				return new BoundFieldAccessExpression(boundExpression, (BoundVariableExpression)boundMember);
 			}
 			else
 				throw new Exception();
@@ -1157,35 +1354,6 @@ namespace Minsk.CodeAnalysis.Binding
 				return BindLibraryFunctionExpression(functionExpression, library);
 			}
 			else throw new Exception();
-		}
-
-		private bool TryBindStaticMemberAccess(MemberAccessExpressionSyntax syntax, out BoundExpression expression)
-		{
-			expression = null;
-			if (!(syntax.Expression is VariableExpressionSyntax v))
-				return false;
-			var name = v.Identifier.Text;
-			if (!_scope.TryLookup(name, out TypeSymbol type))
-				return false;
-			if (type.Type != TypeType.Advanced)
-				return false;
-			var advancedType = (AdvancedTypeSymbol)type;
-			if (syntax.Member.Kind != SyntaxKind.VariableExpression)
-			{
-				expression = new BoundErrorExpression();
-				_diagnostics.ReportUnexpectedMemberKind(syntax.Span, syntax.Member.Kind, advancedType);
-				return true;
-			}
-			var member = (VariableExpressionSyntax)syntax.Member;
-			var memberName = member.Identifier.Text;
-			if (!advancedType.TryLookUpStaticField(memberName, out var field))
-			{
-				_diagnostics.ReportUndefinedVariable(syntax.Span, memberName, advancedType);
-				expression = new BoundErrorExpression();
-				return true;
-			}
-			expression = new BoundStaticFieldAccesExpression(advancedType, field);
-			return true;
 		}
 
 		public BoundVariableExpression BindMemberVariableExpression(VariableExpressionSyntax syntax, TypeSymbol type)
@@ -1521,11 +1689,11 @@ namespace Minsk.CodeAnalysis.Binding
 
 		private BoundExpression BindAssignmentExpression(AssignmentExpressionSyntax syntax)
 		{
-			var boundVariables = new List<VariableSymbol>();
+			var boundVariables = new List<BoundVariableExpression>();
 			foreach (var variable in syntax.Variables)
 			{
-				boundVariables.Add(BindGlobalVariableExpression(variable).Variable);
-				_assignedVariables.Add(boundVariables.Last());
+				boundVariables.Add(BindGlobalVariableExpression(variable));
+				_assignedVariables.Add(boundVariables.Last().Variable);
 			}
 			BoundExpression boundExpression = null; // BindExpression(syntax.Expression);
 			if (syntax.Variables.Length == 1)
@@ -1559,10 +1727,32 @@ namespace Minsk.CodeAnalysis.Binding
 				}
 
 				if (variable.Type.Type == TypeType.Nullable)
-					_noneableVariableSet[variable] = boundExpression.Type.Type != TypeType.Nullable;
+				{
+					_noneableVariableSet[variable.Variable] = boundExpression.Type.Type != TypeType.Nullable;
+					if(boundExpression.Type.Type != TypeType.Nullable)
+					{
+						//_noneableVariableExpressionsConversion.Push(new Stack());
+						_scope.MakeSave(variable);
+					}
+					else
+					{
+						_scope.MakeUnsafe(variable.Variable);
+					}
+				}
+
+				_scope.CheckIfVariablesAreUnsafe(variable);
+
+				if (_isInSVGGroup)
+				{
+					var svgElementType = _builtInTypes.LookSymbolUp(typeof(SVGElement));
+					if (boundExpression.Type.CanBeConvertedTo(_builtInTypes.LookSymbolUp(typeof(Element))) && !boundExpression.Type.CanBeConvertedTo(svgElementType))
+					{
+						_diagnostics.ReportCannotConvert(syntax.Span, boundExpression.Type, svgElementType);
+					}
+				}
 
 				if (boundExpression is BoundMathExpression mathExpression)
-					_mathFormulas[variable] = mathExpression;
+					_mathFormulas[variable.Variable] = mathExpression;
 			}
 			else
 			{
@@ -1617,11 +1807,11 @@ namespace Minsk.CodeAnalysis.Binding
 			return new BoundFieldAssignmentExpression(boundField, boundExpression);
 		}
 
-		private BoundFieldAccesExpression BindFieldAccessExpression(FieldAccessExpressionSyntax syntax)
+		private BoundFieldAccessExpression BindFieldAccessExpression(FieldAccessExpressionSyntax syntax)
 		{
 			var boundParent = BindExpression(syntax.Parent);
 			var boundVariable = BindMemberVariableExpression(syntax.Variable, boundParent.Type);
-			return new BoundFieldAccesExpression(boundParent, boundVariable);
+			return new BoundFieldAccessExpression(boundParent, boundVariable);
 		}
 
 		private BoundExpression BindLambdaExpression(LambdaExpressionSyntax syntax)
@@ -1679,6 +1869,11 @@ namespace Minsk.CodeAnalysis.Binding
 			type.SetData(true);
 			int unknowns = 5;
 			return new BoundMathExpression(expression, type, unknowns);
+		}
+
+		private BoundExpression BindAnonymForExpression(AnonymForExpressionSyntax syntax)
+		{
+			return new BoundAnonymForExpression();
 		}
 
 		private BoundExpression BindUnaryExpression(UnaryExpressionSyntax syntax)

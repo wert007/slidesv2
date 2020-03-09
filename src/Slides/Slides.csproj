@@ -61,6 +61,7 @@
     <Compile Include="Data\Color.cs" />
     <Compile Include="Container.cs" />
     <Compile Include="Data\CSVFile.cs" />
+    <Compile Include="Data\Direction.cs" />
     <Compile Include="Data\Polynom.cs" />
     <Compile Include="Data\Range.cs" />
     <Compile Include="Data\VariableType.cs" />
@@ -106,9 +107,11 @@
     <Compile Include="Data\Matrix.cs" />
     <Compile Include="Data\Orientation.cs" />
     <Compile Include="Math\MathFormula.cs" />
+    <Compile Include="Math\MathPlot.cs" />
     <Compile Include="Presentation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rectangle.cs" />
+    <Compile Include="SingleValueTransform.cs" />
     <Compile Include="Slide.cs" />
     <Compile Include="SlideAttributes.cs" />
     <Compile Include="Slider.cs" />
@@ -117,6 +120,16 @@
     <Compile Include="Data\Thickness.cs" />
     <Compile Include="Data\Time.cs" />
     <Compile Include="Style.cs" />
+    <Compile Include="SVG\Path.cs" />
+    <Compile Include="SVG\PathOperationHelper.cs" />
+    <Compile Include="SVG\PathOperationIntersectionHandler.cs" />
+    <Compile Include="SVG\Rect.cs" />
+    <Compile Include="SVG\SVGContainer.cs" />
+    <Compile Include="SVG\SVGElement.cs" />
+    <Compile Include="SVG\SVGText.cs" />
+    <Compile Include="Table.cs" />
+    <Compile Include="Transform.cs" />
+    <Compile Include="TransformType.cs" />
     <Compile Include="Transition.cs" />
     <Compile Include="TupleType.cs" />
     <Compile Include="Data\Unit.cs" />

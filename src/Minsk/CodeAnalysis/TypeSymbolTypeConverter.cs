@@ -9,6 +9,7 @@ using Slides.Code;
 using Slides.Filters;
 using Slides.MathExpressions;
 using Slides.MathTypes;
+using Slides.SVG;
 
 namespace Minsk.CodeAnalysis
 {
@@ -71,10 +72,11 @@ namespace Minsk.CodeAnalysis
 			Add(typeof(LibrarySymbol), CreateEmptySymbol("Library"));
 
 			Add(typeof(BorderStyle));
+			Add(typeof(Direction));
 			Add(typeof(Time.TimeUnit));
 			Add(typeof(Time), isData: true);
 			Add(typeof(Thickness));
-			Add(typeof(Color));
+			Add(typeof(Color), isData: true);
 			Add(typeof(Font), isData: true);
 			Add(typeof(ImageSource), isData: true);
 			Add(typeof(CSVFile), isData: true);
@@ -125,7 +127,7 @@ namespace Minsk.CodeAnalysis
 			Add(typeof(Rectangle));
 			Add(typeof(ImageStretching));
 			Add(typeof(Image));
-			Add(typeof(Stack.StackOrientation));
+			Add(typeof(FlowAxis));
 			Add(typeof(Stack));
 			Add(typeof(Alignment));
 			Add(typeof(Label));
@@ -133,6 +135,8 @@ namespace Minsk.CodeAnalysis
 			Add(typeof(List));
 			Add(typeof(IFrame));
 			Add(typeof(Slider));
+			Add(typeof(TableChild));
+			Add(typeof(Table));
 
 			Add(typeof(CodeBlock));
 
@@ -141,6 +145,24 @@ namespace Minsk.CodeAnalysis
 
 			Add(typeof(Chart));
 			Add(typeof(LineChart));
+
+			Add(typeof(SVGElementKind));
+			Add(typeof(SVGElement));
+			Add(typeof(SVGGroup));
+			Add(typeof(SVGShape), CreateEmptySymbol(nameof(SVGShape)));
+			Add(typeof(PathOperationKind));
+			Add(typeof(PathOperation));
+			Add(typeof(SVGPath), name: "Path");
+			Add(typeof(SVGShape));
+			Add(typeof(Rect));
+			Add(typeof(Circle));
+			Add(typeof(Ellipse));
+			Add(typeof(Line));
+			Add(typeof(Polyline));
+			Add(typeof(Polygon));
+			Add(typeof(SVGText), name: "Text");
+
+			Add(typeof(SVGContainer));
 
 			Add(typeof(MathPlot));
 
@@ -321,7 +343,14 @@ namespace Minsk.CodeAnalysis
 					parameter.Add(new VariableSymbol(para.Name, true, LookSymbolUp(para.ParameterType), false));
 				}
 				parameter.Seal();
-				functions.Add(new FunctionSymbol(mname, parameter, LookSymbolUp(method.ReturnType)));
+				if (method.ReturnType != type)
+				{
+					functions.Add(new FunctionSymbol(mname, parameter, LookSymbolUp(method.ReturnType)));
+				}
+				else
+				{
+					todoList.Add(mname);
+				}
 			}
 			if(typeof(Element).IsAssignableFrom(type))
 			{
@@ -335,9 +364,12 @@ namespace Minsk.CodeAnalysis
 			symbol = new AdvancedTypeSymbol(name, fields, staticFields, constructor, functions, parentSymbol, canBeCastedTo);
 			foreach (string todo in todoList)
 			{
-				if (!fields.TryLookUp(todo, out VariableSymbol variable))
-					staticFields.TryLookUp(todo, out variable);
-				variable.Type = symbol;
+				if (fields.TryLookUp(todo, out VariableSymbol variable) && variable.Type == null)
+					variable.Type = symbol;
+				if (functions.TryLookUp(todo, out FunctionSymbol[] function))
+					foreach (var f in function)
+						if (f.Type == null)
+							f.Type = symbol;
 			}
 			foreach (var c in constructor)
 			{
@@ -359,6 +391,10 @@ namespace Minsk.CodeAnalysis
 		{
 			if (type.IsArray)
 				return new ArrayTypeSymbol(LookSymbolUp(type.GetElementType()));
+			if(type.Name == "Nullable`1")
+			{
+				return new NullableTypeSymbol(LookSymbolUp(type.GenericTypeArguments[0]));
+			}
 			if(type == typeof(TupleType))
 			{
 				throw new Exception();
@@ -370,6 +406,12 @@ namespace Minsk.CodeAnalysis
 
 		public Type LookTypeUp(TypeSymbol symbol)
 		{
+			if(symbol.Type == TypeType.Array)
+			{
+				var arrSym = symbol as ArrayTypeSymbol;
+				var res = LookTypeUp(arrSym.Child);
+				return res.MakeArrayType();
+			}
 			if (symbol.Type == TypeType.Tuple)
 				throw new Exception();
 			if (!_toType.ContainsKey(symbol))

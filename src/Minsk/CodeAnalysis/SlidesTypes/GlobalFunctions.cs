@@ -21,6 +21,18 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 		{
 			return (int)f;
 		}
+
+		public static int min(int a, int b)
+		{
+			if (a < b) return a;
+			return b;
+		}
+
+		public static float min(float a, float b)
+		{
+			if (a < b) return a;
+			return b;
+		}
 		public static CSVFile csv(string path)
 		{
 			string fileContents = null;
@@ -48,20 +60,6 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			}
 			return result;
 		}
-
-		public static ImageSource svg(string fileName)
-		{
-			var path = Path.Combine(CompilationFlags.Directory, fileName);
-			var result = new ImageSource(path, true);
-			using (var image = new MagickImage(path))
-			{
-				result.width = image.BaseWidth;
-				result.height = image.BaseHeight;
-			}
-			return result;
-
-		}
-
 		public static IFrame youtube(string video)
 		{
 			return youtube(video, false);
@@ -75,10 +73,9 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			return new IFrame(src, "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture", "allowfullscreen");
 		}
 
-		public static void print(string message)
-		{
-			Console.WriteLine(message);
-		}
+		public static void println() => Console.WriteLine();
+		public static void println(string message) => Console.WriteLine(message);
+		public static void print(string message) => Console.Write(message);
 
 		public static Color hsl(int hue, int sat, int light)
 		{

@@ -13,27 +13,6 @@ namespace Minsk.CodeAnalysis.Symbols
 		Advanced,
 		Nullable,
 		Tuple,
-		VariableType
-	}
-
-	public class VariableTypeSymbol : TypeSymbol
-	{
-		public VariableTypeSymbol(TypeSymbol child, int variable)
-			: base($"{child.Name}<{variable}>")
-		{
-			Child = child;
-			Variable = variable;
-		}
-		public override TypeType Type => TypeType.VariableType;
-
-		public override bool IsData => Child.IsData;
-
-		//TODO: Debateable. What value does variable have, if it is
-		//None? 0? Idk.
-		public override bool AllowsNone => Child.AllowsNone;
-
-		public TypeSymbol Child { get; }
-		public int Variable { get; }
 	}
 
 	[Serializable]
@@ -79,6 +58,8 @@ namespace Minsk.CodeAnalysis.Symbols
 		public abstract TypeType Type { get; }
 		public abstract bool IsData { get; }
 		public abstract bool AllowsNone { get; }
+		public abstract bool HasDefaultValue { get; }
+		public abstract object DefaultValue { get; }
 
 		public override bool Equals(object obj)
 		{

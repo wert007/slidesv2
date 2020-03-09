@@ -16,5 +16,7 @@ namespace Minsk.CodeAnalysis.Symbols
 
 		public override bool IsData => BaseType.IsData;
 		public override bool AllowsNone => true;
+		public override bool HasDefaultValue => true;
+		public override object DefaultValue => null;
 	}
 }

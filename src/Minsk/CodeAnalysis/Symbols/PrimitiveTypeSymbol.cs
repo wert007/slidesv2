@@ -20,6 +20,7 @@ namespace Minsk.CodeAnalysis.Symbols
 		}
 
 		public readonly static TypeSymbol Error = new PrimitiveTypeSymbol(PrimitiveType.Error);
+		public readonly static TypeSymbol AnonymFor = new PrimitiveTypeSymbol(PrimitiveType.AnonymFor);
 
 		public static readonly TypeSymbol Void = new PrimitiveTypeSymbol(PrimitiveType.Void);
 
@@ -33,6 +34,33 @@ namespace Minsk.CodeAnalysis.Symbols
 
 		public override bool IsData => true;
 		public override bool AllowsNone => PrimitiveType == PrimitiveType.Void;
+		public override bool HasDefaultValue => PrimitiveType != PrimitiveType.Object;
+		public override object DefaultValue
+		{
+			get
+			{
+				switch (PrimitiveType)
+				{
+					case PrimitiveType.Bool:
+						return false;
+					case PrimitiveType.Integer:
+						return 0;
+					case PrimitiveType.String:
+						return "";
+					case PrimitiveType.Float:
+						return 0f;
+					case PrimitiveType.Unit:
+						return new Slides.Unit();
+					case PrimitiveType.Void:
+					case PrimitiveType.Error:
+					case PrimitiveType.Undefined:
+					case PrimitiveType.Object:
+						return null;
+					default:
+						throw new NotImplementedException();
+				}
+			}
+		}
 
 		public override bool InnerCanBeConvertedTo(TypeSymbol to)
 		{

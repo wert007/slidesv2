@@ -16,5 +16,13 @@ namespace Minsk.CodeAnalysis.Binding
 
 		public VariableSymbol Variable { get; }
 		public BoundExpression BoundIndex { get; }
+
+		public override bool EqualsBoundExpression(BoundExpression expression)
+		{
+			var e = (BoundIndexedArrayExpression)expression;
+			if (!Variable.Equals(e.Variable))
+				return false;
+			return BoundIndex.EqualsBoundExpression(e.BoundIndex);
+		}
 	}
 }

@@ -19,5 +19,13 @@ namespace Minsk.CodeAnalysis.Binding
 		//public Member Member { get; }
 		public BoundFunctionExpression Function { get; }
 
+		public override bool EqualsBoundExpression(BoundExpression expression)
+		{
+			var e = (BoundFunctionAccessExpression)expression;
+			if (!Parent.EqualsBoundExpression(e.Parent))
+				return false;
+			return Function.EqualsBoundExpression(e.Function);
+		}
+
 	}
 }

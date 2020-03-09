@@ -167,8 +167,6 @@ namespace Minsk.CodeAnalysis
 					return DeserializeIndexedArrayExpression();
 				case BoundNodeKind.LiteralExpression:
 					return DeserializeLiteralExpression();
-				case BoundNodeKind.StaticFieldAccessExpression:
-					return DeserializeStaticFieldAccessExpression();
 				case BoundNodeKind.StringExpression:
 					return DeserializeStringExpression();
 				case BoundNodeKind.UnaryExpression:
@@ -183,19 +181,21 @@ namespace Minsk.CodeAnalysis
 		private BoundAssignmentExpression DeserializeAssignmentExpression()
 		{
 			ConsumeStatementHeader();
-			var variables = new List<VariableSymbol>();
+			var variables = new List<BoundVariableExpression>();
 			ConsumeToken(); //(
-			variables.Add(DeserializeVariableSymbol());
+			var cur = DeserializeVariableSymbol();
+			variables.Add(new BoundVariableExpression(cur, null, cur.Type));
 			while (PeekToken() == ",")
 			{
 				ConsumeToken(); //,
-				variables.Add(DeserializeVariableSymbol());
+				cur = DeserializeVariableSymbol();
+				variables.Add(new BoundVariableExpression(cur, null, cur.Type));
 			}
 			ConsumeToken(); //)
 			ConsumeToken(); //=
 			var expression = DeserializeExpression();
 			ConsumeStatementTail();
-			return new BoundAssignmentExpression(variables.ToArray(), expression);
+			return new BoundAssignmentExpression( variables.ToArray(), expression);
 		}
 
 		private BoundBinaryExpression DeserializeBinaryExpression()
@@ -236,14 +236,14 @@ namespace Minsk.CodeAnalysis
 			return new BoundEnumExpression(type, value);
 		}
 
-		private BoundFieldAccesExpression DeserializeFieldAccessExpression()
+		private BoundFieldAccessExpression DeserializeFieldAccessExpression()
 		{
 			ConsumeStatementHeader();
 			var parent = DeserializeExpression();
 			ConsumeToken(); //.
 			var field = DeserializeVariableExpression();
 			ConsumeStatementTail();
-			return new BoundFieldAccesExpression(parent, field);
+			return new BoundFieldAccessExpression(parent, field);
 		}
 
 		private BoundFieldAssignmentExpression DeserializeFieldAssignmentExpression()
@@ -373,18 +373,6 @@ namespace Minsk.CodeAnalysis
 			}
 			Logger.LogUnmatchedBoundNodeToken(token);
 			return token;
-		}
-
-		private BoundStaticFieldAccesExpression DeserializeStaticFieldAccessExpression()
-		{
-			ConsumeStatementHeader();
-			var type = (AdvancedTypeSymbol)DeserializeTypeSymbol();
-			if (type == null)
-				throw new Exception();
-			ConsumeToken(); //.
-			var field = DeserializeVariableSymbol();
-			ConsumeStatementTail();
-			return new BoundStaticFieldAccesExpression(type, field);
 		}
 
 		private BoundStringExpression DeserializeStringExpression()
@@ -790,7 +778,7 @@ namespace Minsk.CodeAnalysis
 			var token = ConsumeToken();
 			if (token == "?")
 				return new NullableTypeSymbol(type);
-			if (token == "[]")
+			if (token == "[]") //TODO: Store Length!
 			{
 				if (PeekToken() == "?" ||
 					PeekToken() == "[]")

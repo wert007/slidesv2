@@ -2,6 +2,7 @@
 {
 	public enum Alignment
 	{
+		Unset,
 		Left,
 		Center,
 		Right,
