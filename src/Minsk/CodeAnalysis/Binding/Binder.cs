@@ -871,6 +871,10 @@ namespace Minsk.CodeAnalysis.Binding
 			{
 				_scope.TryDeclare(field, null);
 			}
+			foreach (var function in ((AdvancedTypeSymbol)_builtInTypes.LookSymbolUp(typeof(SlideAttributes))).Functions)
+			{
+				_scope.TryDeclare(function);
+			}
 			var boundStatements = new List<BoundStepStatement>();
 			foreach (var statement in syntax.Statements)
 			{

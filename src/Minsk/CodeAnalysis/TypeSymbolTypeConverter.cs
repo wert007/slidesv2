@@ -132,6 +132,7 @@ namespace Minsk.CodeAnalysis
 			Add(typeof(Alignment));
 			Add(typeof(Label));
 			Add(typeof(Container));
+			Add(typeof(SplittedContainer));
 			Add(typeof(List));
 			Add(typeof(IFrame));
 			Add(typeof(Slider));
@@ -273,7 +274,7 @@ namespace Minsk.CodeAnalysis
 				if (field.FieldType != type)
 				{
 					fieldType = LookSymbolUp(field.FieldType);
-					if (fieldsAreNoneable)
+					if (fieldsAreNoneable || field.Name.StartsWith("n_"))
 						fieldType = new NullableTypeSymbol(fieldType);
 				}
 				else
@@ -294,7 +295,7 @@ namespace Minsk.CodeAnalysis
 				if(prop.PropertyType != type)
 				{
 					propertyType = LookSymbolUp(prop.PropertyType);
-					if (fieldsAreNoneable)
+					if (fieldsAreNoneable || prop.Name.StartsWith("n_"))
 						propertyType = new NullableTypeSymbol(propertyType);
 				}
 				else
@@ -345,7 +346,10 @@ namespace Minsk.CodeAnalysis
 				parameter.Seal();
 				if (method.ReturnType != type)
 				{
-					functions.Add(new FunctionSymbol(mname, parameter, LookSymbolUp(method.ReturnType)));
+					var returnType = LookSymbolUp(method.ReturnType);
+					if (mname == "getData")
+						returnType = new NullableTypeSymbol(returnType);
+					functions.Add(new FunctionSymbol(mname, parameter, returnType));
 				}
 				else
 				{

@@ -22,7 +22,8 @@ namespace Slides
 		MathPlot,
 		SVGContainer,
 		Table,
-		TableChild
+		TableChild,
+		SplittedContainer
 	}
 	public abstract class Element : IFilterInput
 	{

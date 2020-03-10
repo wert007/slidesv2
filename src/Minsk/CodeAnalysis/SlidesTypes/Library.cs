@@ -51,21 +51,14 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 		//	return new SplittedContainer()
 		//}
 
-		public static TupleType CreateVerticalSeperator(Unit width)
+		public static SplittedContainer CreateVerticalSeperator(Unit width)
 		{
-			//	Console.WriteLine("HEWWO!!!!!");
-			Dictionary<string, object> fields = new Dictionary<string, object>();
-			fields.Add("left", new Container()
-			{
-				orientation = Orientation.LeftStretch,
-				width = width,
-			});
-			fields.Add("right", new Container()
-			{
-				orientation = Orientation.RightStretch,
-				width = new Unit(100, Unit.UnitKind.Percent) - width,
-			});
-			var result = new TupleType(fields);
+			var result = new SplittedContainer(FlowAxis.Horizontal);
+			result.childA.orientation = Orientation.LeftStretch;
+			result.childA.width = width;
+			result.childB.orientation = Orientation.RightStretch;
+			result.childB.width = new Unit(100, Unit.UnitKind.Percent) - width;
+			result.orientation = Orientation.Stretch;
 			return result;
 		}
 
@@ -76,14 +69,10 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			var customTypes = new BodySymbol[0];
 			var styles = new Style[0];
 			var globalVariables = new VariableValueCollection(null);
+			var builtInTypes = TypeSymbolTypeConverter.Instance;
 			var globalFunctions = new FunctionSymbol[]
 			{
-				new FunctionSymbol("vertical", new VariableSymbol("width", true, TypeSymbolTypeConverter.Instance.LookSymbolUp(typeof(Unit)), false), new TupleTypeSymbol(
-					new TypeSymbol[]
-					{
-						TypeSymbolTypeConverter.Instance.LookSymbolUp(typeof(Container)),
-						TypeSymbolTypeConverter.Instance.LookSymbolUp(typeof(Container)),
-					})),
+				new FunctionSymbol("vertical", new VariableSymbol("width", true, builtInTypes.LookSymbolUp(typeof(Unit)), false), builtInTypes.LookSymbolUp(typeof(SplittedContainer))),
 			};
 			var globalFunctionsReflections = new string[]
 			{
@@ -93,7 +82,6 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			var result = new LibrarySymbol(name, libraries, customTypes, styles, globalVariables, globalFunctions, globalFunctionsReflections, imports);
 			return result;
 		}
-
 
 		public bool TryLookUpFunction(string name, out FunctionSymbol[] functions)
 		{

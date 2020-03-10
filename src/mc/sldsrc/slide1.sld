@@ -7,9 +7,6 @@ import gfont('Quicksand') as quicksand;
 //		import css('myStyle.css');
 
 //Possible Features:
-// - Time 'constant'. totalTime, slideTime
-// - Seperator Library needs a SplittedContainer Type.
-// - offline compile flag (--offline). With warnings when using youtube() or such!
 // - support anonym for loops:
 //		a[..] = b[..];
 //			->
@@ -19,9 +16,16 @@ import gfont('Quicksand') as quicksand;
 //TODO: This is a error, because we can't determine the type of this array,
 //      but we don't get any diagnostics
 //			let a~ = [none, none, none, none, none]; //:int? 
+// - offline compile flag (--offline). With warnings when using youtube() or such!
 // - Advanced SVGSupport?
 //		- PathOperations. (Intersection/Union/Divide)
 //		- SVGParser.
+// - Time 'constant'. totalTime, slideTime
+//   Done. Very basicly at least. But we need to rework the whole system
+//   right now there is only totalTime, which is the time in milliseconds.
+//   And we can only use this on element fields. And not on all..
+// - multitype indeces?
+//   data['title'] = 'lol';
 // - make arrays safe. What do we do if we have an IndexOutOfBoundsException?
 //   Should we throw a runtime exception? Should we try our best to don't do that
 //   and only sometimes throw a runtime exception? Should we treat runtime exceptions
@@ -53,7 +57,11 @@ template stressMe(child: Slide):
 endtemplate
 
 template pagenumber(child: Slide):
-	let text~ = $'{child.name}:   {child.index + 1}/{slideCount}';
+	let name~ = child.name;
+	if child.getData('name'):
+		name~ = child.getData('name');
+	endif
+	let text~ = $'{name~}:   {child.index + 1}/{slideCount}';
 	let label = new Label(text~);
 	label.orientation = Horizontal.Right | Vertical.Top;
 	label.fontsize = 12pt;
@@ -158,6 +166,7 @@ style algoTable(tbl: Table):
 endstyle
 
 slide algo < pagenumber:
+	setData('name', 'gti presentation 1');
 	let tbl = new Table(7, 7);
 	tbl.applyStyle(algoTable);
 
@@ -347,46 +356,20 @@ slide cityDevelopment < pagenumber:
 	args~.populationFile~ = @'somefile.csv';
 	args~.populationSource~ = '(c) surely wikipedia';
 
-	//Can you store a Tuple in a single variable, or do you need to
-	//tear it down to its child types?
-	//
-	//	let tuple = seperator.vertical(50%);
-	// tuple[0], tuple[1]
-	//
-	//I'd say no. Because why would you?
-	//
-	//Well maybe it would make to use it in a FunctionCall
-	//so you can just call it inline and don't need to store the
-	//tuple in an extra variable.
-	//
-	//	foo(5, seperator.vertical(50%));
-	//
-	//				vs
-	//
-	//	let left, right = seperator.vertical(50%);
-	//	foo(5, left, right);
-	//
-	//def:
-	//	func foo(a: int, (left: Container, right: Container))
-	//
-	//				 vs
-	//
-	//	func foo(a: int, left: Container, right: Container)
-	//
 	//How long are we going to keep tuples? idk.. there is no good use case anywhere?
 	//maybe in for loops. like 
 	//
 	//	for a~, i~ in array:
 	//
 	//Where i would be the index while a is the actual element.
-		
-	let left, right = seperator.vertical(20%);
-	left.fill(new custom.imageBanner());
+	//The only current use of tuples is dead. even though
+	//they are technically still supported.. just not used anymore..
+
 	let ~text = new custom.cityDevelopmentText(args~);
 	~text.height = 100%;
-	right.fill(~text);
-
-	right.padding = padding(10%, 5%);
+	let container = seperator.vertical(20%);
+	container.fill(new custom.imageBanner(), ~text);
+	container.childB.padding = padding(10%, 5%);
 endslide
 
 slide introduction:

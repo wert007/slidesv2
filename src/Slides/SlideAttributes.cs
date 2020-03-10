@@ -31,6 +31,7 @@ namespace Slides
 		public Transition transition { get; set; }
 		public Filter filter { get; set; }
 		private HashSet<CustomStyle> appliedStyles = new HashSet<CustomStyle>();
+		private Dictionary<string, string> _data = new Dictionary<string, string>();
 
 		public SlideAttributes(string name, int index, bool isVisible)
 		{
@@ -52,6 +53,18 @@ namespace Slides
 		public void applyStyle(CustomStyle style)
 		{
 			appliedStyles.Add(style);
+		}
+
+		public string getData(string name)
+		{
+			if (_data.ContainsKey(name))
+				return _data[name];
+			return null;
+		}
+
+		public void setData(string name, string data)
+		{
+			_data[name] = data;
 		}
 
 		public CustomStyle[] get_AppliedStyles()

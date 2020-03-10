@@ -25,7 +25,7 @@ namespace Minsk.CodeAnalysis.Binding
 			var e = (BoundFunctionExpression)expression;
 			if (!Function.Equals(e.Function))
 				return false;
-			if (!Source.Equals(e.Source))
+			if (Source != null && !Source.Equals(e.Source))
 				return false;
 			if (Arguments.Length != e.Arguments.Length)
 				return false;

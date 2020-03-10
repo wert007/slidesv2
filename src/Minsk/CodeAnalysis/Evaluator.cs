@@ -1457,6 +1457,9 @@ namespace Minsk.CodeAnalysis
 					else
 						_groupAppliedStyles.Peek().Add(style);
 					return null;
+				case "setData":
+					_currentSlide.setData((string)args[0], (string)args[1]);
+					return null;
 				case "lib": return null;
 			}
 			MethodInfo method = null;
@@ -1466,10 +1469,9 @@ namespace Minsk.CodeAnalysis
 				_libraryUsed[expression.Source.Name] = true;
 			}
 			else
-				//Ok. Shit just happened here. I introduce Multiline Comments in the Lexer
-				//And out of nowhere returns this LookMethodInfoUp for 'image(source: string) : ImageSource'
-				//the fucking csv function! Obv you need to look into it. Unbelievable
+			{
 				method = GlobalFunctionsConverter.Instance.LookMethodInfoUp(expression.Function);
+			}
 			if (expression.Function.Name == "image")
 			{
 				var fileName = args[0].ToString();

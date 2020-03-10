@@ -310,6 +310,9 @@ namespace HTMLWriter
 				case ElementType.Container:
 					WriteContainer(parentName, (Container)element);
 					break;
+				case ElementType.SplittedContainer:
+					WriteSplittedContainer(parentName, (SplittedContainer)element);
+					break;
 				case ElementType.List:
 					WriteList(parentName, (List)element);
 					break;
@@ -502,6 +505,17 @@ namespace HTMLWriter
 			_htmlWriter.EndTag();
 		}
 
+		private static void WriteSplittedContainer(string parentName, SplittedContainer element)
+		{
+
+			var id = $"{parentName}-{element.name}";
+			if (string.IsNullOrEmpty(element.name))
+				id = null;
+			_htmlWriter.StartTag("div", id: id, classes: "splittedContainer " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
+			WriteElement(id, element.childA, element);
+			WriteElement(id, element.childB, element);
+			_htmlWriter.EndTag();
+		}
 		private static void WriteStack(string parentName, Stack stack)
 		{
 			var id = $"{parentName}-{stack.name}";
