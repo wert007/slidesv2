@@ -290,6 +290,12 @@ namespace HTMLWriter
 					return "style.padding";
 				case "color":
 					return "style.color";
+				case "background":
+					return "style.backgroundColor";
+				case "fill":
+					return "style.fill";
+				case "innerHTML":
+					return cssAttribute;
 				default:
 					throw new Exception();
 			}

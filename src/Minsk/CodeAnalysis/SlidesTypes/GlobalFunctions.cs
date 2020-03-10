@@ -22,6 +22,8 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			return (int)f;
 		}
 
+		public static int mod(int a, int b) => a % b;
+
 		public static int min(int a, int b)
 		{
 			if (a < b) return a;

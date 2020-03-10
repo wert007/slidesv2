@@ -4,6 +4,7 @@ using Slides.Code;
 using Slides.MathExpressions;
 using Slides.SVG;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -138,6 +139,9 @@ namespace HTMLWriter
 
 						FilterWriter.Write(_htmlWriter, presentation.CustomFilter);
 
+						WriteDependency(presentation.Dependencies);
+
+
 						foreach (var transition in presentation.Transitions)
 						{
 							Write(transition);
@@ -164,6 +168,31 @@ namespace HTMLWriter
 					}
 				}
 			}
+		}
+
+		private static void WriteDependency(FieldDependency[] dependencies)
+		{
+			_jsWriter.StartFunction($"update_totalTime");
+			var declaredVariables = new HashSet<string>();
+			foreach (var d in dependencies)
+			{
+				if (d.Element != null)
+				{
+						var name = d.Element.get_Id().Replace('-', '_');
+					if (!declaredVariables.Contains(name))
+					{
+						_jsWriter.WriteVariableDeclarationInline(name, $"document.getElementById('{d.Element.get_Id()}')");
+						declaredVariables.Add(name);
+					}
+					_jsWriter.WriteAssignment($"{name}.{JavaScriptWriter.ToJSAttribute(CSSWriter.ToCssAttribute(d.Field))}", d.Value.Insert("totalTime"));
+				}
+				else
+				{
+					throw new NotImplementedException();
+				}
+			}
+			_jsWriter.EndFunction();
+
 		}
 
 		private static void WriteStdOverlay()
@@ -381,6 +410,7 @@ namespace HTMLWriter
 			if (id == null)
 				throw new Exception();
 			var jsId = id.Replace('-', '_');
+			WriteSliderFunction(parentName, element);
 			_htmlWriter.PushAttribute("type", "range");
 			_htmlWriter.PushAttribute("min", element.range.From.ToString());
 			_htmlWriter.PushAttribute("max", element.range.To.ToString());
@@ -390,6 +420,31 @@ namespace HTMLWriter
 			_htmlWriter.PushAttribute("oninput", $"oninput_{jsId}()");
 			_htmlWriter.StartTag("input", id: id, classes: "slider " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
 			_htmlWriter.EndTag();
+		}
+
+
+		private static void WriteSliderFunction(string parentName, Slider element)
+		{
+			var id = $"{parentName}-{element.name}";
+			var jsId = id.Replace('-', '_');
+			_jsWriter.StartFunction($"oninput_{jsId}");
+			_jsWriter.WriteVariableDeclarationInline("slider", $"document.getElementById('{id}')");
+			foreach (var d in element.get_Dependencies())
+			{
+				if (d.Element != null)
+				{
+					_jsWriter.WriteVariableDeclarationInline(d.Element.name, $"document.getElementById('{parentName}-{d.Element.name}')");
+					_jsWriter.WriteAssignment($"{d.Element.name}.{JavaScriptWriter.ToJSAttribute(CSSWriter.ToCssAttribute(d.Field))}", d.Value.Insert("slider.value"));
+				}
+				else if (d.MathFormula != null)
+				{
+					//TODO: Use of parentName is hacky. But! 
+					//The slider should be on the same slide as the math expression
+					_jsWriter.WriteAssignment($"{parentName}_{d.MathFormula.Name}_scope.{d.Field}", d.Value.Insert("slider.value"));
+					_jsWriter.WriteFunctionCall($"recalculate_{parentName}_{d.MathFormula.Name}_scope");
+				}
+			}
+			_jsWriter.EndFunction();
 		}
 
 		private static void WriteSVGContainer(string parentName, SVGContainer element)

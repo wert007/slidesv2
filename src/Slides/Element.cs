@@ -104,7 +104,16 @@ namespace Slides
 		private Stack<Transform> _transforms = new Stack<Transform>();
 
 		private static int index = 0;
-
+		private Step step { get; set; }
+		public void set_Step(Step step)
+		{
+			this.step = step;
+		}
+		public string get_Id()
+		{
+			if (parent != null) return $"{parent.get_Id()}-{name}";
+			return $"{step.get_Id()}-{name}";
+		}
 		public Element()
 		{
 			borderColor = null;
@@ -148,6 +157,54 @@ namespace Slides
 		public Transform[] get_Transforms()
 		{
 			return _transforms.ToArray();
+		}
+
+		/// <summary>
+		/// Gets the elements property.
+		/// Return null if the name couldn't be matched to any property.
+		/// </summary>
+		/// <param name="name">Must be the element property name.</param>
+		/// <returns></returns>
+		public object get_Property(string name)
+		{
+			object styleValue = null;
+			foreach (var style in appliedStyles)
+			{
+				foreach (var field in style.ModifiedFields)
+				{
+					if (field.Key == name)
+						styleValue = field.Value;
+				}
+			}
+			switch (name)
+			{
+				case "borderColor":
+					return borderColor;
+				case "borderThickness":
+					if (borderThickness == new Thickness()) return null;
+					return borderThickness;
+				case "borderStyle":
+					if (borderStyle == BorderStyle.Unset) return null;
+					return borderStyle;
+				case "background":
+					return background;
+				case "color":
+					if (color.Equals(Color.Transparent)) 
+						return null;
+					return color;
+				case "orientation":
+					if (orientation == Orientation.LeftTop && styleValue != null) return null;
+					return orientation;
+				case "margin":
+					if (margin == new Thickness()) return null;
+					return margin;
+				case "padding":
+					if (padding == new Thickness()) return null;
+					return padding;
+				case "filter": return filter;
+				default:
+					return null;
+			}
 		}
 
 		protected abstract Unit get_InitialWidth();

@@ -36,16 +36,20 @@ import gfont('Quicksand') as quicksand;
 //
 // - support github code in javascript! just important, if you don't want to rebuild
 //   your slide, when you update your code. But for now i guess it's fine. So BIG MAYBE
-// - Support textboxes maybe? idk why but maybe. Probably not. Because when would you need
-//   it? And how would you make it work in sld? Just use a iframe if you need to. then you
-//   can use clean javascript.
+// - Support textboxes maybe? idk why but maybe.
+//   Probably not. Because when would you need it? And how would you make it work in sld?
+//   Just use a iframe if you need to. then you can use clean javascript.
 
 template stressMe(child: Slide):
 	let label = new Label('no time defined');
-	label.text = $'{totalTime}';
+	label.text = $'{totalTime / 1000}s';
 	label.orientation = Horizontal.Left | Vertical.Top;
 	label.fontsize = 12pt;
 	label.margin = margin(10px);
+
+	let rect = new Rectangle(pct(100), 50px);
+	rect.background = hsl(mod(totalTime / 500, 360), 55, 55);
+	rect.orientation = Vertical.Bottom | Horizontal.Left;
 endtemplate
 
 template pagenumber(child: Slide):

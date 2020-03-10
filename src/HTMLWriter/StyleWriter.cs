@@ -186,22 +186,21 @@ namespace HTMLWriter
 			if (element.name == null)
 				return;
 			var id = $"{parentName}-{element.name}";
-			//if (element.type == ElementType.SVGShape)
-			//	id += "-container";
+			//TODO: New way to get properties from elements?
+			//A way that includes the applied styles??
+			//something like
+			//var listOfPropertys = {"borderColor"};
+			//foreach prop in listOfPropertys:
+			//	writer.WriteAttributeIfValue(CSSWriter.ToCssAttribute(prop), element.get_Property(prop));
 			writer.StartId(id);
 			WriteBrush(writer, element.background);
-			writer.WriteAttributeIfNotDefault("border-color", element.borderColor, new Color(0, 0, 0, 0));
-			writer.WriteAttributeIfNotDefault("border-style", element.borderStyle, BorderStyle.Unset);
-			writer.WriteAttributeIfNotDefault("border-width", element.borderThickness, new Thickness());
-			writer.WriteAttributeIfNotDefault("color", element.color, new Color(0, 0, 0, 0));
-			writer.WriteAttributeIfValue("filter", element.filter);
-
+			var properties = new string[] { "borderColor", "borderStyle", "borderThickness", "color", "filter", "padding" };
+			foreach (var prop in properties)
+			{
+				writer.WriteAttributeIfValue(CSSWriter.ToCssAttribute(prop), element.get_Property(prop));
+			}
 			WriteOrientation(writer, element, parent);
 
-			if(element.padding != new Thickness())
-				writer.WriteAttribute("padding", element.padding);
-			if (element.parent != null && element.parent.name != null)
-				writer.WriteAttribute("parent", element.parent.name);
 
 			WriteTransform(writer, element.get_Transforms());
 
@@ -286,15 +285,23 @@ namespace HTMLWriter
 
 
 			var unit100Percent = new Unit(100, Unit.UnitKind.Percent);
-
-			var hasHorizontalStretch = element.orientation == Orientation.StretchTop ||
-												element.orientation == Orientation.Stretch ||
-												element.orientation == Orientation.StretchCenter ||
-												element.orientation == Orientation.StretchBottom;
-			var hasVerticalStretch = element.orientation == Orientation.LeftStretch ||
-												element.orientation == Orientation.Stretch ||
-												element.orientation == Orientation.CenterStretch ||
-												element.orientation == Orientation.RightStretch;
+			var orientation = element.orientation;
+			if(element.get_Property("orientation") == null)
+			{
+				foreach (var style in appliedStyles)
+				{
+					if (style.ModifiedFields.ContainsKey("orientation"))
+						orientation = (Orientation)style.ModifiedFields["orientation"];
+				}
+			}
+			var hasHorizontalStretch = orientation == Orientation.StretchTop ||
+												orientation == Orientation.Stretch ||
+												orientation == Orientation.StretchCenter ||
+												orientation == Orientation.StretchBottom;
+			var hasVerticalStretch = orientation == Orientation.LeftStretch ||
+											 orientation == Orientation.Stretch ||
+											 orientation == Orientation.CenterStretch ||
+											 orientation == Orientation.RightStretch;
 
 
 			{
@@ -321,17 +328,17 @@ namespace HTMLWriter
 			}
 			
 			
-			WriteOrientation_(writer, element, m);
+			WriteOrientation_(writer, element, orientation, m);
 		}
 
-		private static void WriteOrientation_(CSSWriter writer, Element element, Thickness margin)
+		private static void WriteOrientation_(CSSWriter writer, Element element, Orientation orientation, Thickness margin)
 		{
 			var unit50Percent = new Unit(50, Unit.UnitKind.Percent);
 
 			var marginHorizontalOffset = margin.left - margin.right;
 			var marginVerticalOffset = margin.top - margin.bottom;
 
-			switch (element.orientation)
+			switch (orientation)
 			{
 				case Orientation.LeftTop:
 					writer.WriteAttribute("left", margin.left);
@@ -345,7 +352,6 @@ namespace HTMLWriter
 				case Orientation.CenterTop:
 					writer.WriteAttribute("left", unit50Percent + marginHorizontalOffset);
 					writer.WriteAttribute("top", margin.top);
-//					_currentTransform += "translate(-50%, 0) ";
 					element.translate(new Unit(-50, Unit.UnitKind.Percent), new Unit());
 					break;
 				case Orientation.RightTop:
@@ -356,7 +362,6 @@ namespace HTMLWriter
 					writer.WriteAttribute("left", margin.left);
 					writer.WriteAttribute("top", unit50Percent + marginVerticalOffset);
 					element.translate(new Unit(), new Unit(-50, Unit.UnitKind.Percent));
-
 					break;
 				case Orientation.StretchCenter:
 					writer.WriteAttribute("left", margin.left);

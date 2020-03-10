@@ -71,7 +71,7 @@ namespace Minsk.CodeAnalysis
 			}
 			_variables = new VariableValueCollection(variables);
 			_variables.Add(new VariableSymbol("slideCount", true, PrimitiveTypeSymbol.Integer, false), slideCount);
-			_variables.Add(new VariableSymbol("totalTime", true, _builtInTypes.LookSymbolUp(typeof(Time)), false), new Time(42.1234f, Time.TimeUnit.Hours));
+			_variables.Add(new VariableSymbol("totalTime", true, PrimitiveTypeSymbol.Integer, false), 0);
 			if (!variables.Any())
 			{
 				//TODO: This needs to be calculated in js!
@@ -661,7 +661,8 @@ namespace Minsk.CodeAnalysis
 					if (value.Key.IsVisible && value.Value is Element e)
 					{
 						e.name = value.Key.Name;
-						if(e.isVisible)
+						e.set_Step(_steps.Last());
+						if (e.isVisible)
 							visualChildren.Add(e);
 					}
 					else
@@ -981,7 +982,7 @@ namespace Minsk.CodeAnalysis
 				}
 			if (node.Type == PrimitiveTypeSymbol.Float)
 				return Convert.ToSingle(value);
-			if(node.Expression.Type.Type == TypeType.Nullable &&
+			if (node.Expression.Type.Type == TypeType.Nullable &&
 				((NullableTypeSymbol)node.Expression.Type).BaseType == node.Type)
 			{
 				if (value == null)
@@ -1328,7 +1329,7 @@ namespace Minsk.CodeAnalysis
 
 			//As of now they are included in the _groupChildren. You just need to give them
 			//a better name!
-			SVGElement[] svgValues = null ;
+			SVGElement[] svgValues = null;
 			Element[] groupValues = null;
 			if (isSVGGroup)
 			{
@@ -1685,7 +1686,6 @@ namespace Minsk.CodeAnalysis
 				}
 				if (d != null)
 				{
-					_dependencies.Add(d);/*
 					if (dependent is BoundFieldAccessExpression fieldAccess)
 					{
 						var slider = (Slider)EvaluateExpression(fieldAccess.Parent);
@@ -1693,11 +1693,11 @@ namespace Minsk.CodeAnalysis
 					}
 					else if (dependent is BoundVariableExpression variable)
 					{
-
+						_dependencies.Add(d);
 					}
 					else
 						throw new Exception();
-				*/}
+				}
 			}
 
 			if (parentType == typeof(DataObject))

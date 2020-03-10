@@ -22,6 +22,7 @@ namespace Slides
 		public Element[] VisualChildren { get; }
 		public object[] DataChildren { get; }
 		public string[] DataChildrenNames { get; }
+		private string ParentName { get; }
 
 		public Step(string name, SlideAttributes dummy, AnimationCall[] animationCalls, Element[] visualChildren, object[] dataChildren, string[] dataChildrenNames)
 		{
@@ -30,6 +31,13 @@ namespace Slides
 			VisualChildren = visualChildren;
 			DataChildren = dataChildren;
 			DataChildrenNames = dataChildrenNames;
+			ParentName = dummy.name;
+		}
+
+		public string get_Id()
+		{
+			if (Name != null) return $"{ParentName}-{Name}";
+			return ParentName;
 		}
 	}
 

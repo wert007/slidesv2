@@ -120,6 +120,8 @@ namespace Minsk.CodeAnalysis
 					return $"'hsl(' + {args[0]} + ', ' + {args[1]} + '%, ' + {args[2]} + '%)'";
 				case "rgb":
 					return $"'rgb(' + {args[0]} + ', ' + {args[1]} + ', ' + {args[2]} + ')'";
+				case "mod":
+					return $"({args[0]}) % ({args[1]})";
 				default:
 					return null;
 			}

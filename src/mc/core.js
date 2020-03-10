@@ -1,6 +1,7 @@
 let sildeIndex = 0;
 let stepIndex = 0;
 let stepNumericalId = 0;
+let totalTime = 0;
 
 let currentSlide;
 let currentSteps;
@@ -33,6 +34,12 @@ function load() {
     loadSlides();
     showSlides();
     loadInner();
+
+    let timerId = setInterval(() => {
+        totalTime += 20;
+        update_totalTime();
+    }, 20);
+
     initAnimations();
 }
 
