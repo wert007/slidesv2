@@ -16,11 +16,14 @@ namespace Minsk.CodeAnalysis
 
 		public string FileName { get; }
 
-		public static void OutputToConsole(Diagnostic[] diagnostics, SourceText text)
+		public static void OutputToConsole(Diagnostic[] diagnostics, SourceText text, int max)
 		{
 			foreach (var diagnostic in diagnostics)
 			{
 				diagnostic.OutputToConsole(text);
+				max--;
+				if (max < 0)
+					return;
 			}
 		}
 

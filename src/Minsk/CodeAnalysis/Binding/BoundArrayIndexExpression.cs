@@ -2,35 +2,30 @@
 
 namespace Minsk.CodeAnalysis.Binding
 {
-	internal class BoundArrayIndex : BoundExpression
+	internal class BoundArrayAccessExpression : BoundExpression
 	{
-		public BoundArrayIndex(BoundExpression boundIndex, BoundArrayIndex boundChild)
+		public BoundArrayAccessExpression(BoundExpression child, BoundExpression index)
 		{
-			BoundIndex = boundIndex;
-			BoundChild = boundChild;
+			Child = child;
+			Index = index;
+			var arrayType = child.Type as ArrayTypeSymbol;
+			Type = arrayType.Child;
 		}
 
-		public BoundExpression BoundIndex { get; }
-		public BoundArrayIndex BoundChild { get; }
 
-		public override BoundNodeKind Kind => BoundNodeKind.ArrayIndex;
+		public override BoundNodeKind Kind => BoundNodeKind.ArrayAccessExpression;
 
-		public override TypeSymbol Type => PrimitiveTypeSymbol.Void;
+		public BoundExpression Child { get; }
+		public BoundExpression Index { get; }
+
+		public override TypeSymbol Type { get; }
 
 		public override bool EqualsBoundExpression(BoundExpression expression)
 		{
-			var other = (BoundArrayIndex)expression;
-			if (!BoundIndex.Equals(other.BoundIndex))
+			var other = (BoundArrayAccessExpression)expression;
+			if (!Index.Equals(other.Index))
 				return false;
-			if (BoundChild == null)
-			{
-				if (other.BoundChild == null)
-					return true;
-				else
-					return false;
-			}
-			else
-				return BoundChild.Equals(other.BoundChild);
-					}
+			return Child.Equals(other.Child);
+		}
 	}
 }

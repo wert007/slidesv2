@@ -18,5 +18,7 @@
 		public SyntaxToken SemicolonToken { get; }
 		public ExpressionSyntax LengthExpression { get; }
 		public SyntaxToken CloseBracketToken { get; }
+
+		public override bool IsLValue => false;
 	}
 }

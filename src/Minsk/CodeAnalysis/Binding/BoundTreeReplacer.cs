@@ -47,16 +47,12 @@ namespace Minsk.CodeAnalysis.Binding
                return RewriteBinaryExpression((BoundBinaryExpression)expression, source, replacement);
             case BoundNodeKind.FunctionExpression:
                return RewriteFunctionExpression((BoundFunctionExpression)expression, source, replacement);
-            case BoundNodeKind.IndexedArrayExpression:
-               return RewriteIndexedArrayExpression((BoundIndexedArrayExpression)expression, source, replacement);
             case BoundNodeKind.ArrayExpression:
                return RewriteArrayExpression((BoundArrayExpression)expression, source, replacement);
             case BoundNodeKind.FunctionAccessExpression:
                return RewriteFunctionAccessExpression((BoundFunctionAccessExpression)expression, source, replacement);
             case BoundNodeKind.FieldAccessExpression:
                return RewriteFieldAccessExpression((BoundFieldAccessExpression)expression, source, replacement);
-            case BoundNodeKind.FieldAssignmentExpression:
-               return RewriteFieldAssignmentExpression((BoundFieldAssignmentExpression)expression, source, replacement);
             case BoundNodeKind.StringExpression:
                return RewriteStringExpression((BoundStringExpression)expression, source, replacement);
             case BoundNodeKind.Conversion:
@@ -117,31 +113,25 @@ namespace Minsk.CodeAnalysis.Binding
       {
          if (expression == source)
             return (BoundExpression)replacement;
-         var arrayIndex = RewriteArrayIndex(expression.BoundArrayIndex, source, replacement);
-         return new BoundVariableExpression(expression.Variable, arrayIndex, expression.Type);
+         return new BoundVariableExpression(expression.Variable);
       }
 
-      private static BoundArrayIndex RewriteArrayIndex(BoundArrayIndex arrayIndex, BoundNode source, BoundNode replacement)
+      private static BoundArrayAccessExpression RewriteArrayIndex(BoundArrayAccessExpression arrayIndex, BoundNode source, BoundNode replacement)
       {
          if (arrayIndex == null)
             return null;
-         var index = RewriteExpression(arrayIndex.BoundIndex, source, replacement);
-         var child = RewriteArrayIndex(arrayIndex.BoundChild, source, replacement);
-         return new BoundArrayIndex(index, child);
+         var index = RewriteExpression(arrayIndex.Index, source, replacement);
+         var child = RewriteExpression(arrayIndex.Child, source, replacement);
+         return new BoundArrayAccessExpression(index, child);
       }
 
       private static BoundExpression RewriteAssignmentExpression(BoundAssignmentExpression expression, BoundNode source, BoundNode replacement)
       {
          if (expression == source)
             return (BoundExpression)replacement;
-         var variables = new List<BoundVariableExpression>();
-         foreach (var v in expression.Variables)
-         {
-            //TODO: Errorprone
-            variables.Add((BoundVariableExpression)RewriteVariableExpression(v, source, replacement));
-         }
+         var lvalue = RewriteExpression(expression.LValue, source, replacement);
          var e = RewriteExpression(expression.Expression, source, replacement);
-         return new BoundAssignmentExpression(variables.ToArray(), e);
+         return new BoundAssignmentExpression(lvalue, e);
       }
 
       private static BoundExpression RewriteUnaryExpression(BoundUnaryExpression expression, BoundNode source, BoundNode replacement)
@@ -179,14 +169,6 @@ namespace Minsk.CodeAnalysis.Binding
          return new BoundFunctionExpression(expression.Function, arguments.ToArray(), expression.Source);
       }
 
-      private static BoundExpression RewriteIndexedArrayExpression(BoundIndexedArrayExpression expression, BoundNode source, BoundNode replacement)
-      {
-         if (expression == source)
-            return (BoundExpression)replacement;
-         var index = RewriteExpression(expression.BoundIndex, source, replacement);
-         return new BoundIndexedArrayExpression(expression.Variable, index);
-      }
-
       private static BoundExpression RewriteArrayExpression(BoundArrayExpression expression, BoundNode source, BoundNode replacement)
       {
 
@@ -222,16 +204,6 @@ namespace Minsk.CodeAnalysis.Binding
          //TODO: Errorprone
          var field = (BoundVariableExpression)RewriteVariableExpression(expression.Field, source, replacement);
          return new BoundFieldAccessExpression(parent, field);
-      }
-
-      private static BoundExpression RewriteFieldAssignmentExpression(BoundFieldAssignmentExpression expression, BoundNode source, BoundNode replacement)
-      {
-         if (expression == source)
-            return (BoundExpression)replacement;
-
-         var field = (BoundFieldAccessExpression)RewriteFieldAccessExpression(expression.Field, source, replacement);
-         var initializer = RewriteExpression(expression.Initializer, source, replacement);
-         return new BoundFieldAssignmentExpression(field, initializer);
       }
 
       private static BoundExpression RewriteStringExpression(BoundStringExpression expression, BoundNode source, BoundNode replacement)

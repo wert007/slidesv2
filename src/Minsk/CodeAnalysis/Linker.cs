@@ -81,7 +81,7 @@ namespace Minsk.CodeAnalysis
 			timewatch.Record($"evaluate {key}");
 
 			var syntaxTree = _loadedCompilations[key].SyntaxTree;
-			DiagnosticBag.OutputToConsole(result.Diagnostics, syntaxTree.Text);
+			DiagnosticBag.OutputToConsole(result.Diagnostics, syntaxTree.Text, 100);
 
 			if (result.Diagnostics.Any(d => d.Level == DiagnosticLevel.Error))
 				return new LibrarySymbol(key);

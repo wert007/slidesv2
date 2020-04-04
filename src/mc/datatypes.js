@@ -966,3 +966,9 @@ var Color_t = (function(window){
 function lerp(v0, v1, t) {
     return v0*(1-t)+v1*t
 }
+
+//source: https://stackoverflow.com/questions/596467/how-do-i-convert-a-float-number-to-a-whole-number-in-javascript
+function castToInt(value)
+{
+	return value | 0;
+}

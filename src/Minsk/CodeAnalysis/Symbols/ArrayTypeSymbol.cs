@@ -8,6 +8,7 @@ namespace Minsk.CodeAnalysis.Symbols
 	//shal see.
 	public class ArrayTypeSymbol : TypeSymbol
 	{
+		public static readonly FunctionSymbol LenFunction = new FunctionSymbol("len", PrimitiveTypeSymbol.Integer);
 		public TypeSymbol Child { get; private set; }
 		public ArrayTypeSymbol(TypeSymbol child) : base($"{child.Name}[]")
 		{
@@ -21,7 +22,7 @@ namespace Minsk.CodeAnalysis.Symbols
 				case "len":
 					function = new FunctionSymbol[]
 						{
-							new FunctionSymbol("len", PrimitiveTypeSymbol.Integer)
+							LenFunction
 						};
 					return true;
 				default:

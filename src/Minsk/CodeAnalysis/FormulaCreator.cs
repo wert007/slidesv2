@@ -122,6 +122,8 @@ namespace Minsk.CodeAnalysis
 					return $"'rgb(' + {args[0]} + ', ' + {args[1]} + ', ' + {args[2]} + ')'";
 				case "mod":
 					return $"({args[0]}) % ({args[1]})";
+				case "int":
+					return $"castToInt({args[0]})";
 				default:
 					return null;
 			}

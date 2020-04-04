@@ -14,5 +14,7 @@
 		public ExpressionSyntax Expression { get; }
 
 		public override SyntaxKind Kind => SyntaxKind.LambdaExpression;
+
+		public override bool IsLValue => false;
 	}
 }

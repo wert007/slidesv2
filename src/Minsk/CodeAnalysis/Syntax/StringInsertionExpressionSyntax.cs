@@ -14,5 +14,7 @@
 		public SyntaxToken OpenBraceToken { get; }
 		public ExpressionSyntax Expression { get; }
 		public SyntaxToken CloseBraceToken { get; }
+
+		public override bool IsLValue => false;
 	}
 }

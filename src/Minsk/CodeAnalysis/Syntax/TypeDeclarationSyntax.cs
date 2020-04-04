@@ -4,7 +4,7 @@ namespace Minsk.CodeAnalysis.Syntax
 {
 	internal class TypeDeclarationSyntax
 	{
-		public TypeDeclarationSyntax(SyntaxToken colonToken, SyntaxToken type, SyntaxToken questionMarkToken, List<SyntaxTokenPair> bracketPairs)
+		public TypeDeclarationSyntax(SyntaxToken colonToken, SyntaxToken type, SyntaxToken questionMarkToken, SyntaxToken[] bracketPairs)
 		{
 			ColonToken = colonToken;
 			Type = type;
@@ -15,7 +15,7 @@ namespace Minsk.CodeAnalysis.Syntax
 		public SyntaxToken ColonToken { get; }
 		public SyntaxToken Type { get; }
 		public SyntaxToken QuestionMarkToken { get; }
-		public List<SyntaxTokenPair> BracketPairs { get; }
+		public SyntaxToken[] BracketPairs { get; }
 		
 	}
 }

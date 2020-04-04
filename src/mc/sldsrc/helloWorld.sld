@@ -28,7 +28,7 @@ slide helloWorld:
 	
 	//Sets the font of our newly created Label to the font we imported
 	//in the beginning
-	lbl.font = mono~;
+	lbl.font = mono;
 
 	//Sets the fontsize of this Label. pt is a Unit well fitted for text.
 	//But you could as well use Pixel. If you have a good reason for that..
@@ -64,8 +64,6 @@ slide howDoesThePresentationWork:
 	//This time we create Variable, which only contains data. 
 	//So it can't be drawn to the screen. In this case it's just
 	//a string. To draw it you need a Label.
-	//Data variables need to end with ~ so they don't get mixed up
-	//with visual elements.
 	//
 	//In the string we use backslashes (\) to escape certain characters.
 	//So means \n a new line and will not print \n on the screen
@@ -76,13 +74,13 @@ slide howDoesThePresentationWork:
 	//
 	//With ** and __ you have basic formatting options. These should work
 	//everywhere you use Labels! (Most visual elements do!)
-	let controls~ = 'With the up and down arrow keys you can switch between slides. \n' +
+	let controls = 'With the up and down arrow keys you can switch between slides. \n' +
 					'And I don\'t have more to say. **Big** __italic **stuff**__(c)';
 	
 	//If you use controls now you need to use as well the post-tilde.
 	//If you forget them, the "compiler" will cry loudly!
-	let lblControls = new Label(controls~);
-	lblControls.font = mono~;
+	let lblControls = new Label(controls);
+	lblControls.font = mono;
 	lblControls.orientation = Vertical.Center | Horizontal.Center;
 
 	//Since we now have multiline, we can make use of alignment.
@@ -105,7 +103,7 @@ style std:
 	//use a special font for a single element you can
 	//just write "specialelement.font = comicSans;" and
 	//the std font will be overridden.
-	font = mono~;
+	font = mono;
 
 //Just like on slides you need to say on styles as well
 //when they end.
@@ -145,10 +143,11 @@ slide hoverExample:
 	//TODO: This shouldn't be needed. I want to copy that totally normal.
 	//because our source file is in the same directory and it would be 
 	//strange, if its afterwards different.
-	
-	//BIG FUCKING TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	let imgSrc~ = image('desert.jpg');
-	let imgDesert = new Image(imgSrc~);
+	//
+	//Seems normal now..
+
+	let imgSrc = image('desert.jpg');
+	let imgDesert = new Image(imgSrc);
 	imgDesert.orientation = Horizontal.Stretch | Vertical.Stretch;
 	imgDesert.margin = margin(5%);
 	imgDesert.hover = hoverStyle;

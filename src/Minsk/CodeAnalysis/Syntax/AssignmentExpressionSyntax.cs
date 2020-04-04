@@ -2,18 +2,18 @@ namespace Minsk.CodeAnalysis.Syntax
 {
 	public sealed class AssignmentExpressionSyntax : ExpressionSyntax
 	{
-		public AssignmentExpressionSyntax(VariableExpressionSyntax[] variables, SyntaxToken[] commas, SyntaxToken equalsToken, ExpressionSyntax expression)
+		public AssignmentExpressionSyntax(LExpressionSyntax lvalue, SyntaxToken equalsToken, ExpressionSyntax expression)
 		{
-			Variables = variables;
-			Commas = commas;
+			LValue = lvalue;
 			OperatorToken = equalsToken;
 			Expression = expression;
 		}
 
 		public override SyntaxKind Kind => SyntaxKind.AssignmentExpression;
-		public VariableExpressionSyntax[] Variables { get; }
-		public SyntaxToken[] Commas { get; }
+		public LExpressionSyntax LValue { get; }
 		public SyntaxToken OperatorToken { get; }
 		public ExpressionSyntax Expression { get; }
+
+		public override bool IsLValue => false;
 	}
 }

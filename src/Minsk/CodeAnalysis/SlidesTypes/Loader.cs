@@ -68,7 +68,7 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			var result = compilation.Evaluate(variables, timewatch);
 			timewatch.Pop();
 			timewatch.Record("evaluate program");
-			DiagnosticBag.OutputToConsole(result.Diagnostics, syntaxTree.Text);
+			DiagnosticBag.OutputToConsole(result.Diagnostics, syntaxTree.Text, 100);
 			Console.WriteLine();
 			return new EvaluationResult(result.Diagnostics, result.Value, timewatch);
 

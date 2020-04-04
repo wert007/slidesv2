@@ -13,5 +13,7 @@ namespace Minsk.CodeAnalysis.Syntax
         public ExpressionSyntax Left { get; }
         public SyntaxToken OperatorToken { get; }
         public ExpressionSyntax Right { get; }
-    }
+
+      public override bool IsLValue => false;
+   }
 }

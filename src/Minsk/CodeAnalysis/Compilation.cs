@@ -58,12 +58,19 @@ namespace Minsk.CodeAnalysis
 
 		public EvaluationResult Evaluate(Dictionary<VariableSymbol, object> variables, TimeWatcher timewatch)
 		{
-			var diagnostics = SyntaxTree.Diagnostics.Concat(GlobalScope.Diagnostics).ToArray();
+			var diagnostics = SyntaxTree.Diagnostics.ToArray();
+			if (diagnostics.Any(d => d.Level == DiagnosticLevel.Error))
+				return new EvaluationResult(diagnostics, null, new TimeWatcher());
+			diagnostics = GlobalScope.Diagnostics;
 			if (diagnostics.Any(d => d.Level == DiagnosticLevel.Error))
 				return new EvaluationResult(diagnostics, null, new TimeWatcher());
 
+
 			var statement = GetStatement();
 			var declarations = GetDeclarations();
+
+			var syntacticSugar = new SyntaxSugarReplacer();
+			statement = (BoundBlockStatement)syntacticSugar.RewriteStatement(statement);
 
 			var evaluator = new Evaluator(statement, variables, References, declarations);
 			timewatch.Record("create new evaluator");

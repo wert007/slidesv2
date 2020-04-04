@@ -18,5 +18,7 @@ namespace Minsk.CodeAnalysis.Syntax
 		public bool FirstElementIsLiteral { get; }
 
 		public override SyntaxKind Kind => SyntaxKind.StringExpression;
+
+		public override bool IsLValue => false;
 	}
 }

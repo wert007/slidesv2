@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Minsk.CodeAnalysis.Binding;
@@ -244,8 +245,9 @@ namespace Minsk.CodeAnalysis
 		{
 			switch (expression.Kind)
 			{
-				case BoundNodeKind.FieldAssignmentExpression:
-					return CollectAnimationFields((BoundFieldAssignmentExpression)expression, animatedObject);
+				case BoundNodeKind.AssignmentExpression:
+					return CollectAnimationFields((BoundAssignmentExpression)expression, animatedObject);
+					throw new NotImplementedException();
 				case BoundNodeKind.FunctionAccessExpression:
 					return CollectAnimationFields((BoundFunctionAccessExpression)expression, animatedObject);
 				default:
@@ -253,30 +255,35 @@ namespace Minsk.CodeAnalysis
 			}
 		}
 
-		private Slides.Attribute[] CollectAnimationFields(BoundFieldAssignmentExpression expression, Type animatedObject)
+		private Slides.Attribute[] CollectAnimationFields(BoundAssignmentExpression expression, Type animatedObject)
 		{
-			var field = expression.Field.Field.Variable.Name;
-			var parent = expression.Field.Parent;
-			while (parent.Kind == BoundNodeKind.FieldAccessExpression)
+			var value = EvaluateExpression(expression.Expression);
+			switch (expression.LValue.Kind)
 			{
-				var fieldExpression = (BoundFieldAccessExpression)parent;
-				field = fieldExpression.Field.Variable.Name + "." + field;
-				parent = fieldExpression.Parent;
+				case BoundNodeKind.VariableExpression:
+					var variableExpression = (BoundVariableExpression)expression.LValue;
+					switch (variableExpression.Variable.Name)
+					{
+						case "interpolation":
+							return new Slides.Attribute[0];
+					}
+					break;
+				case BoundNodeKind.FieldAccessExpression:
+					//TODO: Fixme!
+					var fieldAccessExpression = (BoundFieldAccessExpression)expression.LValue;
+					return new Slides.Attribute[]
+					{
+						new Slides.Attribute(fieldAccessExpression.Field.Variable.Name, value),
+					};
+				default:
+					throw new Exception();
 			}
-			var parentObject = EvaluateExpression(parent);
-			if (parentObject.GetType() != animatedObject)
-				return new Slides.Attribute[0];
-			var value = EvaluateExpression(expression.Initializer);
-			if (value == null)
-				throw new Exception();
-			return new Slides.Attribute[]
-			{
-				new Slides.Attribute(field, value)
-			};
+			return new Slides.Attribute[0];
 		}
 
 		private Slides.Attribute[] CollectAnimationFields(BoundFunctionAccessExpression expression, Type animatedObject)
 		{
+			throw new NotSupportedException();
 			//TODO(Time): hacky
 			//without setPadding() Idk when we use this actually...
 			var field = expression.Function.Function.Name;
@@ -380,8 +387,6 @@ namespace Minsk.CodeAnalysis
 		{
 			switch (expression.Kind)
 			{
-				case BoundNodeKind.FieldAssignmentExpression:
-					return CollectStyleFields((BoundFieldAssignmentExpression)expression);
 				case BoundNodeKind.AssignmentExpression:
 					return CollectStyleFields((BoundAssignmentExpression)expression);
 				case BoundNodeKind.FunctionAccessExpression:
@@ -392,30 +397,31 @@ namespace Minsk.CodeAnalysis
 			}
 		}
 
-		private List<TypedModifications> CollectStyleFields(BoundFieldAssignmentExpression expression)
-		{
-			//TODO(Major): Std-Style needs a very own class for ModifiedFields. There could be subtypes and everything!
-			//working on it
-			var field = expression.Field.Field.Variable.Name;
-			var value = EvaluateExpression(expression.Initializer);
-			var fields = new Dictionary<string, object>();
-			fields.Add(field, value);
-			return new List<TypedModifications>
-			{
-				new TypedModifications(expression.Field.Parent.Type.Name, fields)
-			};
-		}
-
 		private List<TypedModifications> CollectStyleFields(BoundAssignmentExpression expression)
 		{
-			//TODO(Time): Maybe hacky
-			var field = expression.Variables[0].Variable.Name;
+			//TODO: Clean Up
+			var field = "";
+			var type = "*";
+			switch (expression.LValue.Kind)
+			{
+				case BoundNodeKind.VariableExpression:
+					field = ((BoundVariableExpression)expression.LValue).Variable.Name;
+					break;
+				case BoundNodeKind.FieldAccessExpression:
+					var fieldAccessExpression = (BoundFieldAccessExpression)expression.LValue;
+					field = fieldAccessExpression.Field.Variable.Name;
+					if(fieldAccessExpression.Parent.Kind == BoundNodeKind.VariableExpression)
+						type = ((BoundVariableExpression)fieldAccessExpression.Parent).Variable.Name;
+					break;
+				default:
+					throw new Exception();
+			}
 			var value = EvaluateExpression(expression.Expression);
 			var fields = new Dictionary<string, object>();
 			fields.Add(field, value);
 			return new List<TypedModifications>
 			{
-				new TypedModifications("*", fields)
+				new TypedModifications(type, fields)
 			};
 		}
 
@@ -584,12 +590,12 @@ namespace Minsk.CodeAnalysis
 			if (!Flags.GroupsAllowed)
 				throw new Exception();
 			var parameters = new List<VariableSymbol>();
-			foreach (var parameter in node.BoundParameters.Statements)
+			foreach (var parameter in node.Parameters.Statements)
 			{
 				parameters.Add(parameter.Variable);
 			}
 
-			var group = new BodySymbol(node.Type, node.BoundBody);
+			var group = new BodySymbol(node.Type, node.Body);
 			_customTypes.Add(node.Type, group);
 			_declarations.Remove(new VariableSymbol(node.Type.Name, true, node.Type, false));
 		}
@@ -813,7 +819,7 @@ namespace Minsk.CodeAnalysis
 			if (node.Variables.Length == 1)
 			{
 				var variable = node.Variables[0];
-				TryAddChildren(value, new BoundVariableExpression(variable, null, variable.Type));
+				TryAddChildren(value, new BoundVariableExpression(variable));
 				_variables[variable] = value;
 				_lastValue = value;
 				if (value is Element e)
@@ -862,14 +868,13 @@ namespace Minsk.CodeAnalysis
 				{
 					if (value is Element element && element.isVisible)
 					{
-						if (variable.BoundArrayIndex == null)
-							_groupChildren.Peek().Add(variable.Variable, element);
-						else
-						{
-							var i = (int)EvaluateExpression(variable.BoundArrayIndex.BoundIndex);
-							var v = new VariableSymbol($"{variable.Variable.Name}#{i}", variable.Variable.IsReadOnly, variable.Type, variable.Variable.NeedsDataFlag);
-							_groupChildren.Peek().Add(v, element);
-						}
+						_groupChildren.Peek().Add(variable.Variable, element);
+						//if(variable.BoundArrayIndex != null)
+						//{
+						//	var i = (int)EvaluateExpression(variable.BoundArrayIndex.BoundIndex);
+						//	var v = new VariableSymbol($"{variable.Variable.Name}#{i}", variable.Variable.IsReadOnly, variable.Type, variable.Variable.NeedsDataFlag);
+						//	_groupChildren.Peek().Add(v, element);
+						//}
 					}
 				}
 				else
@@ -896,14 +901,13 @@ namespace Minsk.CodeAnalysis
 				{
 					if (value is SVGElement element && element.isVisible)
 					{
-						if (variable.BoundArrayIndex == null)
-							_svggroupChildren.Peek().Add(variable.Variable, element);
-						else
-						{
-							var i = (int)EvaluateExpression(variable.BoundArrayIndex.BoundIndex);
-							var v = new VariableSymbol($"{variable.Variable.Name}#{i}", variable.Variable.IsReadOnly, variable.Type, variable.Variable.NeedsDataFlag);
-							_svggroupChildren.Peek().Add(v, element);
-						}
+						_svggroupChildren.Peek().Add(variable.Variable, element);
+						//if (variable.BoundArrayIndex != null)
+						//		{
+						//	var i = (int)EvaluateExpression(variable.BoundArrayIndex.BoundIndex);
+						//	var v = new VariableSymbol($"{variable.Variable.Name}#{i}", variable.Variable.IsReadOnly, variable.Type, variable.Variable.NeedsDataFlag);
+						//	_svggroupChildren.Peek().Add(v, element);
+						//}
 					}
 				}
 				else
@@ -937,8 +941,6 @@ namespace Minsk.CodeAnalysis
 					return EvaluateVariableExpression((BoundVariableExpression)node);
 				case BoundNodeKind.AssignmentExpression:
 					return EvaluateAssignmentExpression((BoundAssignmentExpression)node);
-				case BoundNodeKind.FieldAssignmentExpression:
-					return EvaluateFieldAssignmentExpression((BoundFieldAssignmentExpression)node);
 				case BoundNodeKind.UnaryExpression:
 					return EvaluateUnaryExpression((BoundUnaryExpression)node);
 				case BoundNodeKind.BinaryExpression:
@@ -961,6 +963,8 @@ namespace Minsk.CodeAnalysis
 					return EvaluateMathExpression((BoundMathExpression)node);
 				case BoundNodeKind.LambdaExpression:
 					return EvaluateLambdaExpression((BoundLambdaExpression)node);
+				case BoundNodeKind.ArrayAccessExpression:
+					return EvaluateArrayAccessExpression((BoundArrayAccessExpression)node);
 				default:
 					throw new Exception($"Unexpected node {node.Kind}");
 			}
@@ -1241,9 +1245,7 @@ namespace Minsk.CodeAnalysis
 				return value;
 			}
 			var v = type.GetProperty(node.Field.Variable.Name).GetValue(parent);
-			if (node.Field.BoundArrayIndex == null)
-				return v;
-			return EvaluateArrayIndexAccess((object[])v, node.Field.BoundArrayIndex);
+			return v;
 		}
 
 		private object EvaluateEmptyArrayConstructorExpression(BoundEmptyArrayConstructorExpression node)
@@ -1618,122 +1620,261 @@ namespace Minsk.CodeAnalysis
 			}
 			if (value == null)
 				throw new Exception();
-			if (v.BoundArrayIndex == null)
+			return value;
+		}
+
+		private object EvaluateArrayAccessExpression(BoundArrayAccessExpression arrayIndex)
+		{
+			var index = (int)EvaluateExpression(arrayIndex.Index);
+			var value = (object[])EvaluateExpression(arrayIndex.Child);
+			return value[index];
+		}
+		struct FormulaDependency
+		{
+			public enum Type
 			{
-				return value;
+				Slider,
+				Time
 			}
-			return EvaluateArrayIndexAccess((object[])value, v.BoundArrayIndex);
-		}
+			public Formula Formula { get; }
+			public Type DependentType { get; }
 
-		private object EvaluateArrayIndexAccess(object[] value, BoundArrayIndex arrayIndex)
-		{
-			var index = (int)EvaluateExpression(arrayIndex.BoundIndex);
-			if (arrayIndex.BoundChild == null)
-				return value[index];
-			return EvaluateArrayIndexAccess((object[])value[index], arrayIndex.BoundChild);
-		}
+			public BoundExpression Dependent { get; }
 
-		private object EvaluateAssignmentExpression(BoundAssignmentExpression a)
-		{
-			var value = EvaluateExpression(a.Expression);
-			object[] array = null;
-			if (a.Variables.Length > 1)
-				array = (object[])value;
-			for (int i = 0; i < a.Variables.Length; i++)
+			public FormulaDependency(Formula formula, BoundExpression dependent, Type dependentType)
 			{
-				TryAddChildren(value, a.Variables[i]);
-				if (a.Variables.Length == 1)
-				{
-					if (a.Variables[i].BoundArrayIndex == null)
-						_variables[a.Variables[i].Variable] = value;
-					else
-					{
-						var currentArrayIndex = a.Variables[i].BoundArrayIndex;
-						var arr = (object[])_variables[a.Variables[i].Variable];
-						while (currentArrayIndex != null)
-						{
-							int index = (int)EvaluateExpression(currentArrayIndex.BoundIndex);
-							currentArrayIndex = currentArrayIndex.BoundChild;
-							if (currentArrayIndex != null)
-								arr = (object[])arr[index];
-							else
-								arr[index] = value;
-						}
-					}
-					return value;
-				}
-				_variables[a.Variables[i].Variable] = array[i];
+				Formula = formula;
+				DependentType = dependentType;
+				Dependent = dependent;
+			}
+		}
+		private object EvaluateAssignmentExpression(BoundAssignmentExpression node)
+		{
+			var value = EvaluateExpression(node.Expression);
+
+			FormulaDependency? formulaDependency = null;
+			if (FormulaCreator.NeedsDependency(node.Expression, out BoundExpression dependent))
+			{
+				var formula = this.CreateFunction(node.Expression, dependent);
+				var type = FormulaDependency.Type.Time;
+				if (dependent.Kind == BoundNodeKind.FieldAccessExpression)
+					type = FormulaDependency.Type.Slider;
+				formulaDependency = new FormulaDependency(formula, dependent, type);
+			}
+			switch (node.LValue.Kind)
+			{
+				case BoundNodeKind.VariableExpression:
+					AssignVariable((BoundVariableExpression)node.LValue, value);
+					break;
+				case BoundNodeKind.ArrayAccessExpression:
+					AssignArrayAccess((BoundArrayAccessExpression)node.LValue, value, formulaDependency);
+					break;
+				case BoundNodeKind.FieldAccessExpression:
+					AssignFieldAccess((BoundFieldAccessExpression)node.LValue, value, formulaDependency);
+					break;
+				default:
+					throw new Exception();
 			}
 			return value;
 		}
 
-		private object EvaluateFieldAssignmentExpression(BoundFieldAssignmentExpression node)
+		private void AssignVariable(BoundVariableExpression lValue, object value, Stack<int> indices = null)
 		{
-			var value = EvaluateExpression(node.Initializer);
-			var parent = EvaluateExpression(node.Field.Parent);
-			var parentType = parent.GetType();
-			var fieldName = node.Field.Field.Variable.Name;
-
-			if (FormulaCreator.NeedsDependency(node.Initializer, out BoundExpression dependent))
+			TryAddChildren(value, lValue);
+			if (indices == null)
+				_variables[lValue.Variable] = value;
+			else
 			{
-				FieldDependency d = null;
-				if (parent is Element e)
+				var variable = (object[])_variables[lValue.Variable];
+				while (indices.Count > 1)
 				{
-					d = new FieldDependency(e, fieldName, this.CreateFunction(node.Initializer, dependent));
-
+					variable = (object[])variable[indices.Pop()];
 				}
-				else if (parent is MathFormula m)
-				{
-					d = new FieldDependency(m, fieldName, this.CreateFunction(node.Initializer, dependent));
-				}
-				if (d != null)
-				{
-					if (dependent is BoundFieldAccessExpression fieldAccess)
-					{
-						var slider = (Slider)EvaluateExpression(fieldAccess.Parent);
-						slider.add_Dependency(d);
-					}
-					else if (dependent is BoundVariableExpression variable)
-					{
-						_dependencies.Add(d);
-					}
-					else
-						throw new Exception();
-				}
+				variable[indices.Pop()] = value;
 			}
+		}
+
+		private void AssignArrayAccess(BoundArrayAccessExpression lValue, object value, FormulaDependency? formulaDependency)
+		{
+			var expression = lValue.Child;
+			var indices = new Stack<int>();
+			indices.Push((int)EvaluateExpression(lValue.Index));
+			while (expression.Kind == BoundNodeKind.ArrayAccessExpression)
+			{
+				var arrayAccessExpression = (BoundArrayAccessExpression)expression;
+				indices.Push((int)EvaluateExpression(arrayAccessExpression.Index));
+				expression = arrayAccessExpression.Child;
+			}
+			switch (expression.Kind)
+			{
+				case BoundNodeKind.VariableExpression:
+					Debug.Assert(!formulaDependency.HasValue);
+					AssignVariable((BoundVariableExpression)expression, value, indices);
+					break;
+				case BoundNodeKind.FieldAccessExpression:
+					AssignFieldAccess((BoundFieldAccessExpression)expression, value, formulaDependency, indices);
+					break;
+				default:
+					throw new Exception();
+			}
+		}
+
+		private void AssignFieldAccess(BoundFieldAccessExpression lValue, object value, FormulaDependency? formulaDependency, Stack<int> indices = null)
+		{
+			var parent = EvaluateExpression(lValue.Parent);
+			var parentType = parent.GetType();
+			var fieldName = lValue.Field.Variable.Name;
 
 			if (parentType == typeof(DataObject))
 			{
 				var data = (DataObject)parent;
 				if (!data.TrySet(fieldName, value))
 					throw new Exception();
-				return value;
 			}
-			if (parentType == typeof(MathFormula))
+			else if (parentType == typeof(MathFormula))
 			{
 				var math = (MathFormula)parent;
 				if (!math.TrySet(fieldName, Convert.ToSingle(value)))
 					throw new Exception();
-				return value;
-			}
 
-			var field = parentType.GetField(fieldName);
-			if (field != null)
-			{
-				field.SetValue(parent, value);
-				return value;
 			}
-			var property = parentType.GetProperty(fieldName);
-			if (property != null)
+			else
 			{
-				if (property.PropertyType == typeof(Brush))
-					property.SetValue(parent, Brush.FromObject(value));
-				else
-					property.SetValue(parent, value);
-				return value;
+				var field = parentType.GetField(fieldName);
+				var property = parentType.GetProperty(fieldName);
+				if (field != null)
+				{
+					if (indices == null)
+						field.SetValue(parent, value);
+					else
+					{
+						var obj = (object[])field.GetValue(parent);
+						while (indices.Count > 1)
+						{
+							obj = (object[])obj[indices.Pop()];
+						}
+						obj[indices.Pop()] = value;
+					}
+				}
+				else if (property != null)
+				{
+					if (property.PropertyType == typeof(Brush))
+						property.SetValue(parent, Brush.FromObject(value));
+					else if (indices == null)
+						property.SetValue(parent, value);
+					else
+					{
+						var obj = (object[])property.GetValue(parent);
+						while (indices.Count > 1)
+						{
+							obj = (object[])obj[indices.Pop()];
+						}
+						obj[indices.Pop()] = value;
+					}
+				}
+				else throw new Exception($"Could not match Field or Property '{fieldName}'");
 			}
-			throw new Exception();
+			if (formulaDependency != null)
+			{
+				var fd = formulaDependency.Value;
+				var formula = fd.Formula;
+				var type = fd.DependentType;
+				FieldDependency d = null;
+				if (parent is Element e)
+				{
+					d = new FieldDependency(e, fieldName, formula);
+
+				}
+				else if (parent is MathFormula m)
+				{
+					d = new FieldDependency(m, fieldName, formula);
+				}
+				if (d != null)
+				{
+					switch (type)
+					{
+						case FormulaDependency.Type.Slider:
+							var fieldAccess = (BoundFieldAccessExpression)fd.Dependent;
+							var slider = (Slider)EvaluateExpression(fieldAccess.Parent);
+							slider.add_Dependency(d);
+							break;
+						case FormulaDependency.Type.Time:
+							_dependencies.Add(d);
+							break;
+						default:
+							throw new Exception();
+					}
+				}
+			}
 		}
+
+		//private object EvaluateFieldAssignmentExpression(BoundFieldAssignmentExpression node)
+		//{
+		//	var value = EvaluateExpression(node.Initializer);
+		//	var parent = EvaluateExpression(node.Field.Parent);
+		//	var parentType = parent.GetType();
+		//	var fieldName = node.Field.Field.Variable.Name;
+
+		//	if (FormulaCreator.NeedsDependency(node.Initializer, out BoundExpression dependent))
+		//	{
+		//		FieldDependency d = null;
+		//		if (parent is Element e)
+		//		{
+		//			d = new FieldDependency(e, fieldName, this.CreateFunction(node.Initializer, dependent));
+
+		//		}
+		//		else if (parent is MathFormula m)
+		//		{
+		//			d = new FieldDependency(m, fieldName, this.CreateFunction(node.Initializer, dependent));
+		//		}
+		//		if (d != null)
+		//		{
+		//			if (dependent is BoundFieldAccessExpression fieldAccess)
+		//			{
+		//				var slider = (Slider)EvaluateExpression(fieldAccess.Parent);
+		//				slider.add_Dependency(d);
+		//			}
+		//			else if (dependent is BoundVariableExpression variable)
+		//			{
+		//				_dependencies.Add(d);
+		//			}
+		//			else
+		//				throw new Exception();
+		//		}
+		//	}
+
+		//	if (parentType == typeof(DataObject))
+		//	{
+		//		var data = (DataObject)parent;
+		//		if (!data.TrySet(fieldName, value))
+		//			throw new Exception();
+		//		return value;
+		//	}
+		//	if (parentType == typeof(MathFormula))
+		//	{
+		//		var math = (MathFormula)parent;
+		//		if (!math.TrySet(fieldName, Convert.ToSingle(value)))
+		//			throw new Exception();
+		//		return value;
+		//	}
+
+		//	var field = parentType.GetField(fieldName);
+		//	if (field != null)
+		//	{
+		//		field.SetValue(parent, value);
+		//		return value;
+		//	}
+		//	var property = parentType.GetProperty(fieldName);
+		//	if (property != null)
+		//	{
+		//		if (property.PropertyType == typeof(Brush))
+		//			property.SetValue(parent, Brush.FromObject(value));
+		//		else
+		//			property.SetValue(parent, value);
+		//		return value;
+		//	}
+		//	throw new Exception();
+		//}
 
 		private object EvaluateUnaryExpression(BoundUnaryExpression u)
 		{

@@ -31,12 +31,11 @@ namespace Minsk.CodeAnalysis.Binding
 		UnaryExpression,
 		BinaryExpression,
 		FunctionExpression,
-		IndexedArrayExpression,
+		//IndexedArrayExpression,
 		ArrayExpression,
 		FunctionAccessExpression,
 		ErrorExpression,
 		FieldAccessExpression,
-		FieldAssignmentExpression,
 		StringExpression,
 		Conversion,
 		MathExpression,
@@ -45,6 +44,6 @@ namespace Minsk.CodeAnalysis.Binding
 
 		LambdaExpression,
 		AnonymForExpression,
-		ArrayIndex,
+		ArrayAccessExpression,
 	}
 }

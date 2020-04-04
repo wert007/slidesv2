@@ -112,10 +112,9 @@ namespace Minsk.CodeAnalysis.Syntax
 		ArrayConstructorExpression,
 		ConstructorExpression,
 		VariableExpression,
-		ArrayIndexExpression,
+		ArrayAccessExpression,
 		MemberAccessExpression,
-		FieldAccessExpression,
-		FieldAssignmentExpression,
+//		FieldAccessExpression,
 		StringExpression,
 		StringInsertionExpression,
 		StepStatement,
@@ -147,5 +146,6 @@ namespace Minsk.CodeAnalysis.Syntax
 		SVGGroupStatement,
 		EmptyArrayConstructorExpression,
 		AnonymForExpression,
+		BracketPairToken,
 	}
 }

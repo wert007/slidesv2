@@ -11,8 +11,7 @@ namespace Minsk.CodeAnalysis.Binding
 		private SymbolCollection<VariableSymbol> _variables = new SymbolCollection<VariableSymbol>();
 		private Dictionary<string, TypeSymbol> _customTypes = new Dictionary<string, TypeSymbol>();
 		private Dictionary<string, FunctionSymbol> _functions = new Dictionary<string, FunctionSymbol>();
-		internal List<BoundVariableExpression> SafeVariables { get; } = new List<BoundVariableExpression>();
-		private TypeSymbol _type;
+		internal List<BoundExpression> SafeExpressions { get; } = new List<BoundExpression>();
 
 
 		private static TypeSymbolTypeConverter _builtInTypes = TypeSymbolTypeConverter.Instance;
@@ -25,46 +24,29 @@ namespace Minsk.CodeAnalysis.Binding
 
 		public BoundScope Parent { get; }
 
-		internal void CheckIfVariablesAreUnsafe(BoundVariableExpression dependent)
+		internal void MakeSafe(BoundExpression expression)
 		{
-			for (int i = SafeVariables.Count - 1; i >= 0; i--)
-			{
-				var arrayIndex = SafeVariables[i].BoundArrayIndex;
-				while(arrayIndex != null)
-				{
-					if(arrayIndex.BoundIndex.Contains(dependent))
-					{
-						MakeUnsafe(SafeVariables[i]);
-						break;
-					}
-					arrayIndex = arrayIndex.BoundChild;
-				}
-			}
+			SafeExpressions.Add(expression);
 		}
 
-		internal void MakeSave(BoundVariableExpression boundVariable)
+		internal void MakeUnsafe(BoundExpression expression)
 		{
-			SafeVariables.Add(boundVariable);
-		}
-
-		internal void MakeUnsafe(VariableSymbol variable)
-		{
-			for (int i = SafeVariables.Count - 1; i >= 0; i--)
+			for (int i = SafeExpressions.Count - 1; i >= 0; i--)
 			{
-				if (SafeVariables[i].Variable == variable)
+				if (SafeExpressions[i] == expression)
 				{
-					SafeVariables.RemoveAt(i);
+					SafeExpressions.RemoveAt(i);
 				}
 			}
 		}
 
 		internal void MakeUnsafe(BoundVariableExpression boundVariable)
 		{
-			for (int i = SafeVariables.Count - 1; i >= 0; i--)
+			for (int i = SafeExpressions.Count - 1; i >= 0; i--)
 			{
-				if (SafeVariables[i] == boundVariable)
+				if (SafeExpressions[i] == boundVariable)
 				{
-					SafeVariables.RemoveAt(i);
+					SafeExpressions.RemoveAt(i);
 					return;
 				}
 			}

@@ -157,14 +157,10 @@ namespace Minsk.CodeAnalysis
 					return new BoundErrorExpression();
 				case BoundNodeKind.FieldAccessExpression:
 					return DeserializeFieldAccessExpression();
-				case BoundNodeKind.FieldAssignmentExpression:
-					return DeserializeFieldAssignmentExpression();
 				case BoundNodeKind.FunctionAccessExpression:
 					return DeserializeFunctionAccessExpression();
 				case BoundNodeKind.FunctionExpression:
 					return DeserializeFunctionExpression();
-				case BoundNodeKind.IndexedArrayExpression:
-					return DeserializeIndexedArrayExpression();
 				case BoundNodeKind.LiteralExpression:
 					return DeserializeLiteralExpression();
 				case BoundNodeKind.StringExpression:
@@ -181,21 +177,22 @@ namespace Minsk.CodeAnalysis
 		private BoundAssignmentExpression DeserializeAssignmentExpression()
 		{
 			ConsumeStatementHeader();
-			var variables = new List<BoundVariableExpression>();
+			//TODO
+			var lvalue = new BoundErrorExpression();
 			ConsumeToken(); //(
-			var cur = DeserializeVariableSymbol();
-			variables.Add(new BoundVariableExpression(cur, null, cur.Type));
+			/*var cur = DeserializeVariableSymbol();
+			variables.Add(new BoundVariableExpression(cur));
 			while (PeekToken() == ",")
 			{
 				ConsumeToken(); //,
 				cur = DeserializeVariableSymbol();
-				variables.Add(new BoundVariableExpression(cur, null, cur.Type));
-			}
+				variables.Add(new BoundVariableExpression(cur));
+			}*/
 			ConsumeToken(); //)
 			ConsumeToken(); //=
 			var expression = DeserializeExpression();
 			ConsumeStatementTail();
-			return new BoundAssignmentExpression( variables.ToArray(), expression);
+			return new BoundAssignmentExpression( lvalue, expression);
 		}
 
 		private BoundBinaryExpression DeserializeBinaryExpression()
@@ -244,16 +241,6 @@ namespace Minsk.CodeAnalysis
 			var field = DeserializeVariableExpression();
 			ConsumeStatementTail();
 			return new BoundFieldAccessExpression(parent, field);
-		}
-
-		private BoundFieldAssignmentExpression DeserializeFieldAssignmentExpression()
-		{
-			ConsumeStatementHeader();
-			var field = DeserializeFieldAccessExpression();
-			ConsumeToken(); //=
-			var initializer = DeserializeExpression();
-			ConsumeStatementTail();
-			return new BoundFieldAssignmentExpression(field, initializer);
 		}
 
 		private BoundFunctionAccessExpression DeserializeFunctionAccessExpression()
@@ -331,16 +318,6 @@ namespace Minsk.CodeAnalysis
 			return new LibrarySymbol(name);
 		}
 
-		private BoundIndexedArrayExpression DeserializeIndexedArrayExpression()
-		{
-			ConsumeStatementHeader();
-			var variable = DeserializeVariableSymbol();
-			ConsumeToken(); //<
-			var boundIndex = DeserializeExpression();
-			ConsumeStatementTail();
-			return new BoundIndexedArrayExpression(variable, boundIndex);
-		}
-
 		private BoundLiteralExpression DeserializeLiteralExpression()
 		{
 			ConsumeStatementHeader();
@@ -405,26 +382,20 @@ namespace Minsk.CodeAnalysis
 		{
 			ConsumeStatementHeader();
 			var variable = DeserializeVariableSymbol();
-			BoundArrayIndex boundArrayIndex = null;
-			if (PeekToken() == "<")
-			{
-				ConsumeToken();
-				boundArrayIndex = DeserializeArrayIndex();
-			}
 			ConsumeStatementTail();
-			return new BoundVariableExpression(variable, boundArrayIndex, variable.Type);
+			return new BoundVariableExpression(variable);
 		}
 
-		private BoundArrayIndex DeserializeArrayIndex()
+		private BoundArrayAccessExpression DeserializeArrayIndex()
 		{
 			var boundIndex = DeserializeExpression();
-			BoundArrayIndex child = null;
+			BoundArrayAccessExpression child = null;
 			if (PeekToken() == "<")
 			{
 				ConsumeToken();
 				child = DeserializeArrayIndex();
 			}
-			return new BoundArrayIndex(boundIndex, child);
+			return new BoundArrayAccessExpression(boundIndex, child);
 		}
 
 		private BoundArrayExpression DeserializeArrayExpression()

@@ -1,4 +1,4 @@
-﻿using Minsk.CodeAnalysis.Symbols;
+﻿/*using Minsk.CodeAnalysis.Symbols;
 
 namespace Minsk.CodeAnalysis.Binding
 {
@@ -25,4 +25,4 @@ namespace Minsk.CodeAnalysis.Binding
 			return BoundIndex.EqualsBoundExpression(e.BoundIndex);
 		}
 	}
-}
+}*/

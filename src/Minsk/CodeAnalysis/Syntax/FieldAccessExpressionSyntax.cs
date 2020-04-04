@@ -1,6 +1,6 @@
-﻿namespace Minsk.CodeAnalysis.Syntax
+﻿/*namespace Minsk.CodeAnalysis.Syntax
 {
-	internal class FieldAccessExpressionSyntax : ExpressionSyntax
+	internal class FieldAccessExpressionSyntax : LExpressionSyntax
 	{
 		public FieldAccessExpressionSyntax(ExpressionSyntax parent, SyntaxToken colonToken, VariableExpressionSyntax variable)
 		{
@@ -14,5 +14,7 @@
 		public VariableExpressionSyntax Variable { get; }
 
 		public override SyntaxKind Kind => SyntaxKind.FieldAccessExpression;
+
+		public override bool IsLValue => Parent.IsLValue;
 	}
-}
+}*/

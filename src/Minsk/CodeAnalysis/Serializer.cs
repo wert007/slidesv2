@@ -104,17 +104,11 @@ namespace Minsk.CodeAnalysis
 				case BoundNodeKind.FieldAccessExpression:
 					result = SerializeFieldAccessExpression((BoundFieldAccessExpression)expression);
 					break;
-				case BoundNodeKind.FieldAssignmentExpression:
-					result = SerializeFieldAssignmentExpression((BoundFieldAssignmentExpression)expression);
-					break;
 				case BoundNodeKind.FunctionAccessExpression:
 					result = SerializeFunctionAccessExpression((BoundFunctionAccessExpression)expression);
 					break;
 				case BoundNodeKind.FunctionExpression:
 					result = SerializeFunctionExpression((BoundFunctionExpression)expression);
-					break;
-				case BoundNodeKind.IndexedArrayExpression:
-					result = SerializeIndexedArrayExpression((BoundIndexedArrayExpression)expression);
 					break;
 				case BoundNodeKind.LiteralExpression:
 					result = SerializeLiteralExpression((BoundLiteralExpression)expression);
@@ -154,7 +148,7 @@ namespace Minsk.CodeAnalysis
 		private static string Serialize(BoundBinaryOperator op) => $"{SyntaxFacts.GetText(op.SyntaxKind)}";
 
 		private static string SerializeGroupStatement(BoundGroupStatement statement)
-			=> $"{statement.Type}<{Serialize(statement.BoundParameters)}:{Serialize(statement.BoundBody)}";
+			=> $"{statement.Type}<{Serialize(statement.Parameters)}:{Serialize(statement.Body)}";
 		private static string SerializeAnimationStatement(BoundAnimationStatement statement)
 			=> $"{statement.Variable.Name}<{statement.ElementParameter.Variable.Name}<{statement.TimeParameter.Variable.Name}:{string.Join("", statement.Body.Select(s => Serialize(s)))}";
 		private static string SerializeBlockStatement(BoundBlockStatement statement)
@@ -235,15 +229,14 @@ namespace Minsk.CodeAnalysis
 		private static string SerializeArrayExpression(BoundArrayExpression expression)
 			=> $"{string.Join(",", expression.Expressions.Select(e => Serialize(e)))}";
 		private static string SerializeAssignmentExpression(BoundAssignmentExpression expression)
-			=> $"({string.Join(",", expression.Variables.Select(v => SerializeMin(v.Variable)))})={Serialize(expression.Expression)}";
+			=> $"({ Serialize(expression.LValue) })={Serialize(expression.Expression)}";
 		private static string SerializeBinaryExpression(BoundBinaryExpression expression)
 			=> $"{Serialize(expression.Left)}{Serialize(expression.Op)}{Serialize(expression.Right)}";
 		private static string SerializeConversion(BoundConversion conversion) => $"{Serialize(conversion.Expression)}:{conversion.Type}";
 		private static string SerializeEnumExpression(BoundEnumExpression expression) => $"{expression.Type}.{expression.Value}";
 		private static string SerializeFieldAccessExpression(BoundFieldAccessExpression expression)
 			=> $"{Serialize(expression.Parent)}.{Serialize(expression.Field)}";
-		private static string SerializeFieldAssignmentExpression(BoundFieldAssignmentExpression expression)
-			=> $"{Serialize(expression.Field)}={Serialize(expression.Initializer)}";
+
 		private static string SerializeFunctionAccessExpression(BoundFunctionAccessExpression expression)
 			=> $"{Serialize(expression.Parent)}.{Serialize(expression.Function)}";
 		private static string SerializeFunctionExpression(BoundFunctionExpression expression)
@@ -253,8 +246,6 @@ namespace Minsk.CodeAnalysis
 				source = SerializeReference(expression.Source) + ":";
 			return $"{source}{Serialize(expression.Function)}<({string.Join(",", expression.Arguments.Select(e => Serialize(e)))})";
 		}
-		private static string SerializeIndexedArrayExpression(BoundIndexedArrayExpression expression)
-			=> $"{SerializeMin(expression.Variable)}<{Serialize(expression.BoundIndex)}";
 		private static string SerializeLiteralExpression(BoundLiteralExpression expression) => Serialize(expression.Value);
 
 		private static CultureInfo _usCulture = CultureInfo.CreateSpecificCulture("US-us");
@@ -282,20 +273,15 @@ namespace Minsk.CodeAnalysis
 
 		private static string SerializeVariableExpression(BoundVariableExpression expression)
 		{
-			var arrayIndex = string.Empty;
-			if (expression.BoundArrayIndex != null)
-			{
-				arrayIndex = $"<({Serialize(expression.BoundArrayIndex)})";
-			}
-			return $"{SerializeMin(expression.Variable)}{arrayIndex}";
+			return $"{SerializeMin(expression.Variable)}";
 		}
 
-		private static string Serialize(BoundArrayIndex arrayIndex)
+		private static string Serialize(BoundArrayAccessExpression arrayIndex)
 		{
 			var child = string.Empty;
-			if (arrayIndex.BoundChild != null)
-				child = "<" + Serialize(arrayIndex.BoundChild);
-			return $"{Serialize(arrayIndex.BoundIndex)}{child}";
+			if (arrayIndex.Child != null)
+				child = "<" + Serialize(arrayIndex.Child);
+			return $"{Serialize(arrayIndex.Index)}{child}";
 		}
 	}
 }

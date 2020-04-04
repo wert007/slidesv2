@@ -12,5 +12,7 @@
 
 		public SyntaxToken NewKeyword { get; }
 		public ExpressionSyntax FunctionCall { get; }
+
+		public override bool IsLValue => false;
 	}
 }

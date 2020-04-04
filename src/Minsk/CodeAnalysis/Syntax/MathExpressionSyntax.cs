@@ -13,5 +13,7 @@
 		public LiteralExpressionSyntax StringLiteral { get; }
 
 		public override SyntaxKind Kind => SyntaxKind.MathExpression;
+
+		public override bool IsLValue => false;
 	}
 }

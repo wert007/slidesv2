@@ -10,5 +10,7 @@
 		public SyntaxToken PeriodPeriodToken { get; }
 
 		public override SyntaxKind Kind => SyntaxKind.AnonymForExpression;
+
+		public override bool IsLValue => false;
 	}
 }

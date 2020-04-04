@@ -16,5 +16,7 @@
 		public SyntaxToken OpenParenthesisToken { get; }
 		public ExpressionSyntax[] Arguments { get; }
 		public SyntaxToken CloseParenthesisToken { get; }
+
+		public override bool IsLValue => false;
 	}
 }

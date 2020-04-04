@@ -8,14 +8,14 @@ namespace Minsk.CodeAnalysis.Binding
 		public BoundGroupStatement(TypeSymbol type, BoundParameterBlockStatement boundParameters, BoundBlockStatement boundBody)
 		{
 			Type = type;
-			BoundParameters = boundParameters;
-			BoundBody = boundBody;
+			Parameters = boundParameters;
+			Body = boundBody;
 		}
 
 		public override BoundNodeKind Kind => BoundNodeKind.GroupStatement;
 
 		public TypeSymbol Type { get; }
-		public BoundParameterBlockStatement BoundParameters { get; }
-		public BoundBlockStatement BoundBody { get; }
+		public BoundParameterBlockStatement Parameters { get; }
+		public BoundBlockStatement Body { get; }
 	}
 }

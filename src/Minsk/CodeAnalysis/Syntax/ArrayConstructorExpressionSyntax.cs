@@ -15,5 +15,7 @@ namespace Minsk.CodeAnalysis.Syntax
 		public SyntaxToken OpenBracketToken { get; }
 		public ExpressionSyntax[] Contents { get; }
 		public SyntaxToken CloseBracketToken { get; }
+
+		public override bool IsLValue => false;
 	}
 }
