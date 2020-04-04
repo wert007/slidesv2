@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Minsk.CodeAnalysis.Symbols;
+using System;
 using System.Collections.Generic;
 
 namespace Minsk.CodeAnalysis.Binding
@@ -180,7 +181,7 @@ namespace Minsk.CodeAnalysis.Binding
          {
             expressions.Add(RewriteExpression(e, source, replacement));
          }
-         return new BoundArrayExpression(expressions.ToArray());
+         return new BoundArrayExpression(expressions.ToArray(), expression.BaseType);
       }
 
       private static BoundExpression RewriteFunctionAccessExpression(BoundFunctionAccessExpression expression, BoundNode source, BoundNode replacement)

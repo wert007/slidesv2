@@ -406,7 +406,7 @@ namespace Minsk.CodeAnalysis.Binding
 			if (builder == null)
 				return node;
 
-			return new BoundArrayExpression(builder.ToArray());
+			return new BoundArrayExpression(builder.ToArray(), node.BaseType);
 		}
 
 		protected virtual BoundExpression RewriteConversion(BoundConversion node)

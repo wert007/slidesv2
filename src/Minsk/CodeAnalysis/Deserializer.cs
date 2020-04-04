@@ -409,7 +409,7 @@ namespace Minsk.CodeAnalysis
 				expressions.Add(DeserializeExpression());
 			}
 			ConsumeStatementTail();
-			return new BoundArrayExpression(expressions.ToArray());
+			return new BoundArrayExpression(expressions.ToArray(), expressions[0].Type);
 		}
 
 		private BoundGroupStatement DeserializeGroupStatement()

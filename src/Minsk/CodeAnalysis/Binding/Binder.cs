@@ -1239,8 +1239,15 @@ namespace Minsk.CodeAnalysis.Binding
 
 				if (targetType == null)
 					targetType = boundExpression.Type;
+				if (targetType == TypeSymbol.Undefined)
+					targetType = null;
 			}
-			return new BoundArrayExpression(boundExpressions.ToArray());
+			if(targetType == null)
+			{
+				_diagnostics.ReportCouldNotDetermineType(syntax.Span);
+				return new BoundErrorExpression();
+			}
+			return new BoundArrayExpression(boundExpressions.ToArray(), targetType);
 		}
 
 		private BoundArrayAccessExpression BindArrayIndexExpression(ArrayAccessExpressionSyntax syntax)
@@ -1512,6 +1519,7 @@ namespace Minsk.CodeAnalysis.Binding
 			}
 
 			var arguments = new List<BoundExpression>();
+			var scores = new int[functions.Count];
 			var parameterDiagnostics = new DiagnosticBag[functions.Count];
 			for (int i = 0; i < argumentCount; i++)
 			{
@@ -1525,22 +1533,25 @@ namespace Minsk.CodeAnalysis.Binding
 					var parameterType = functions[j].Parameter[i].Type;
 					if (!boundArgument.Type.CanBeConvertedTo(parameterType))
 					{
+						scores[j] += 100;
 						parameterDiagnostics[j].ReportCannotConvert(syntax.Arguments[i].Span, boundArgument.Type, parameterType);
 					}
-					else
-					{
-						boundArgument = BindConversion(boundArgument, parameterType);
-					}
+					else if(parameterType != boundArgument.Type)
+							scores[j] += 5;
 				}
 				arguments.Add(boundArgument);
 			}
-			var min = parameterDiagnostics.OrderBy(d => d.Count()).First();
-			var index = Array.IndexOf(parameterDiagnostics, min);
+			var index = Array.IndexOf(scores, scores.Min());
 			var bestMatch = functions[index];
 			if (parameterDiagnostics[index].Any())
 			{
 				_diagnostics.ReportCannotFindFunction(syntax.Span, name, bestMatch, parameterDiagnostics[index]);
 				return new BoundErrorExpression();
+			}
+
+			for (int i = 0; i < arguments.Count; i++)
+			{
+				arguments[i] = BindConversion(arguments[i], bestMatch.Parameter[i].Type);
 			}
 
 			switch (bestMatch.Name)

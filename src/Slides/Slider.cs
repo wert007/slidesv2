@@ -21,24 +21,15 @@ namespace Slides
 
 	public class FieldDependency
 	{
-		public FieldDependency(Element element, string field, Formula value)
+		public FieldDependency(object target, string field, Formula value)
 		{
-			MathFormula = null;
-			Element = element;
+			Target = target;
 			Field = field;
 			Value = value;
 		}
 
-		public FieldDependency(MathFormula m, string field, Formula value)
-		{
-			MathFormula = m;
-			Element = null;
-			Field = field;
-			Value = value;
-		}
+		public object Target { get; }
 
-		public MathFormula MathFormula { get; }
-		public Element Element { get; }
 		public string Field { get; }
 		public Formula Value { get; }
 	}

@@ -170,26 +170,39 @@ namespace HTMLWriter
 			}
 		}
 
+		private static string DeclareJSVariableFromObject(object obj, HashSet<string> declaredVariables)
+		{
+			if (obj is Element e)
+			{
+				var name = e.get_Id().Replace('-', '_');
+				if (!declaredVariables.Contains(name))
+				{
+					_jsWriter.WriteVariableDeclarationInline(name, $"document.getElementById('{e.get_Id()}')");
+					declaredVariables.Add(name);
+				}
+				return name;
+			}
+			if(obj is SlideAttributes s)
+			{
+				var name = s.name;
+				if (!declaredVariables.Contains(name))
+				{
+					_jsWriter.WriteVariableDeclarationInline(name, $"document.getElementById('{name}')");
+					declaredVariables.Add(name);
+				}
+				return name;
+			}
+			throw new NotSupportedException();
+		}
+
 		private static void WriteDependency(FieldDependency[] dependencies)
 		{
 			_jsWriter.StartFunction($"update_totalTime");
 			var declaredVariables = new HashSet<string>();
 			foreach (var d in dependencies)
 			{
-				if (d.Element != null)
-				{
-						var name = d.Element.get_Id().Replace('-', '_');
-					if (!declaredVariables.Contains(name))
-					{
-						_jsWriter.WriteVariableDeclarationInline(name, $"document.getElementById('{d.Element.get_Id()}')");
-						declaredVariables.Add(name);
-					}
-					_jsWriter.WriteAssignment($"{name}.{JavaScriptWriter.ToJSAttribute(CSSWriter.ToCssAttribute(d.Field))}", d.Value.Insert("totalTime"));
-				}
-				else
-				{
-					throw new NotImplementedException();
-				}
+				var name = DeclareJSVariableFromObject(d.Target, declaredVariables);
+				_jsWriter.WriteAssignment($"{name}.{JavaScriptWriter.ToJSAttribute(CSSWriter.ToCssAttribute(d.Field))}", d.Value.Insert("totalTime"));
 			}
 			_jsWriter.EndFunction();
 
@@ -434,17 +447,20 @@ namespace HTMLWriter
 			_jsWriter.WriteVariableDeclarationInline("slider", $"document.getElementById('{id}')");
 			foreach (var d in element.get_Dependencies())
 			{
-				if (d.Element != null)
+				switch (d.Target)
 				{
-					_jsWriter.WriteVariableDeclarationInline(d.Element.name, $"document.getElementById('{parentName}-{d.Element.name}')");
-					_jsWriter.WriteAssignment($"{d.Element.name}.{JavaScriptWriter.ToJSAttribute(CSSWriter.ToCssAttribute(d.Field))}", d.Value.Insert("slider.value"));
-				}
-				else if (d.MathFormula != null)
-				{
-					//TODO: Use of parentName is hacky. But! 
-					//The slider should be on the same slide as the math expression
-					_jsWriter.WriteAssignment($"{parentName}_{d.MathFormula.Name}_scope.{d.Field}", d.Value.Insert("slider.value"));
-					_jsWriter.WriteFunctionCall($"recalculate_{parentName}_{d.MathFormula.Name}_scope");
+					case Element e:
+						_jsWriter.WriteVariableDeclarationInline(e.name, $"document.getElementById('{parentName}-{e.name}')");
+						_jsWriter.WriteAssignment($"{e.name}.{JavaScriptWriter.ToJSAttribute(CSSWriter.ToCssAttribute(d.Field))}", d.Value.Insert("slider.value"));
+						break;
+					case MathFormula m:
+						//TODO: Use of parentName is hacky. But! 
+						//The slider should be on the same slide as the math expression
+						_jsWriter.WriteAssignment($"{parentName}_{m.Name}_scope.{d.Field}", d.Value.Insert("slider.value"));
+						_jsWriter.WriteFunctionCall($"recalculate_{parentName}_{m.Name}_scope");
+						break;
+					default:
+						throw new NotImplementedException();
 				}
 			}
 			_jsWriter.EndFunction();

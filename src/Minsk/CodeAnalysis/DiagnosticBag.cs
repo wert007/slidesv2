@@ -437,5 +437,16 @@ namespace Minsk.CodeAnalysis
 			var message = $"Style '{name}' has no body.";
 			Report(span, message, DiagnosticLevel.Warning);
 		}
+
+		internal void ReportCouldNotDetermineType(TextSpan span)
+		{
+			//TODO: Improve Errormessage 
+			//(like, if you use a array you can use the empty array constructor)
+			//or if you have 
+			//		let a = none;
+			//Something else!
+			var message = $"Could not determine type of expression.";
+			Report(span, message, DiagnosticLevel.Error);
+		}
 	}
 }

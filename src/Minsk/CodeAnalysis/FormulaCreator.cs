@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Text;
 using Minsk.CodeAnalysis.Binding;
+using Minsk.CodeAnalysis.Symbols;
 using Slides;
 
 namespace Minsk.CodeAnalysis
@@ -19,9 +20,9 @@ namespace Minsk.CodeAnalysis
 					return true;
 				}
 			}
-			else if(expression is BoundVariableExpression variable)
+			else if (expression is BoundVariableExpression variable)
 			{
-				if(variable.Variable.Name == "totalTime")
+				if (variable.Variable.Name == "totalTime")
 				{
 					dependent = expression;
 					return true;
@@ -46,7 +47,7 @@ namespace Minsk.CodeAnalysis
 		private static string CreateFormula(this Evaluator e, BoundExpression expression, BoundExpression dependent)
 		{
 			if (expression == dependent)
-				return "%x%";
+				return "(%x%)";
 			if (!Contains(expression, dependent))
 				return ToString(e.EvaluateExpression(expression));
 			switch (expression.Kind)
@@ -78,7 +79,7 @@ namespace Minsk.CodeAnalysis
 
 		private static string CreateStringExpressionFormula(Evaluator e, BoundStringExpression expression, BoundExpression dependent)
 		{
-			return string.Join(" + ", expression.Expressions.Select(ex => CreateFormula(e, ex, dependent)));
+			return $"({string.Join(" + ", expression.Expressions.Select(ex => CreateFormula(e, ex, dependent)))})";
 		}
 
 		private static string CreateConversionFormula(this Evaluator e, BoundConversion expression, BoundExpression dependent)
@@ -91,7 +92,9 @@ namespace Minsk.CodeAnalysis
 			var left = CreateFormula(e, expression.Left, dependent);
 			var right = CreateFormula(e, expression.Right, dependent);
 			var op = OperatorToString(expression.Op.Kind);
-			return left + op + right;
+			if (expression.Op.Kind == BoundBinaryOperatorKind.Division && expression.Type == PrimitiveTypeSymbol.Integer)
+				return $"castToInt({left} {op} {right})";
+			return $"({left} {op} {right})";
 		}
 
 		private static string FunctionToString(FunctionSymbol function, string[] args)
@@ -114,7 +117,7 @@ namespace Minsk.CodeAnalysis
 				case "padding":
 					if (args.Length != 4)
 						//TODO
-						return null;
+						throw new NotImplementedException();
 					return $"new Thickness({args[0]}, {args[1]}, {args[2]}, {args[3]})";
 				case "hsl":
 					return $"'hsl(' + {args[0]} + ', ' + {args[1]} + '%, ' + {args[2]} + '%)'";
@@ -195,7 +198,7 @@ namespace Minsk.CodeAnalysis
 					}
 					return $"new StyleUnit({ToString(u.Value)}, {ToString(kind)}, undefined)";
 				default:
-					return value.ToString();
+					return $"({value})";
 			}
 		}
 

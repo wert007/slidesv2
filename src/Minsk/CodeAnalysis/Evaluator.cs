@@ -410,7 +410,7 @@ namespace Minsk.CodeAnalysis
 				case BoundNodeKind.FieldAccessExpression:
 					var fieldAccessExpression = (BoundFieldAccessExpression)expression.LValue;
 					field = fieldAccessExpression.Field.Variable.Name;
-					if(fieldAccessExpression.Parent.Kind == BoundNodeKind.VariableExpression)
+					if (fieldAccessExpression.Parent.Kind == BoundNodeKind.VariableExpression)
 						type = ((BoundVariableExpression)fieldAccessExpression.Parent).Variable.Name;
 					break;
 				default:
@@ -1779,31 +1779,20 @@ namespace Minsk.CodeAnalysis
 				var fd = formulaDependency.Value;
 				var formula = fd.Formula;
 				var type = fd.DependentType;
-				FieldDependency d = null;
-				if (parent is Element e)
+				FieldDependency d = new FieldDependency(parent, fieldName, formula);
+				switch (type)
 				{
-					d = new FieldDependency(e, fieldName, formula);
+					case FormulaDependency.Type.Slider:
+						var fieldAccess = (BoundFieldAccessExpression)fd.Dependent;
+						var slider = (Slider)EvaluateExpression(fieldAccess.Parent);
+						slider.add_Dependency(d);
+						break;
+					case FormulaDependency.Type.Time:
+						_dependencies.Add(d);
+						break;
+					default:
+						throw new Exception();
 
-				}
-				else if (parent is MathFormula m)
-				{
-					d = new FieldDependency(m, fieldName, formula);
-				}
-				if (d != null)
-				{
-					switch (type)
-					{
-						case FormulaDependency.Type.Slider:
-							var fieldAccess = (BoundFieldAccessExpression)fd.Dependent;
-							var slider = (Slider)EvaluateExpression(fieldAccess.Parent);
-							slider.add_Dependency(d);
-							break;
-						case FormulaDependency.Type.Time:
-							_dependencies.Add(d);
-							break;
-						default:
-							throw new Exception();
-					}
 				}
 			}
 		}

@@ -7,9 +7,6 @@ import gfont('Quicksand') as quicksand;
 //		import css('myStyle.css');
 
 //Possible Features:
-//TODO: This is a error, because we can't determine the type of this array,
-//      but we don't get any diagnostics
-//			let a~ = [none, none, none, none, none]; //:int? 
 // - offline compile flag (--offline). With warnings when using youtube() or such!
 // - Advanced SVGSupport?
 //		- PathOperations. (Intersection/Union/Divide)
@@ -41,14 +38,14 @@ import gfont('Quicksand') as quicksand;
 /// Displays the total time
 template stressMe(child: Slide):
 	let label = new Label('no time defined');
-	label.text = $'{int(totalTime / 1000)}s';
+	label.text = $'{totalTime / 1000}s';
 	label.orientation = Horizontal.Left | Vertical.Top;
 	label.fontsize = 12pt;
 	label.margin = margin(10px);
 
-	let rect = new Rectangle(pct(100), 50px);
-	rect.background = hsl(mod(totalTime / 500, 360), 55, 55);
-	rect.orientation = Vertical.Bottom | Horizontal.Left;
+	//let rect = new Rectangle(pct(100), 50px);
+	child.background = hsl(mod(totalTime / 500, 360), 55, 55);
+	//rect.orientation = Vertical.Bottom | Horizontal.Left;
 endtemplate
 
 template pagenumber(child: Slide):
@@ -122,26 +119,6 @@ animation unblur(element: any, duration: Time):
 endanimation
 
 slide possFeatureMaybe < stressMe:
-	//TODO: Bug, you put tWo integers into
-	//		min(a: int, b: int): int
-	//And get a float? something is wrong on this side..
-	//The binder should try to get the overload with the least conversions
-	//not just any first thing he finds..
-	//let m = int(min(3323, 5));
-	let a = [1, 2, 3, 2, 3, 4];
-	let b = [:int[]; 1];
-	b[0] = [:int;3];
-	/*for i in b:
-		print($'{i}');
-	endfor*/
-	b[0][..] = a[..];
-	//for i0 in 0..int(min(b[0].len(), a.len())):
-	//	b[0][i0] = a[i0];
-	//endfor
-	for i in b[0]:
-		print($'{i}, ');
-	endfor
-	println();
 endslide
 
 style algoTable(tbl: Table):
