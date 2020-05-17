@@ -55,18 +55,24 @@
     <Compile Include="Data\Alignment.cs" />
     <Compile Include="AnimationCall.cs" />
     <Compile Include="Data\BorderStyle.cs" />
-    <Compile Include="BoxElement.cs" />
+    <Compile Include="Elements\BoxElement.cs" />
     <Compile Include="Data\Brush.cs" />
     <Compile Include="CaseCall.cs" />
     <Compile Include="Data\Color.cs" />
-    <Compile Include="Container.cs" />
+    <Compile Include="Elements\Chart.cs" />
+    <Compile Include="Elements\ChartType.cs" />
+    <Compile Include="Elements\Container.cs" />
     <Compile Include="Data\CSVFile.cs" />
     <Compile Include="Data\Direction.cs" />
-    <Compile Include="Data\Polynom.cs" />
     <Compile Include="Data\Range.cs" />
     <Compile Include="Data\VariableType.cs" />
     <Compile Include="Data\Vector2.cs" />
-    <Compile Include="Element.cs" />
+    <Compile Include="Elements\Element.cs" />
+    <Compile Include="Elements\ElementKind.cs" />
+    <Compile Include="Elements\FlowAxis.cs" />
+    <Compile Include="Elements\ImageStretching.cs" />
+    <Compile Include="Elements\SplittedContainer.cs" />
+    <Compile Include="Elements\TableChild.cs" />
     <Compile Include="Filters\BlendFilter.cs" />
     <Compile Include="Filters\BlendMode.cs" />
     <Compile Include="Filters\ColorMatrixFilter.cs" />
@@ -96,42 +102,39 @@
     <Compile Include="Filters\TurbulenceType.cs" />
     <Compile Include="Data\Font.cs" />
     <Compile Include="Data\Horizontal.cs" />
-    <Compile Include="IFrame.cs" />
-    <Compile Include="Image.cs" />
+    <Compile Include="Elements\IFrame.cs" />
+    <Compile Include="Elements\Image.cs" />
     <Compile Include="Data\ImageSource.cs" />
+    <Compile Include="Helpers\JavaScriptEmitter.cs" />
     <Compile Include="ImportExpression.cs" />
     <Compile Include="Data\Interpolation.cs" />
-    <Compile Include="Label.cs" />
-    <Compile Include="LineChart.cs" />
-    <Compile Include="List.cs" />
+    <Compile Include="Elements\Label.cs" />
+    <Compile Include="Elements\LineChart.cs" />
+    <Compile Include="Elements\List.cs" />
     <Compile Include="Data\Matrix.cs" />
     <Compile Include="Data\Orientation.cs" />
     <Compile Include="Math\MathFormula.cs" />
     <Compile Include="Math\MathPlot.cs" />
     <Compile Include="Presentation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Rectangle.cs" />
-    <Compile Include="SingleValueTransform.cs" />
+    <Compile Include="Step.cs" />
+    <Compile Include="Template.cs" />
+    <Compile Include="Transforms\RotationTransform.cs" />
+    <Compile Include="Transforms\SingleValueTransform.cs" />
     <Compile Include="Slide.cs" />
     <Compile Include="SlideAttributes.cs" />
-    <Compile Include="Slider.cs" />
-    <Compile Include="Stack.cs" />
+    <Compile Include="Elements\Slider.cs" />
+    <Compile Include="Helpers\SlidesConverter.cs" />
+    <Compile Include="Elements\Stack.cs" />
     <Compile Include="Filters\SVGFilter.cs" />
     <Compile Include="Data\Thickness.cs" />
     <Compile Include="Data\Time.cs" />
     <Compile Include="Style.cs" />
-    <Compile Include="SVG\Path.cs" />
-    <Compile Include="SVG\PathOperationHelper.cs" />
-    <Compile Include="SVG\PathOperationIntersectionHandler.cs" />
-    <Compile Include="SVG\Rect.cs" />
-    <Compile Include="SVG\SVGContainer.cs" />
-    <Compile Include="SVG\SVGElement.cs" />
-    <Compile Include="SVG\SVGText.cs" />
-    <Compile Include="Table.cs" />
-    <Compile Include="Transform.cs" />
-    <Compile Include="TransformType.cs" />
+    <Compile Include="Elements\SVGContainer.cs" />
+    <Compile Include="Elements\Table.cs" />
+    <Compile Include="Transforms\Transform.cs" />
+    <Compile Include="Transforms\TransformKind.cs" />
     <Compile Include="Transition.cs" />
-    <Compile Include="TupleType.cs" />
     <Compile Include="Data\Unit.cs" />
     <Compile Include="Data\UnitAddition.cs" />
     <Compile Include="Data\Vertical.cs" />
@@ -143,6 +146,10 @@
     <ProjectReference Include="..\Github\Github.csproj">
       <Project>{48471C54-50FA-4FA6-9406-140A55690B8E}</Project>
       <Name>Github</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SVGLib\SVGLib.csproj">
+      <Project>{b2521bab-4f8e-4655-a2dd-61ba3b295440}</Project>
+      <Name>SVGLib</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -56,7 +56,6 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			for (int i = 0; i < customTypes.Length; i++)
 			{
 				customTypes[i] = CustomTypes[i].ToBody(libraries);
-				TypeSymbol.RegisterType(customTypes[i].Symbol.Type);
 			}
 			var globalVariablesDict = new Dictionary<VariableSymbol, object>();
 			for (int i = 0; i < GlobalVariablesKeys.Length; i++)

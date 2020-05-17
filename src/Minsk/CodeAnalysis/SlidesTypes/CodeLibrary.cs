@@ -18,21 +18,21 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			var globalVariables = new VariableValueCollection(null);
 			var globalFunctions = new FunctionSymbol[]
 			{
-				new FunctionSymbol("setStyle", new VariableSymbol("style", false, TypeSymbolTypeConverter.Instance.LookSymbolUp(typeof(CodeHighlighter)), true), PrimitiveTypeSymbol.Void),
-				new FunctionSymbol("github", new VariableSymbol("path", false, PrimitiveTypeSymbol.String, true), TypeSymbolTypeConverter.Instance.LookSymbolUp(typeof(GitRepository))),
+				new FunctionSymbol("setStyle", new VariableSymbol("style", false, BuiltInTypes.Instance.LookSymbolUp(typeof(CodeHighlighter)), true), PrimitiveTypeSymbol.Void),
+				new FunctionSymbol("github", new VariableSymbol("path", false, PrimitiveTypeSymbol.String, true), BuiltInTypes.Instance.LookSymbolUp(typeof(GitRepository))),
 
 				new FunctionSymbol("codeblock", new VariableSymbolCollection(new VariableSymbol[]
 				{
-					new VariableSymbol("file", false, TypeSymbolTypeConverter.Instance.LookSymbolUp(typeof(GitFile)), true),
-					new VariableSymbol("lines", false, TypeSymbolTypeConverter.Instance.LookSymbolUp(typeof(Range)), true)
-				}), TypeSymbolTypeConverter.Instance.LookSymbolUp(typeof(CodeBlock))),
+					new VariableSymbol("file", false, BuiltInTypes.Instance.LookSymbolUp(typeof(GitFile)), true),
+					new VariableSymbol("lines", false, BuiltInTypes.Instance.LookSymbolUp(typeof(Range)), true)
+				}), BuiltInTypes.Instance.LookSymbolUp(typeof(CodeBlock))),
 
 				new FunctionSymbol("codeblock", new VariableSymbolCollection(new VariableSymbol[]
 				{
-					new VariableSymbol("repository", false, TypeSymbolTypeConverter.Instance.LookSymbolUp(typeof(GitRepository)), true),
+					new VariableSymbol("repository", false, BuiltInTypes.Instance.LookSymbolUp(typeof(GitRepository)), true),
 					new VariableSymbol("fileName", false, PrimitiveTypeSymbol.String, true),
-					new VariableSymbol("lines", false, TypeSymbolTypeConverter.Instance.LookSymbolUp(typeof(Range)), true)
-				}), TypeSymbolTypeConverter.Instance.LookSymbolUp(typeof(CodeBlock))),
+					new VariableSymbol("lines", false, BuiltInTypes.Instance.LookSymbolUp(typeof(Range)), true)
+				}), BuiltInTypes.Instance.LookSymbolUp(typeof(CodeBlock))),
 			};
 			var globalFunctionsReflections = new string[]
 			{

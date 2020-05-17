@@ -36,13 +36,13 @@ namespace Minsk.CodeAnalysis.Binding
 		public TypeSymbol Type { get; }
 
 
-		private static TypeSymbol Vertical = TypeSymbolTypeConverter.Instance.LookSymbolUp(typeof(Vertical));
-		private static TypeSymbol Horizontal = TypeSymbolTypeConverter.Instance.LookSymbolUp(typeof(Horizontal));
-		private static TypeSymbol Orientation = TypeSymbolTypeConverter.Instance.LookSymbolUp(typeof(Orientation));
+		private static TypeSymbol Vertical = BuiltInTypes.Instance.LookSymbolUp(typeof(Vertical));
+		private static TypeSymbol Horizontal = BuiltInTypes.Instance.LookSymbolUp(typeof(Horizontal));
+		private static TypeSymbol Orientation = BuiltInTypes.Instance.LookSymbolUp(typeof(Orientation));
 
-		private static TypeSymbol Filter = TypeSymbolTypeConverter.Instance.LookSymbolUp(typeof(Filter));
-		private static TypeSymbol Unit = TypeSymbolTypeConverter.Instance.LookSymbolUp(typeof(Unit));
-		private static TypeSymbol Range = TypeSymbolTypeConverter.Instance.LookSymbolUp(typeof(Range));
+		private static TypeSymbol Filter = BuiltInTypes.Instance.LookSymbolUp(typeof(Filter));
+		private static TypeSymbol Unit = BuiltInTypes.Instance.LookSymbolUp(typeof(Unit));
+		private static TypeSymbol Range = BuiltInTypes.Instance.LookSymbolUp(typeof(Range));
 		private static BoundBinaryOperator[] _operators =
 		  {
 				new BoundBinaryOperator(SyntaxKind.PlusToken, BoundBinaryOperatorKind.Addition, PrimitiveTypeSymbol.Integer),
@@ -92,6 +92,12 @@ namespace Minsk.CodeAnalysis.Binding
 
 		public static BoundBinaryOperator Bind(SyntaxKind syntaxKind, TypeSymbol leftType, TypeSymbol rightType)
 		{
+			if(leftType.Type == TypeType.Noneable)
+			{
+				var nullableType = (NoneableTypeSymbol)leftType;
+				if (nullableType.BaseType == rightType)
+					return new BoundBinaryOperator(SyntaxKind.QuestionMarkQuestionMarkToken, BoundBinaryOperatorKind.NotNoneValue, rightType);
+			}
 			foreach (var op in _operators)
 			{
 				if (op.SyntaxKind == syntaxKind && op.LeftType == leftType && op.RightType == rightType)

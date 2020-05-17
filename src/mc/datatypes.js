@@ -972,3 +972,24 @@ function castToInt(value)
 {
 	return value | 0;
 }
+
+function toTime(timeInMilliseconds)
+{
+	timeInMilliseconds = castToInt(timeInMilliseconds);
+	let result = "";
+	if(timeInMilliseconds % 1000 != 0)
+		result = timeInMilliseconds % 1000 + "ms ";
+	timeInMilliseconds = castToInt(timeInMilliseconds / 1000);
+	if(timeInMilliseconds % 60 != 0)
+		result = timeInMilliseconds % 60 + "s " + result;
+	timeInMilliseconds = castToInt(timeInMilliseconds / 60);
+	if(timeInMilliseconds % 60 != 0)
+		result = timeInMilliseconds % 60 + "m " + result;
+	timeInMilliseconds = castToInt(timeInMilliseconds / 60);
+	if (timeInMilliseconds % 24 != 0)
+		result = timeInMilliseconds % 24 + "h " + result;
+	timeInMilliseconds = castToInt(timeInMilliseconds / 24);
+	if (timeInMilliseconds != 0)
+		result = timeInMilliseconds + "d " + result;
+	return result.trim();
+}

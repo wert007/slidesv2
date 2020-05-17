@@ -2,16 +2,16 @@
 
 namespace Minsk.CodeAnalysis.Binding
 {
-	internal class BoundSVGGroupStatement : BoundStatement
+	internal class BoundSVGStatement : BoundStatement
 	{
-		public BoundSVGGroupStatement(AdvancedTypeSymbol type, BoundParameterBlockStatement parameters, BoundBlockStatement body)
+		public BoundSVGStatement(AdvancedTypeSymbol type, BoundParameterBlockStatement parameters, BoundBlockStatement body)
 		{
 			Type = type;
 			Parameters = parameters;
 			Body = body;
 		}
 
-		public override BoundNodeKind Kind => BoundNodeKind.SVGGroupStatement;
+		public override BoundNodeKind Kind => BoundNodeKind.SVGStatement;
 
 		public AdvancedTypeSymbol Type { get; }
 		public BoundParameterBlockStatement Parameters { get; }

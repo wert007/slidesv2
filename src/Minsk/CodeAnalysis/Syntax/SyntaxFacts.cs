@@ -12,7 +12,7 @@ namespace Minsk.CodeAnalysis.Syntax
 				case SyntaxKind.PlusToken:
 				case SyntaxKind.MinusToken:
 				case SyntaxKind.BangToken:
-					return 8;
+					return 9;
 
 				default:
 					return 0;
@@ -24,18 +24,18 @@ namespace Minsk.CodeAnalysis.Syntax
 			switch (kind)
 			{
 				case SyntaxKind.PeriodPeriodToken:
-					return 7;
+					return 8;
 
 				case SyntaxKind.HatToken:
-					return 6;
+					return 7;
 
 				case SyntaxKind.StarToken:
 				case SyntaxKind.SlashToken:
-					return 5;
+					return 6;
 
 				case SyntaxKind.PlusToken:
 				case SyntaxKind.MinusToken:
-					return 4;
+					return 5;
 
 				case SyntaxKind.EqualsEqualsToken:
 				case SyntaxKind.BangEqualsToken:
@@ -43,13 +43,16 @@ namespace Minsk.CodeAnalysis.Syntax
 				case SyntaxKind.LessOrEqualsToken:
 				case SyntaxKind.GreaterToken:
 				case SyntaxKind.GreaterOrEqualsToken:
-					return 3;
+					return 4;
 
 				case SyntaxKind.AmpersandAmpersandToken:
-					return 2;
+					return 3;
 
 				case SyntaxKind.PipeToken:
 				case SyntaxKind.PipePipeToken:
+					return 2;
+
+				case SyntaxKind.QuestionMarkQuestionMarkToken:
 					return 1;
 
 				default:
@@ -63,64 +66,10 @@ namespace Minsk.CodeAnalysis.Syntax
 		{
 			switch (text)
 			{
-				case "#math":
-					return SyntaxKind.HashMathKeyword;
-				case "false":
-					return SyntaxKind.FalseKeyword;
-				case "let":
-					return SyntaxKind.LetKeyword;
-				case "true":
-					return SyntaxKind.TrueKeyword;
-				case "import":
-					return SyntaxKind.ImportKeyword;
-				case "if":
-					return SyntaxKind.IfKeyword;
-				case "else":
-					return SyntaxKind.ElseKeyword;
-				case "endif":
-					return SyntaxKind.EndIfKeyword;
-				case "as":
-					return SyntaxKind.AsKeyword;
-				case "style":
-					return SyntaxKind.StyleKeyword;
-				case "endstyle":
-					return SyntaxKind.EndStyleKeyword;
-				case "animation":
-					return SyntaxKind.AnimationKeyword;
-				case "case":
-					return SyntaxKind.CaseKeyword;
-				case "endanimation":
-					return SyntaxKind.EndAnimationKeyword;
-				case "template":
-					return SyntaxKind.TemplateKeyword;
-				case "endtemplate":
-					return SyntaxKind.EndTemplateKeyword;
-				case "slide":
-					return SyntaxKind.SlideKeyword;
-				case "endslide":
-					return SyntaxKind.EndSlideKeyword;
-				case "step":
-					return SyntaxKind.StepKeyword;
-				case "new":
-					return SyntaxKind.NewKeyword;
-				case "library":
-					return SyntaxKind.LibraryKeyword;
-				case "endlibrary":
-					return SyntaxKind.EndLibraryKeyword;
-				case "group":
-					return SyntaxKind.GroupKeyword;
-				case "endgroup":
-					return SyntaxKind.EndGroupKeyword;
-				case "svggroup":
-					return SyntaxKind.SVGGroupKeyword;
-				case "endsvggroup":
-					return SyntaxKind.EndSVGGroupKeyword;
-				case "data":
-					return SyntaxKind.DataKeyword;
-				case "enddata":
-					return SyntaxKind.EndDataKeyword;
 				case "std":
 					return SyntaxKind.StdKeyword;
+				case "new":
+					return SyntaxKind.NewKeyword;
 				case "none":
 					return SyntaxKind.NoneKeyword;
 				case "any":
@@ -131,14 +80,73 @@ namespace Minsk.CodeAnalysis.Syntax
 					return SyntaxKind.InKeyword;
 				case "endfor":
 					return SyntaxKind.EndForKeyword;
-				case "transition":
-					return SyntaxKind.TransitionKeyword;
-				case "endtransition":
-					return SyntaxKind.EndTransitionKeyword;
+				case "if":
+					return SyntaxKind.IfKeyword;
+				case "else":
+					return SyntaxKind.ElseKeyword;
+				case "endif":
+					return SyntaxKind.EndIfKeyword;
+				case "#math":
+					return SyntaxKind.HashMathKeyword;
+				case "false":
+					return SyntaxKind.FalseKeyword;
+				case "let":
+					return SyntaxKind.LetKeyword;
+				case "true":
+					return SyntaxKind.TrueKeyword;
+				case "import":
+					return SyntaxKind.ImportKeyword;
+				case "as":
+					return SyntaxKind.AsKeyword;
+				
+				case "animation":
+					return SyntaxKind.AnimationKeyword;
+				case "case":
+					return SyntaxKind.CaseKeyword;
+				case "endanimation":
+					return SyntaxKind.EndAnimationKeyword;
+				case "data":
+					return SyntaxKind.DataKeyword;
+				case "enddata":
+					return SyntaxKind.EndDataKeyword;
 				case "filter":
 					return SyntaxKind.FilterKeyword;
 				case "endfilter":
 					return SyntaxKind.EndFilterKeyword;
+				case "group":
+					return SyntaxKind.GroupKeyword;
+				case "endgroup":
+					return SyntaxKind.EndGroupKeyword;
+				case "library":
+					return SyntaxKind.LibraryKeyword;
+				case "endlibrary":
+					return SyntaxKind.EndLibraryKeyword;
+				case "slide":
+					return SyntaxKind.SlideKeyword;
+				case "step":
+					return SyntaxKind.StepKeyword;
+				case "endslide":
+					return SyntaxKind.EndSlideKeyword;
+				case "style":
+					return SyntaxKind.StyleKeyword;
+				case "endstyle":
+					return SyntaxKind.EndStyleKeyword;
+				case "svg":
+					return SyntaxKind.SVGKeyword;
+				case "endsvg":
+					return SyntaxKind.EndSVGKeyword;
+				case "template":
+					return SyntaxKind.TemplateKeyword;
+				case "endtemplate":
+					return SyntaxKind.EndTemplateKeyword;
+				case "transition":
+					return SyntaxKind.TransitionKeyword;
+				case "endtransition":
+					return SyntaxKind.EndTransitionKeyword;
+				case "use":
+					return SyntaxKind.UseKeyword;
+				case "enduse":
+					return SyntaxKind.EndUseKeyword;
 				default:
 					return SyntaxKind.IdentifierToken;
 			}
@@ -168,33 +176,35 @@ namespace Minsk.CodeAnalysis.Syntax
 		{
 			switch (kind)
 			{
-				case SyntaxKind.StyleKeyword:
-					return SyntaxKind.EndStyleKeyword;
-				case SyntaxKind.CaseKeyword:
-				case SyntaxKind.AnimationKeyword:
-					return SyntaxKind.EndAnimationKeyword;
-				case SyntaxKind.SlideKeyword:
-				case SyntaxKind.StepKeyword:
-					return SyntaxKind.EndSlideKeyword;
-				case SyntaxKind.TemplateKeyword:
-					return SyntaxKind.EndTemplateKeyword;
-				case SyntaxKind.LibraryKeyword:
-					return SyntaxKind.EndLibraryKeyword;
-				case SyntaxKind.GroupKeyword:
-					return SyntaxKind.EndGroupKeyword;
-				case SyntaxKind.SVGGroupKeyword:
-					return SyntaxKind.EndSVGGroupKeyword;
-				case SyntaxKind.DataKeyword:
-					return SyntaxKind.EndDataKeyword;
 				case SyntaxKind.ForKeyword:
 					return SyntaxKind.EndForKeyword;
 				case SyntaxKind.IfKeyword:
 				case SyntaxKind.ElseKeyword:
 					return SyntaxKind.EndIfKeyword;
-				case SyntaxKind.TransitionKeyword:
-					return SyntaxKind.EndTransitionKeyword;
+				case SyntaxKind.AnimationKeyword:
+				case SyntaxKind.CaseKeyword:
+					return SyntaxKind.EndAnimationKeyword;
 				case SyntaxKind.FilterKeyword:
 					return SyntaxKind.EndFilterKeyword;
+				case SyntaxKind.DataKeyword:
+					return SyntaxKind.EndDataKeyword;
+				case SyntaxKind.GroupKeyword:
+					return SyntaxKind.EndGroupKeyword;
+				case SyntaxKind.SlideKeyword:
+				case SyntaxKind.StepKeyword:
+					return SyntaxKind.EndSlideKeyword;
+				case SyntaxKind.StyleKeyword:
+					return SyntaxKind.EndStyleKeyword;
+				case SyntaxKind.SVGKeyword:
+					return SyntaxKind.EndSVGKeyword;
+				case SyntaxKind.TemplateKeyword:
+					return SyntaxKind.EndTemplateKeyword;
+				case SyntaxKind.LibraryKeyword:
+					return SyntaxKind.EndLibraryKeyword;
+				case SyntaxKind.UseKeyword:
+					return SyntaxKind.EndUseKeyword;
+				case SyntaxKind.TransitionKeyword:
+					return SyntaxKind.EndTransitionKeyword;
 				default:
 					return kind;
 			}
@@ -204,6 +214,24 @@ namespace Minsk.CodeAnalysis.Syntax
 		{
 			switch (kind)
 			{
+				case SyntaxKind.SlashSlashToken:
+					return "//";
+				case SyntaxKind.SemicolonToken:
+					return ";";
+				case SyntaxKind.TildeToken:
+					return "~";
+				case SyntaxKind.CommaToken:
+					return ",";
+				case SyntaxKind.ColonToken:
+					return ":";
+				case SyntaxKind.PeriodToken:
+					return ".";
+				case SyntaxKind.QuestionMarkToken:
+					return "?";
+				case SyntaxKind.DollarSignToken:
+					return "$";
+				case SyntaxKind.PercentToken:
+					return "%";
 				case SyntaxKind.PlusToken:
 					return "+";
 				case SyntaxKind.MinusToken:
@@ -212,28 +240,24 @@ namespace Minsk.CodeAnalysis.Syntax
 					return "*";
 				case SyntaxKind.SlashToken:
 					return "/";
+				case SyntaxKind.HatToken:
+					return "^";
 				case SyntaxKind.BangToken:
 					return "!";
-				case SyntaxKind.EqualsToken:
-					return "=";
-				case SyntaxKind.TildeToken:
-					return "~";
-				case SyntaxKind.ColonToken:
-					return ":";
-				case SyntaxKind.SemicolonToken:
-					return ";";
-				case SyntaxKind.CommaToken:
-					return ",";
-				case SyntaxKind.PeriodToken:
-					return ".";
-				case SyntaxKind.QuestionMarkToken:
-					return "?";
-				case SyntaxKind.DollarSignToken:
-					return "$";
-				case SyntaxKind.OpenBraceToken:
-					return "{";
-				case SyntaxKind.CloseBraceToken:
-					return "}";
+				case SyntaxKind.PipeToken:
+					return "|";
+				case SyntaxKind.QuestionMarkQuestionMarkToken:
+					return "??";
+				case SyntaxKind.PeriodPeriodToken:
+					return "..";
+				case SyntaxKind.AmpersandAmpersandToken:
+					return "&&";
+				case SyntaxKind.PipePipeToken:
+					return "||";
+				case SyntaxKind.EqualsEqualsToken:
+					return "==";
+				case SyntaxKind.BangEqualsToken:
+					return "!=";
 				case SyntaxKind.LessToken:
 					return "<";
 				case SyntaxKind.LessOrEqualsToken:
@@ -242,72 +266,103 @@ namespace Minsk.CodeAnalysis.Syntax
 					return ">";
 				case SyntaxKind.GreaterOrEqualsToken:
 					return ">=";
-				case SyntaxKind.AmpersandAmpersandToken:
-					return "&&";
-				case SyntaxKind.PipeToken:
-					return "|";
-				case SyntaxKind.PipePipeToken:
-					return "||";
-				case SyntaxKind.HatToken:
-					return "^";
-				case SyntaxKind.EqualsEqualsToken:
-					return "==";
-				case SyntaxKind.BangEqualsToken:
-					return "!=";
+
+				case SyntaxKind.EqualsToken:
+					return "=";
+				case SyntaxKind.PlusEqualsToken:
+					return "+=";
+				case SyntaxKind.MinusEqualsToken:
+					return "-=";
+				case SyntaxKind.StarEqualsToken:
+					return "*=";
+				case SyntaxKind.SlashEqualsToken:
+					return "/=";
+
 				case SyntaxKind.OpenParenthesisToken:
 					return "(";
 				case SyntaxKind.CloseParenthesisToken:
 					return ")";
-				case SyntaxKind.FalseKeyword:
-					return "false";
+				case SyntaxKind.OpenBracketToken:
+					return "[";
+				case SyntaxKind.CloseBracketToken:
+					return "]";
+				case SyntaxKind.BracketPairToken:
+					return "[]";
+				case SyntaxKind.OpenBraceToken:
+					return "{";
+				case SyntaxKind.CloseBraceToken:
+					return "}";
+
 				case SyntaxKind.LetKeyword:
 					return "let";
 				case SyntaxKind.TrueKeyword:
 					return "true";
-				case SyntaxKind.ImportKeyword:
-					return "import";
-				case SyntaxKind.AsKeyword:
-					return "as";
-				case SyntaxKind.StyleKeyword:
-					return "style";
-				case SyntaxKind.EndStyleKeyword:
-					return "endstyle";
+				case SyntaxKind.FalseKeyword:
+					return "false";
+				case SyntaxKind.StdKeyword:
+					return "std";
+				case SyntaxKind.NewKeyword:
+					return "new";
+				case SyntaxKind.NoneKeyword:
+					return "none";
+				case SyntaxKind.AnyKeyword:
+					return "any";
+				case SyntaxKind.HashMathKeyword:
+					return "#math";
+				
 				case SyntaxKind.AnimationKeyword:
 					return "animation";
 				case SyntaxKind.CaseKeyword:
 					return "case";
 				case SyntaxKind.EndAnimationKeyword:
 					return "endanimation";
-				case SyntaxKind.TemplateKeyword:
-					return "template";
-				case SyntaxKind.EndTemplateKeyword:
-					return "endtemplate";
+				case SyntaxKind.DataKeyword:
+					return "data";
+				case SyntaxKind.EndDataKeyword:
+					return "enddata";
+				case SyntaxKind.FilterKeyword:
+					return "filter";
+				case SyntaxKind.EndFilterKeyword:
+					return "endfilter";
+				case SyntaxKind.GroupKeyword:
+					return "group";
+				case SyntaxKind.EndGroupKeyword:
+					return "endgroup";
+				case SyntaxKind.LibraryKeyword:
+					return "library";
+				case SyntaxKind.EndLibraryKeyword:
+					return "endlibrary";
 				case SyntaxKind.SlideKeyword:
 					return "slide";
 				case SyntaxKind.StepKeyword:
 					return "step";
 				case SyntaxKind.EndSlideKeyword:
 					return "endslide";
-				case SyntaxKind.NewKeyword:
-					return "new";
-				case SyntaxKind.LibraryKeyword:
-					return "library";
-				case SyntaxKind.EndLibraryKeyword:
-					return "endlibrary";
-				case SyntaxKind.GroupKeyword:
-					return "group";
-				case SyntaxKind.EndGroupKeyword:
-					return "endgroup";
-				case SyntaxKind.DataKeyword:
-					return "data";
-				case SyntaxKind.EndDataKeyword:
-					return "enddata";
-				case SyntaxKind.StdKeyword:
-					return "std";
-				case SyntaxKind.NoneKeyword:
-					return "none";
-				case SyntaxKind.AnyKeyword:
-					return "any";
+				case SyntaxKind.StyleKeyword:
+					return "style";
+				case SyntaxKind.EndStyleKeyword:
+					return "endstyle";
+				case SyntaxKind.SVGKeyword:
+					return "svg";
+				case SyntaxKind.EndSVGKeyword:
+					return "endsvg";
+				case SyntaxKind.TemplateKeyword:
+					return "template";
+				case SyntaxKind.EndTemplateKeyword:
+					return "endtemplate";
+				case SyntaxKind.TransitionKeyword:
+					return "transition";
+				case SyntaxKind.EndTransitionKeyword:
+					return "endtransition";
+				case SyntaxKind.UseKeyword:
+					return "use";
+				case SyntaxKind.EndUseKeyword:
+					return "enduse";
+					
+				case SyntaxKind.ImportKeyword:
+					return "import";
+				case SyntaxKind.AsKeyword:
+					return "as";
 				case SyntaxKind.ForKeyword:
 					return "for";
 				case SyntaxKind.InKeyword:
@@ -320,16 +375,6 @@ namespace Minsk.CodeAnalysis.Syntax
 					return "else";
 				case SyntaxKind.EndIfKeyword:
 					return "endif";
-				case SyntaxKind.TransitionKeyword:
-					return "transition";
-				case SyntaxKind.EndTransitionKeyword:
-					return "endtransition";
-				case SyntaxKind.FilterKeyword:
-					return "filter";
-				case SyntaxKind.EndFilterKeyword:
-					return "endfilter";
-				case SyntaxKind.HashMathKeyword:
-					return "#math";
 				default:
 					return null;
 			}
@@ -340,6 +385,25 @@ namespace Minsk.CodeAnalysis.Syntax
 		{
 			switch (text)
 			{
+				case "//":
+					return SyntaxKind.SlashSlashToken;
+				case ";":
+					return SyntaxKind.SemicolonToken;
+				case "~":
+					return SyntaxKind.TildeToken;
+				case ",":
+					return SyntaxKind.CommaToken;
+				case ":":
+					return SyntaxKind.ColonToken;
+				case ".":
+					return SyntaxKind.PeriodToken;
+				case "?":
+					return SyntaxKind.QuestionMarkToken;
+				case "$":
+					return SyntaxKind.DollarSignToken;
+				case "%":
+					return SyntaxKind.PercentToken;
+
 				case "+":
 					return SyntaxKind.PlusToken;
 				case "-":
@@ -348,28 +412,25 @@ namespace Minsk.CodeAnalysis.Syntax
 					return SyntaxKind.StarToken;
 				case "/":
 					return SyntaxKind.SlashToken;
+				case "^":
+					return SyntaxKind.HatToken;
 				case "!":
 					return SyntaxKind.BangToken;
-				case "=":
-					return SyntaxKind.EqualsToken;
-				case "~":
-					return SyntaxKind.TildeToken;
-				case ":":
-					return SyntaxKind.ColonToken;
-				case ";":
-					return SyntaxKind.SemicolonToken;
-				case ",":
-					return SyntaxKind.CommaToken;
-				case ".":
-					return SyntaxKind.PeriodToken;
-				case "?":
-					return SyntaxKind.QuestionMarkToken;
-				case "$":
-					return SyntaxKind.DollarSignToken;
-				case "{":
-					return SyntaxKind.OpenBraceToken;
-				case "}":
-					return SyntaxKind.CloseBraceToken;
+				case "|":
+					return SyntaxKind.PipeToken;
+				case "??":
+					return SyntaxKind.QuestionMarkQuestionMarkToken;
+				case "..":
+					return SyntaxKind.PeriodPeriodToken;
+
+				case "&&":
+					return SyntaxKind.AmpersandAmpersandToken;
+				case "||":
+					return SyntaxKind.PipePipeToken;
+				case "==":
+					return SyntaxKind.BangEqualsToken;
+				case "!=":
+					return SyntaxKind.EqualsEqualsToken;
 				case "<":
 					return SyntaxKind.LessToken;
 				case "<=":
@@ -378,22 +439,32 @@ namespace Minsk.CodeAnalysis.Syntax
 					return SyntaxKind.GreaterToken;
 				case ">=":
 					return SyntaxKind.GreaterOrEqualsToken;
-				case "&&":
-					return SyntaxKind.AmpersandAmpersandToken;
-				case "|":
-					return SyntaxKind.PipeToken;
-				case "||":
-					return SyntaxKind.PipePipeToken;
-				case "^":
-					return SyntaxKind.HatToken;
-				case "==":
-					return SyntaxKind.BangEqualsToken;
-				case "!=":
-					return SyntaxKind.EqualsEqualsToken;
+				
+				case "=":
+					return SyntaxKind.EqualsToken;
+				case "+=":
+					return SyntaxKind.PlusEqualsToken;
+				case "-=":
+					return SyntaxKind.MinusEqualsToken;
+				case "*=":
+					return SyntaxKind.StarEqualsToken;
+				case "/=":
+					return SyntaxKind.SlashEqualsToken;
+
 				case "(":
 					return SyntaxKind.OpenParenthesisToken;
 				case ")":
 					return SyntaxKind.CloseParenthesisToken;
+				case "[":
+					return SyntaxKind.OpenBracketToken;
+				case "]":
+					return SyntaxKind.CloseBracketToken;
+				case "[]":
+					return SyntaxKind.BracketPairToken;
+				case "{":
+					return SyntaxKind.OpenBraceToken;
+				case "}":
+					return SyntaxKind.CloseBraceToken;
 				default:
 					var keyword = GetKeywordKind(text);
 					if (keyword == SyntaxKind.IdentifierToken)

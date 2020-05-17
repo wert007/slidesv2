@@ -44,5 +44,13 @@ namespace Minsk.CodeAnalysis
 		{
 			return _toConstructor[symbol];
 		}
+
+		public bool TryConstructorInfoLookUp(FunctionSymbol symbol, out ConstructorInfo constructor)
+		{
+			constructor = null;
+			if (!_toConstructor.ContainsKey(symbol)) return false;
+			constructor = LookConstructorInfoUp(symbol);
+			return true;
+		}
 	}
 }

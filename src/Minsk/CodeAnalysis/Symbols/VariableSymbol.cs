@@ -28,7 +28,7 @@ namespace Minsk.CodeAnalysis.Symbols
 		{
 			get
 			{
-				if (Type.Type != TypeType.Nullable)
+				if (Type.Type != TypeType.Noneable)
 					return true;
 				return _hasValue;
 			}

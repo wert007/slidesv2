@@ -85,7 +85,7 @@ namespace Minsk.CodeAnalysis.Syntax
 					return ParseTemplateStatement();
 				case SyntaxKind.GroupKeyword:
 					return ParseGroupStatement();
-				case SyntaxKind.SVGGroupKeyword:
+				case SyntaxKind.SVGKeyword:
 					return ParseSVGGroupStatement();
 				case SyntaxKind.StyleKeyword:
 					return ParseStyleStatement();
@@ -120,6 +120,8 @@ namespace Minsk.CodeAnalysis.Syntax
 					return ParseForStatement();
 				case SyntaxKind.LetKeyword:
 					return ParseVariableDeclaration();
+				case SyntaxKind.UseKeyword:
+					return ParseUseStatement();
 				default:
 					return ParseExpressionStatement();
 			}
@@ -174,14 +176,14 @@ namespace Minsk.CodeAnalysis.Syntax
 			return new FunctionExpressionSyntax(identifier, openParenthesisToken, arguments.ToArray(), closeParenthesisToken);
 		}
 
-		private IfStatementSyntax ParseIfStatement()
+		private IfStatementSyntax ParseIfStatement(bool needsEndIf = true)
 		{
 			var ifKeyword = MatchToken(SyntaxKind.IfKeyword);
 			var condition = ParseExpression();
 			var colonToken = MatchToken(SyntaxKind.ColonToken);
 			var body = ParseBlockStatement(SyntaxKind.IfKeyword);
 			var elseClause = ParseElseClause();
-			var endIfKeyword = MatchToken(SyntaxKind.EndIfKeyword);
+			var endIfKeyword = needsEndIf ? MatchToken(SyntaxKind.EndIfKeyword) : null;
 			return new IfStatementSyntax(ifKeyword, condition, colonToken, body, elseClause, endIfKeyword);
 		}
 
@@ -190,9 +192,12 @@ namespace Minsk.CodeAnalysis.Syntax
 			if (Current.Kind != SyntaxKind.ElseKeyword)
 				return null;
 			var elseKeyword = NextToken();
-			var colonToken = MatchToken(SyntaxKind.ColonToken);
-			var body = ParseBlockStatement(SyntaxKind.ElseKeyword);
-			return new ElseClauseSyntax(elseKeyword, colonToken, body);
+			StatementSyntax body;
+			if (Current.Kind == SyntaxKind.IfKeyword)
+				body = ParseIfStatement(false);
+			else
+				body = ParseBlockStatement(SyntaxKind.ElseKeyword);
+			return new ElseClauseSyntax(elseKeyword, body);
 		}
 
 		private ForStatementSyntax ParseForStatement()
@@ -553,16 +558,16 @@ namespace Minsk.CodeAnalysis.Syntax
 			return new GroupStatementSyntax(groupKeyword, identifier, parameterStatement, colonToken, body, endGroupKeyword);
 		}
 
-		private SVGGroupStatementSyntax ParseSVGGroupStatement()
+		private SVGStatementSyntax ParseSVGGroupStatement()
 		{
-			var svgGroupKeyword = MatchToken(SyntaxKind.SVGGroupKeyword);
+			var svgGroupKeyword = MatchToken(SyntaxKind.SVGKeyword);
 			var identifier = MatchToken(SyntaxKind.IdentifierToken);
 			var parameterStatement = ParseParameterBlockStatement();
 			var colonToken = MatchToken(SyntaxKind.ColonToken);
-			var body = ParseBlockStatement(SyntaxKind.SVGGroupKeyword);
-			var endSVGGroupKeyword = MatchToken(SyntaxKind.EndSVGGroupKeyword);
+			var body = ParseBlockStatement(SyntaxKind.SVGKeyword);
+			var endSVGGroupKeyword = MatchToken(SyntaxKind.EndSVGKeyword);
 
-			return new SVGGroupStatementSyntax(svgGroupKeyword, identifier, parameterStatement, colonToken, body, endSVGGroupKeyword);
+			return new SVGStatementSyntax(svgGroupKeyword, identifier, parameterStatement, colonToken, body, endSVGGroupKeyword);
 		}
 
 		private BlockStatementSyntax ParseBlockStatement(SyntaxKind starter)
@@ -586,6 +591,11 @@ namespace Minsk.CodeAnalysis.Syntax
 				var startToken = Current;
 
 				var statement = ParseStatement();
+				if(starter == SyntaxKind.UseKeyword && statement.Kind == SyntaxKind.UseStatement)
+				{
+					//TODO:
+					throw new NotImplementedException();
+				}
 				statements.Add(statement);
 
 				// If ParseStatement() did not consume any tokens,
@@ -607,19 +617,30 @@ namespace Minsk.CodeAnalysis.Syntax
 		{
 			var keyword = MatchToken(SyntaxKind.LetKeyword);
 
-			var variables = new List<VariableExpressionSyntax>();
-			var commas = new List<SyntaxToken>();
-			variables.Add(ParseVariableExpression());
-			while (Current.Kind == SyntaxKind.CommaToken)
-			{
-				commas.Add(NextToken());
-				variables.Add(ParseVariableExpression());
-			}
-
+			var variable = ParseVariableExpression();
 			var equals = MatchToken(SyntaxKind.EqualsToken);
 			var initializer = ParseExpression();
 			var semicolonToken = MatchToken(SyntaxKind.SemicolonToken);
-			return new VariableDeclarationSyntax(keyword, variables.ToArray(), equals, initializer, semicolonToken);
+			return new VariableDeclarationSyntax(keyword, variable, equals, initializer, semicolonToken);
+		}
+
+		private StatementSyntax ParseUseStatement()
+		{
+			var keyword = MatchToken(SyntaxKind.UseKeyword);
+
+			var commaToken = new List<SyntaxToken>();
+			var expressions = new List<ExpressionSyntax>();
+			expressions.Add(ParseFieldAccessExpression());
+			while(Current.Kind == SyntaxKind.CommaToken)
+			{
+				commaToken.Add(NextToken());
+				expressions.Add(ParseFieldAccessExpression());
+			}
+			var colonToken = MatchToken(SyntaxKind.ColonToken);
+			var body = ParseBlockStatement(SyntaxKind.UseKeyword);
+			var endKeyword = MatchToken(SyntaxKind.EndUseKeyword);
+
+			return new UseStatementSyntax(keyword, expressions.ToArray(), commaToken.ToArray(), colonToken, body, endKeyword);
 		}
 
 
@@ -868,19 +889,6 @@ namespace Minsk.CodeAnalysis.Syntax
 					case SyntaxKind.IdentifierToken:
 					case SyntaxKind.TildeToken:
 						break;
-				/*	case SyntaxKind.OpenBracketToken:
-						var openBrackets = 1;
-						while (openBrackets > 0)
-						{
-							i++;
-							peek = Peek(i);
-							if (peek.Kind == SyntaxKind.OpenBracketToken)
-								openBrackets++;
-							else if (peek.Kind == SyntaxKind.CloseBracketToken)
-								openBrackets--;
-						}
-						returnType = PVOFEReturnType.Array;
-						break;*/
 					case SyntaxKind.OpenParenthesisToken:
 						returnType = PVOFEReturnType.Function;
 						break;
@@ -983,15 +991,6 @@ namespace Minsk.CodeAnalysis.Syntax
 				var operatorToken = NextToken();
 				var right = ParseAssignmentExpression();
 				return new AssignmentExpressionSyntax((LExpressionSyntax)left, operatorToken, right);
-			}
-			else if (Peek(2).Kind == SyntaxKind.EqualsGreaterToken)
-			{
-				throw new Exception();
-				//Currently not supported and propably never will
-				var variable = ParseVariableExpression();
-				var arrowToken = MatchToken(SyntaxKind.EqualsGreaterToken);
-				var expression = ParseBinaryExpression();
-				return new LambdaExpressionSyntax(variable, arrowToken, expression);
 			}
 			return ParseBinaryExpression();
 		}

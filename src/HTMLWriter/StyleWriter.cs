@@ -1,7 +1,9 @@
 ﻿using Slides;
 using Slides.Code;
 using Slides.Debug;
+using Slides.Elements;
 using Slides.SVG;
+using Slides.Transforms;
 using System;
 using System.Linq;
 using System.Text;
@@ -431,7 +433,7 @@ namespace HTMLWriter
 			var builder = new StringBuilder();
 			foreach (var t in transforms)
 			{
-				var functionName = Transform.GetFunctionName(t.Type);
+				var functionName = Transform.GetFunctionName(t.Kind);
 				switch (t)
 				{
 					case SingleValueTransform singleValue:

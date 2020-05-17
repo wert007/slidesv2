@@ -3,44 +3,6 @@ using System.Collections.Generic;
 
 namespace Slides
 {
-	public class Template
-	{
-		public string Name { get; }
-		public Element[] VisualChildren { get; }
-		public object[] DataChildren { get; }
-		public Template(string name, Element[] visualChildren, object[] dataChildren)
-		{
-			Name = name;
-			VisualChildren = visualChildren;
-			DataChildren = dataChildren;
-		}
-	}
-	public class Step
-	{
-		public string Name { get; }
-		public AnimationCall[] AnimationCalls { get; }
-		public Element[] VisualChildren { get; }
-		public object[] DataChildren { get; }
-		public string[] DataChildrenNames { get; }
-		private string ParentName { get; }
-
-		public Step(string name, SlideAttributes dummy, AnimationCall[] animationCalls, Element[] visualChildren, object[] dataChildren, string[] dataChildrenNames)
-		{
-			Name = name;
-			AnimationCalls = animationCalls;
-			VisualChildren = visualChildren;
-			DataChildren = dataChildren;
-			DataChildrenNames = dataChildrenNames;
-			ParentName = dummy.name;
-		}
-
-		public string get_Id()
-		{
-			if (Name != null) return $"{ParentName}-{Name}";
-			return ParentName;
-		}
-	}
-
 	public class Slide
 	{
 		public string Name { get; }

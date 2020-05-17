@@ -7,9 +7,9 @@ namespace Minsk.CodeAnalysis.Binding
 		public BoundFunctionAccessExpression(BoundExpression parent, BoundFunctionExpression function)
 		{
 			Parent = parent;
-			Function = function;
+			FunctionCall = function;
 		}
-		public override TypeSymbol Type => Function.Type;
+		public override TypeSymbol Type => FunctionCall.Type;
 
 		public override BoundNodeKind Kind => BoundNodeKind.FunctionAccessExpression;
 
@@ -17,14 +17,14 @@ namespace Minsk.CodeAnalysis.Binding
 		//Maybe we will introduce something like this again. But right now a BoundExpression is well fitted.
 		//This extra safety measure SHOULDN'T be that important.
 		//public Member Member { get; }
-		public BoundFunctionExpression Function { get; }
+		public BoundFunctionExpression FunctionCall { get; }
 
 		public override bool EqualsBoundExpression(BoundExpression expression)
 		{
 			var e = (BoundFunctionAccessExpression)expression;
 			if (!Parent.EqualsBoundExpression(e.Parent))
 				return false;
-			return Function.EqualsBoundExpression(e.Function);
+			return FunctionCall.EqualsBoundExpression(e.FunctionCall);
 		}
 
 	}

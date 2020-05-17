@@ -4,41 +4,52 @@ using System.Text;
 using Minsk.CodeAnalysis.Binding;
 using Minsk.CodeAnalysis.Symbols;
 using Slides;
+using Slides.Elements;
 
 namespace Minsk.CodeAnalysis
 {
 	internal static class FormulaCreator
 	{
-		public static bool NeedsDependency(BoundExpression expression, out BoundExpression dependent)
+		public static JSInsertionKind GetJSInsertionKind(this BoundExpression dependent)
 		{
-			if (expression is BoundFieldAccessExpression fieldAccess)
+			switch (dependent.Kind)
 			{
-				if (fieldAccess.Parent.Type == TypeSymbolTypeConverter.Instance.LookSymbolUp(typeof(Slider)) &&
-					fieldAccess.Field.Variable.Name == "value")
-				{
-					dependent = expression;
-					return true;
-				}
+				case BoundNodeKind.VariableExpression:
+					var variableExpression = (BoundVariableExpression)dependent;
+					if (variableExpression.Variable.Name == "totalTime")
+						return JSInsertionKind.Time;
+					break;
+				case BoundNodeKind.FieldAccessExpression:
+					var fieldAccess = (BoundFieldAccessExpression)dependent;
+					if (fieldAccess.Parent.Type == BuiltInTypes.Instance.LookSymbolUp(typeof(Slider)) &&
+						fieldAccess.Field.Variable.Name == "value")
+						return JSInsertionKind.Slider;
+					break;
+				default:
+					break;
 			}
-			else if (expression is BoundVariableExpression variable)
+			return JSInsertionKind.None;
+		}
+		public static JSInsertionKind GetJSInsertionKind(BoundExpression expression, out BoundExpression dependent)
+		{
+			
+			if(expression.GetJSInsertionKind() != JSInsertionKind.None)
 			{
-				if (variable.Variable.Name == "totalTime")
-				{
-					dependent = expression;
-					return true;
-				}
+				dependent = expression;
+				return dependent.GetJSInsertionKind();
 			}
 			foreach (var child in expression.GetChildren())
 			{
-				if (child is BoundExpression e && NeedsDependency(e, out BoundExpression childDependent))
+				if (child is BoundExpression e && GetJSInsertionKind(e, out BoundExpression childDependent) != JSInsertionKind.None)
 				{
 					dependent = childDependent;
-					return true;
+					return dependent.GetJSInsertionKind();
 				}
 			}
 			dependent = null;
-			return false;
+			return JSInsertionKind.None;
 		}
+		/*
 		public static Formula CreateFunction(this Evaluator e, BoundExpression expression, BoundExpression dependent)
 		{
 			return new Formula(CreateFormula(e, expression, dependent));
@@ -52,7 +63,7 @@ namespace Minsk.CodeAnalysis
 				return ToString(e.EvaluateExpression(expression));
 			switch (expression.Kind)
 			{
-				case BoundNodeKind.Conversion:
+				case BoundNodeKind.ConversionExpression:
 					return CreateConversionFormula(e, (BoundConversion)expression, dependent);
 				case BoundNodeKind.BinaryExpression:
 					return CreateBinaryExpressionFormula(e, (BoundBinaryExpression)expression, dependent);
@@ -127,6 +138,8 @@ namespace Minsk.CodeAnalysis
 					return $"({args[0]}) % ({args[1]})";
 				case "int":
 					return $"castToInt({args[0]})";
+				case "toTime":
+					return $"toTime({args[0]})";
 				default:
 					return null;
 			}
@@ -201,7 +214,7 @@ namespace Minsk.CodeAnalysis
 					return $"({value})";
 			}
 		}
-
+		*/
 		private static bool Contains(BoundExpression a, BoundExpression b)
 		{
 			if (a == b)

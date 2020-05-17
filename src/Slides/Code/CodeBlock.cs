@@ -1,8 +1,10 @@
-﻿namespace Slides.Code
+﻿using Slides.Elements;
+
+namespace Slides.Code
 {
 	public class CodeBlock : Element
 	{
-		public override ElementType type => ElementType.CodeBlock;
+		public override ElementKind kind => ElementKind.CodeBlock;
 
 		public bool showLineNumbers { get; set; } = true;
 		public int lineStart { get; set; } = 1;

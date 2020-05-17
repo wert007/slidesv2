@@ -4,14 +4,14 @@
 	{
 		public BoundIfStatement(BoundExpression boundCondition, BoundStatement boundBody, BoundStatement boundElse)
 		{
-			BoundCondition = boundCondition;
-			BoundBody = boundBody;
-			BoundElse = boundElse;
+			Condition = boundCondition;
+			Body = boundBody;
+			Else = boundElse;
 		}
 
-		public BoundExpression BoundCondition { get; }
-		public BoundStatement BoundBody { get; }
-		public BoundStatement BoundElse { get; }
+		public BoundExpression Condition { get; }
+		public BoundStatement Body { get; }
+		public BoundStatement Else { get; }
 
 		public override BoundNodeKind Kind => BoundNodeKind.IfStatement;
 	}

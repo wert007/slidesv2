@@ -1,5 +1,6 @@
 ﻿using Slides;
 using Slides.Debug;
+using Slides.Elements;
 using Slides.Filters;
 using System;
 using System.CodeDom.Compiler;
@@ -7,6 +8,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using SVGColor = SVGLib.Datatypes.Color;
 
 namespace HTMLWriter
 {
@@ -297,6 +299,8 @@ namespace HTMLWriter
 		{
 			switch (value)
 			{
+				case SVGColor svgc:
+					return ToString(svgc);
 				case Color c:
 					return ToString(c);
 				case Alignment a:
@@ -319,6 +323,8 @@ namespace HTMLWriter
 				//return ToString(filter);
 				case float f:
 					return f.ToString(_usCulture);
+				case double d:
+					return d.ToString(_usCulture);
 				default:
 					return value.ToString();
 			}

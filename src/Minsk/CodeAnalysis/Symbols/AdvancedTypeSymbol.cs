@@ -12,29 +12,20 @@ namespace Minsk.CodeAnalysis.Symbols
 		public AdvancedTypeSymbol(string name, VariableSymbolCollection fields, FunctionSymbolCollection constructor, FunctionSymbolCollection functions) :
 			this(name, fields, constructor, functions, null)
 		{ }
-		public AdvancedTypeSymbol(string name, VariableSymbolCollection fields, FunctionSymbolCollection constructor, FunctionSymbolCollection functions, TypeSymbol parent) : this(name, fields, VariableSymbolCollection.Empty, constructor, functions, parent)
+		public AdvancedTypeSymbol(string name, VariableSymbolCollection fields, FunctionSymbolCollection constructor, FunctionSymbolCollection functions, TypeSymbol parent) : this(name, fields, constructor, functions, parent, new TypeSymbol[0])
 		{
 			Fields = fields;
 			Constructor = constructor;
 			Functions = functions;
 			Parent = parent;
 		}
-		public AdvancedTypeSymbol(string name, VariableSymbolCollection fields, VariableSymbolCollection staticFields, FunctionSymbolCollection constructor, FunctionSymbolCollection functions, TypeSymbol parent) : base(name)
-		{
-			Fields = fields;
-			Constructor = constructor;
-			Functions = functions;
-			Parent = parent;
-			StaticFields = staticFields;
-		}
-		public AdvancedTypeSymbol(string name, VariableSymbolCollection fields, VariableSymbolCollection staticFields, FunctionSymbolCollection constructor, FunctionSymbolCollection functions, TypeSymbol parent, TypeSymbol[] canBeCastedTo) : base(name)
+		public AdvancedTypeSymbol(string name, VariableSymbolCollection fields, FunctionSymbolCollection constructor, FunctionSymbolCollection functions, TypeSymbol parent, TypeSymbol[] canBeCastedTo) : base(name)
 		{
 			Fields = fields;
 			Constructor = constructor;
 			Functions = functions;
 			Parent = parent;
 			CanBeCastedTo = canBeCastedTo;
-			StaticFields = staticFields;
 		}
 
 		private bool _isData = false;
@@ -44,7 +35,6 @@ namespace Minsk.CodeAnalysis.Symbols
 		public override bool HasDefaultValue => false;
 		public override object DefaultValue => null;
 
-		public VariableSymbolCollection StaticFields { get; }
 		public VariableSymbolCollection Fields { get; }
 		public FunctionSymbolCollection Constructor { get; }
 		public FunctionSymbolCollection Functions { get; }
@@ -75,15 +65,6 @@ namespace Minsk.CodeAnalysis.Symbols
 				return true;
 			if (Parent != null)
 				return Parent.TryLookUpField(name, out field);
-			return false;
-		}
-
-		public override bool TryLookUpStaticField(string name, out VariableSymbol field)
-		{
-			if (StaticFields.TryLookUp(name, out field))
-				return true;
-			if (Parent != null)
-				return Parent.TryLookUpStaticField(name, out field);
 			return false;
 		}
 

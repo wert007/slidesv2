@@ -283,7 +283,7 @@ namespace Minsk.Tests.CodeAnalysis
         private static void AssertValue(string text, object expectedValue)
         {
             var syntaxTree = SyntaxTree.Parse(text, "TESTS");
-            var compilation = new Compilation(syntaxTree);
+            var compilation = new Compilation(syntaxTree, false);
             var variables = new Dictionary<VariableSymbol, object>();
             var result = compilation.Evaluate(variables, new Minsk.CodeAnalysis.SlidesTypes.TimeWatcher());
 
@@ -295,7 +295,7 @@ namespace Minsk.Tests.CodeAnalysis
         {
             var annotatedText = AnnotatedText.Parse(text);
             var syntaxTree = SyntaxTree.Parse(annotatedText.Text, "TESTS");
-            var compilation = new Compilation(syntaxTree);
+            var compilation = new Compilation(syntaxTree, false);
             var result = compilation.Evaluate(new Dictionary<VariableSymbol, object>(), new Minsk.CodeAnalysis.SlidesTypes.TimeWatcher());
 
             var expectedDiagnostics = AnnotatedText.UnindentLines(diagnosticText);

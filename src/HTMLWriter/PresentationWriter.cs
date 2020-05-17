@@ -1,13 +1,18 @@
 ﻿using Minsk.CodeAnalysis;
 using Slides;
 using Slides.Code;
+using Slides.Elements;
 using Slides.MathExpressions;
 using Slides.SVG;
+using SVGLib;
+using SVGLib.GraphicsElements;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Path = System.IO.Path;
+using SVGTag = SVGLib.ContainerElements.SVGTag;
 
 namespace HTMLWriter
 {
@@ -139,7 +144,7 @@ namespace HTMLWriter
 
 						FilterWriter.Write(_htmlWriter, presentation.CustomFilter);
 
-						WriteDependency(presentation.Dependencies);
+						WriteJSInsertions(presentation.JSInsertions);
 
 
 						foreach (var transition in presentation.Transitions)
@@ -170,6 +175,49 @@ namespace HTMLWriter
 			}
 		}
 
+		private static void WriteJSInsertions(JSInsertionBlock[] insertions)
+		{
+			var timeFunctions = new List<string>();
+			var sortedInsertions = new List<Stack<JSInsertionBlock>>();
+			foreach(var insertion in insertions)
+			{
+				var foundIndex = sortedInsertions.FindIndex(e => e.First().FunctionName == insertion.FunctionName && e.First().Kind == insertion.Kind);
+				if(foundIndex < 0)
+				{
+					foundIndex = sortedInsertions.Count;
+					sortedInsertions.Add(new Stack<JSInsertionBlock>());
+				}
+				sortedInsertions[foundIndex].Push(insertion);
+			}
+			foreach (var insertionStack in sortedInsertions)
+			{
+				var kind = insertionStack.Peek().Kind;
+				var functionName = insertionStack.Peek().FunctionName + "_" + kind;
+				if(kind == JSInsertionKind.Time)
+					timeFunctions.Add(functionName);
+				_jsWriter.StartFunction(functionName);
+				foreach (var insertion in insertionStack)
+				{
+					foreach (var variables in insertion.Variables)
+					{
+						_jsWriter.WriteVariableDeclarationInline(variables.Key, variables.Value);
+					}
+				}
+				_jsWriter.WriteLine("");
+				foreach (var insertion in insertionStack)
+				{
+					_jsWriter.WriteLine(insertion.Body);
+				}
+				_jsWriter.EndFunction();
+			}
+			_jsWriter.StartFunction($"update_totalTime");
+			foreach (var f in timeFunctions)
+			{
+				_jsWriter.WriteFunctionCall(f);
+			}
+			_jsWriter.EndFunction();
+		}
+
 		private static string DeclareJSVariableFromObject(object obj, HashSet<string> declaredVariables)
 		{
 			if (obj is Element e)
@@ -193,19 +241,6 @@ namespace HTMLWriter
 				return name;
 			}
 			throw new NotSupportedException();
-		}
-
-		private static void WriteDependency(FieldDependency[] dependencies)
-		{
-			_jsWriter.StartFunction($"update_totalTime");
-			var declaredVariables = new HashSet<string>();
-			foreach (var d in dependencies)
-			{
-				var name = DeclareJSVariableFromObject(d.Target, declaredVariables);
-				_jsWriter.WriteAssignment($"{name}.{JavaScriptWriter.ToJSAttribute(CSSWriter.ToCssAttribute(d.Field))}", d.Value.Insert("totalTime"));
-			}
-			_jsWriter.EndFunction();
-
 		}
 
 		private static void WriteStdOverlay()
@@ -297,58 +332,55 @@ namespace HTMLWriter
 					element.orientation = (Orientation)style.ModifiedFields["orientation"];
 			}
 			StyleWriter.WriteElement(_cssWriter, parentName, element, parent);
-			switch (element.type)
+			switch (element.kind)
 			{
-				case ElementType.Image:
+				case ElementKind.Image:
 					WriteImage(parentName, (Image)element);
 					break;
-				case ElementType.BoxElement:
+				case ElementKind.BoxElement:
 					WriteBoxElement(parentName, (BoxElement)element);
 					break;
-				case ElementType.Label:
+				case ElementKind.Label:
 					WriteLabel(parentName, (Label)element);
 					break;
-				case ElementType.LineChart:
+				case ElementKind.Chart:
 					WriteLineChart(parentName, (LineChart)element);
 					break;
-				case ElementType.MathPlot:
+				case ElementKind.MathPlot:
 					WriteMathPlot(parentName, (MathPlot)element);
 					break;
-				case ElementType.Rectangle:
-					WriteRectangle(parentName, (Rectangle)element);
-					break;
-				case ElementType.Stack:
+				case ElementKind.Stack:
 					WriteStack(parentName, (Stack)element);
 					break;
-				case ElementType.Container:
+				case ElementKind.Container:
 					WriteContainer(parentName, (Container)element);
 					break;
-				case ElementType.SplittedContainer:
+				case ElementKind.SplittedContainer:
 					WriteSplittedContainer(parentName, (SplittedContainer)element);
 					break;
-				case ElementType.List:
+				case ElementKind.List:
 					WriteList(parentName, (List)element);
 					break;
-				case ElementType.CodeBlock:
+				case ElementKind.CodeBlock:
 					WriteCodeBlock(parentName, (CodeBlock)element);
 					break;
-				case ElementType.IFrame:
+				case ElementKind.IFrame:
 					WriteIFrame(parentName, (IFrame)element);
 					break;
-				case ElementType.Slider:
+				case ElementKind.Slider:
 					WriteSlider(parentName, (Slider)element);
 					break;
-				case ElementType.SVGContainer:
+				case ElementKind.SVGContainer:
 					WriteSVGContainer(parentName, (SVGContainer)element);
 					break;
-				case ElementType.Table:
+				case ElementKind.Table:
 					WriteTable(parentName, (Table)element);
 					break;
-				case ElementType.TableChild:
+				case ElementKind.TableChild:
 					WriteTableChild(parentName, (TableChild)element);
 					break;
 				default:
-					throw new Exception($"ElementType unknown: {element.type}");
+					throw new Exception($"ElementType unknown: {element.kind}");
 			}
 		}
 
@@ -444,24 +476,9 @@ namespace HTMLWriter
 			var id = $"{parentName}-{element.name}";
 			var jsId = id.Replace('-', '_');
 			_jsWriter.StartFunction($"oninput_{jsId}");
-			_jsWriter.WriteVariableDeclarationInline("slider", $"document.getElementById('{id}')");
-			foreach (var d in element.get_Dependencies())
+			foreach (var insertion in element.get_JSInsertions())
 			{
-				switch (d.Target)
-				{
-					case Element e:
-						_jsWriter.WriteVariableDeclarationInline(e.name, $"document.getElementById('{parentName}-{e.name}')");
-						_jsWriter.WriteAssignment($"{e.name}.{JavaScriptWriter.ToJSAttribute(CSSWriter.ToCssAttribute(d.Field))}", d.Value.Insert("slider.value"));
-						break;
-					case MathFormula m:
-						//TODO: Use of parentName is hacky. But! 
-						//The slider should be on the same slide as the math expression
-						_jsWriter.WriteAssignment($"{parentName}_{m.Name}_scope.{d.Field}", d.Value.Insert("slider.value"));
-						_jsWriter.WriteFunctionCall($"recalculate_{parentName}_{m.Name}_scope");
-						break;
-					default:
-						throw new NotImplementedException();
-				}
+				_jsWriter.WriteFunctionCall(insertion.FunctionName + "_" + insertion.Kind);
 			}
 			_jsWriter.EndFunction();
 		}
@@ -473,10 +490,17 @@ namespace HTMLWriter
 				id = null;
 
 			var child = element.Element;
-
-			_htmlWriter.PushAttribute("viewBox", $"{child.x} {child.y} {child.width} {child.height}");
+			var viewBox = SVGWriter.GetViewBox(child);
+			_htmlWriter.PushAttribute("viewBox", $"{viewBox}");
 			_htmlWriter.StartTag("svg", id: id, classes: "svgcontainer " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
-			SVGWriter.Write(_htmlWriter, child);
+			if(child is SVGTag svg) //TODO: FIXME: Put fill etc on this css. Right now it just gets discarded..
+			{
+				foreach (var svgChild in svg.Children)
+				{
+					SVGWriter.Write(_htmlWriter, svgChild);
+				}
+			}
+			else SVGWriter.Write(_htmlWriter, child);
 			_htmlWriter.EndTag();
 		}
 
@@ -553,13 +577,6 @@ namespace HTMLWriter
 			_htmlWriter.EndTag();
 		}
 
-		private static void WriteRectangle(string parentName, Rectangle element)
-		{
-			var id = $"{parentName}-{element.name}";
-			_htmlWriter.StartTag("div", id: id, classes: "rect " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
-			_htmlWriter.EndTag();
-		}
-
 		private static void WriteLineChart(string parentName, LineChart element)
 		{
 			var id = $"{parentName}-{element.name}";
@@ -633,6 +650,8 @@ namespace HTMLWriter
 			var useBolds = false;
 			for (int i = 0; i < text.Length; i++)
 			{
+				var prev = '\0';
+				if (i > 0) prev = text[i - 1];
 				var character = text[i];
 				var next = (char)0;
 				if (i + 1 < text.Length)
@@ -706,6 +725,38 @@ namespace HTMLWriter
 							default:
 								throw new Exception();
 						}
+						break;
+					case ' ':
+						if (next != ' ' && prev != ' ')
+						{
+							span.Append(character);
+							break;
+						}
+						int spaces = 1;
+						while(text[i + spaces] == ' ' && spaces < 4)
+						{
+							spaces++;
+							if (i + spaces >= text.Length)
+								break;
+						}
+						switch (spaces)
+						{
+							case 4:
+								span.Append("&emsp;");
+								break;
+							case 3:
+								span.Append("&ensp;&nbsp;");
+								break;
+							case 2:
+								span.Append("&ensp;");
+								break;
+							case 1:
+								span.Append("&nbsp;");
+								break;
+							default:
+								throw new Exception();
+						}
+						i += spaces - 1;
 						break;
 					default:
 						span.Append(character);

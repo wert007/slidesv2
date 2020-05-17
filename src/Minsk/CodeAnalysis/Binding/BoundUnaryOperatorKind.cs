@@ -5,6 +5,5 @@ namespace Minsk.CodeAnalysis.Binding
         Identity,
         Negation,
         LogicalNegation,
-        OnesComplement
     }
 }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Minsk.CodeAnalysis.Symbols;
 using Slides;
+using Slides.Elements;
 
 namespace Minsk.CodeAnalysis.SlidesTypes
 {
@@ -69,7 +70,7 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			var customTypes = new BodySymbol[0];
 			var styles = new Style[0];
 			var globalVariables = new VariableValueCollection(null);
-			var builtInTypes = TypeSymbolTypeConverter.Instance;
+			var builtInTypes = BuiltInTypes.Instance;
 			var globalFunctions = new FunctionSymbol[]
 			{
 				new FunctionSymbol("vertical", new VariableSymbol("width", true, builtInTypes.LookSymbolUp(typeof(Unit)), false), builtInTypes.LookSymbolUp(typeof(SplittedContainer))),

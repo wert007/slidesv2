@@ -56,7 +56,7 @@ namespace Minsk.CodeAnalysis.Binding
                return RewriteFieldAccessExpression((BoundFieldAccessExpression)expression, source, replacement);
             case BoundNodeKind.StringExpression:
                return RewriteStringExpression((BoundStringExpression)expression, source, replacement);
-            case BoundNodeKind.Conversion:
+            case BoundNodeKind.ConversionExpression:
                return RewriteConversion((BoundConversion)expression, source, replacement);
             case BoundNodeKind.EmptyArrayConstructorExpression:
                return RewriteEmptyArrayConstructorExpression((BoundEmptyArrayConstructorExpression)expression, source, replacement);
@@ -80,7 +80,7 @@ namespace Minsk.CodeAnalysis.Binding
          if (statement == source)
             return (BoundVariableDeclaration)replacement;
          var initializer = RewriteExpression(statement.Initializer, source, replacement);
-         return new BoundVariableDeclaration(statement.Variables, initializer);
+         return new BoundVariableDeclaration(statement.Variable, initializer);
       }
 
       private static BoundForStatement RewriteForStatement(BoundForStatement statement, BoundNode source, BoundNode replacement)
@@ -104,9 +104,9 @@ namespace Minsk.CodeAnalysis.Binding
       {
          if (statement == source)
             return (BoundStatement)replacement;
-         var condition = RewriteExpression(statement.BoundCondition, source, replacement);
-         var body = RewriteStatement(statement.BoundBody, source, replacement);
-         var elseStatement = RewriteStatement(statement.BoundElse, source, replacement);
+         var condition = RewriteExpression(statement.Condition, source, replacement);
+         var body = RewriteStatement(statement.Body, source, replacement);
+         var elseStatement = RewriteStatement(statement.Else, source, replacement);
          return new BoundIfStatement(condition, body, elseStatement);
       }
 
@@ -191,7 +191,7 @@ namespace Minsk.CodeAnalysis.Binding
 
          var parent = RewriteExpression(expression.Parent, source, replacement);
          //TODO: Error prone
-         var function = (BoundFunctionExpression)RewriteFunctionExpression(expression.Function, source, replacement);
+         var function = (BoundFunctionExpression)RewriteFunctionExpression(expression.FunctionCall, source, replacement);
          return new BoundFunctionAccessExpression(parent, function);
       }
 

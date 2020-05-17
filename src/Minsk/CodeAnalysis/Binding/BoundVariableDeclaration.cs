@@ -5,20 +5,14 @@ namespace Minsk.CodeAnalysis.Binding
 	internal sealed class BoundVariableDeclaration : BoundStatement
 	{
 
-		public BoundVariableDeclaration(VariableSymbol[] variables, BoundExpression initializer)
-		{
-			Variables = variables;
-			Initializer = initializer;
-		}
-
 		public BoundVariableDeclaration(VariableSymbol variable, BoundExpression initializer)
 		{
 			Initializer = initializer;
-			Variables = new VariableSymbol[] { variable };
+			Variable = variable;
 		}
 
 		public override BoundNodeKind Kind => BoundNodeKind.VariableDeclaration;
-		public VariableSymbol[] Variables { get; }
+		public VariableSymbol Variable { get; }
 		public BoundExpression Initializer { get; }
 	}
 }

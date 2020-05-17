@@ -8,7 +8,7 @@ namespace Minsk.CodeAnalysis.Binding
 		public BoundLiteralExpression(object value)
 		{
 			Value = value;
-			_type = TypeSymbolTypeConverter.Instance.LookSymbolUp(Value.GetType());
+			_type = BuiltInTypes.Instance.LookSymbolUp(Value.GetType());
 		}
 
 		public BoundLiteralExpression(object value, TypeSymbol type)

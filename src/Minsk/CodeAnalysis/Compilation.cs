@@ -20,21 +20,23 @@ namespace Minsk.CodeAnalysis
 			set; }
 		private string _fileName;
 
-		public Compilation(SyntaxTree syntaxTree)
-			 : this(null, syntaxTree)
+		public Compilation(SyntaxTree syntaxTree, bool offlineView)
+			 : this(null, syntaxTree, offlineView)
 		{
 
 		}
 
-		private Compilation(Compilation previous, SyntaxTree syntaxTree)
+		private Compilation(Compilation previous, SyntaxTree syntaxTree, bool offlineView)
 		{
 			Previous = previous;
 			SyntaxTree = syntaxTree;
+			OfflineView = offlineView;
 			_fileName = syntaxTree.Text.FileName;
 		}
 
 		public Compilation Previous { get; }
 		public SyntaxTree SyntaxTree { get; }
+		public bool OfflineView { get; }
 
 		internal BoundGlobalScope GlobalScope
 		{
@@ -42,7 +44,7 @@ namespace Minsk.CodeAnalysis
 			{
 				if (_globalScope == null)
 				{
-					var globalScope = Binder.BindGlobalScope(Previous?.GlobalScope, SyntaxTree, References);
+					var globalScope = Binder.BindGlobalScope(Previous?.GlobalScope, SyntaxTree, References, OfflineView);
 					Interlocked.CompareExchange(ref _globalScope, globalScope, null);
 				}
 
@@ -53,7 +55,7 @@ namespace Minsk.CodeAnalysis
 		
 		public Compilation ContinueWith(SyntaxTree syntaxTree)
 		{
-			return new Compilation(this, syntaxTree);
+			return new Compilation(this, syntaxTree, OfflineView);
 		}
 
 		public EvaluationResult Evaluate(Dictionary<VariableSymbol, object> variables, TimeWatcher timewatch)

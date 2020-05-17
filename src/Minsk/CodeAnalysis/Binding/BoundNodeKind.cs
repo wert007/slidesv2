@@ -6,44 +6,50 @@ namespace Minsk.CodeAnalysis.Binding
 		BlockStatement,
 		VariableDeclaration,
 		ForStatement,
+		IfStatement,
 		ExpressionStatement,
 
-		SlideStatement,
+		//Parameter Statemens
 		ParameterStatement,
 		ParameterBlockStatement,
-		GroupStatement,
-		StyleStatement,
+		
+		//Top Level Statemens
 		AnimationStatement,
-		LibraryStatement,
-		DataStatement,
-		IfStatement,
 		CaseStatement,
-		StepStatement,
-		TransitionStatement,
+		DataStatement,
+		GroupStatement,
 		FilterStatement,
+		LibraryStatement,
+		SlideStatement,
+		StepStatement,
+		StyleStatement,
+		SVGStatement,
 		TemplateStatement,
-		SVGGroupStatement,
+		TransitionStatement,
+		UseStatement,
 
 		// Expressions
+		ErrorExpression,
 		LiteralExpression,
-		EnumExpression,
-		VariableExpression,
+		
 		UnaryExpression,
 		BinaryExpression,
-		FunctionExpression,
-		//IndexedArrayExpression,
 		ArrayExpression,
-		FunctionAccessExpression,
-		ErrorExpression,
-		FieldAccessExpression,
+		
 		StringExpression,
-		Conversion,
 		MathExpression,
+		
+		VariableExpression,
+		FunctionExpression,
+		EnumExpression,
 		EmptyArrayConstructorExpression,
-		AssignmentExpression,
-
-		LambdaExpression,
-		AnonymForExpression,
+		
 		ArrayAccessExpression,
+		FieldAccessExpression,
+		FunctionAccessExpression,
+		
+		ConversionExpression,
+		AssignmentExpression,
+		AnonymForExpression,
 	}
 }

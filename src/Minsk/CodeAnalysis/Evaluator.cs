@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using Minsk.CodeAnalysis.Binding;
 using Minsk.CodeAnalysis.SlidesTypes;
 using Minsk.CodeAnalysis.Symbols;
@@ -11,13 +10,20 @@ using Slides.Code;
 using Slides.Debug;
 using Slides.Filters;
 using Slides.MathExpressions;
-using Slides.MathTypes;
-using Slides.SVG;
+using SVGGroup = SVGLib.ContainerElements.Group;
+using Color = Slides.Color;
+using SVGLib.GraphicsElements;
+using SVGLib;
+using SVGLib.ContainerElements;
+using SVGLib.Datatypes;
+using Slides.Elements;
+using Slides.Helpers;
 
 namespace Minsk.CodeAnalysis
 {
 
-	internal sealed class Evaluator
+
+	internal sealed class Evaluator : StatementEvaluator
 	{
 
 		private LibrarySymbol[] _referenced;
@@ -25,71 +31,52 @@ namespace Minsk.CodeAnalysis
 		LibrarySymbol library = null;
 		Presentation presentation = null;
 
+		private string _currentIdBase;
 		private SlideAttributes _currentSlide = null;
 		private LibrarySymbol _currentReferenced = null;
+		public static PresentationFlags Flags = new PresentationFlags();
 
 		private readonly Dictionary<VariableSymbol, BoundStatement> _declarations;
 
 		private readonly Dictionary<string, bool> _libraryUsed = new Dictionary<string, bool>();
 
 		private List<CaseSymbol> _animationCases = null;
-		private List<string> _referencedFiles = new List<string>();
+		private HashSet<string> _referencedFiles = new HashSet<string>();
 		private List<Transition> _transitions = new List<Transition>();
 		private List<CustomFilter> _filters = new List<CustomFilter>();
 		private List<Step> _steps = new List<Step>();
-		private List<FieldDependency> _dependencies = new List<FieldDependency>();
-		private readonly BoundBlockStatement _root;
-		private VariableValueCollection _variables;
-		private int _invisibleSlideCount = 0;
 		private readonly Dictionary<VariableSymbol, Slide> _slides = new Dictionary<VariableSymbol, Slide>();
 		private readonly Dictionary<TypeSymbol, BodySymbol> _customTypes = new Dictionary<TypeSymbol, BodySymbol>();
 		private readonly Dictionary<VariableSymbol, Style> _styles = new Dictionary<VariableSymbol, Style>();
 		private readonly Dictionary<Element, AnimationCall> _animations = new Dictionary<Element, AnimationCall>();
 		private readonly Dictionary<VariableSymbol, BoundTemplateStatement> _templates = new Dictionary<VariableSymbol, BoundTemplateStatement>();
 		private readonly List<string> _imports = new List<string>();
-		private int slideCount = 0;
+		private int _invisibleSlideCount = 0;
+		private int _slideCount = 0;
 
-		public static PresentationFlags Flags = new PresentationFlags();
-
-		private object _lastValue;
+		private readonly JSEmitter _jsEmitter = new JSEmitter();
+		private readonly List<JSInsertionBlock> _jsInsertions = new List<JSInsertionBlock>();
 		private Stack<Dictionary<VariableSymbol, Element>> _groupChildren = new Stack<Dictionary<VariableSymbol, Element>>();
-		private Stack<Dictionary<VariableSymbol, SVGElement>> _svggroupChildren = new Stack<Dictionary<VariableSymbol, SVGElement>>();
-		private bool _isInSVGGroup;
+		private bool _isInSVG;
+		private Stack<Dictionary<VariableSymbol, SVGGraphicsElement>> _svgChildren = new Stack<Dictionary<VariableSymbol, SVGGraphicsElement>>();
 		private Stack<List<CustomStyle>> _groupAppliedStyles = new Stack<List<CustomStyle>>();
-		private readonly TypeSymbolTypeConverter _builtInTypes = TypeSymbolTypeConverter.Instance;
 
 		public Evaluator(BoundBlockStatement root, Dictionary<VariableSymbol, object> variables, LibrarySymbol[] referenced, Dictionary<VariableSymbol, BoundStatement> declarations)
+			: base(root, new VariableValueCollection(variables))
 		{
 			Flags = new PresentationFlags();
-			_root = root;
 			_referenced = referenced;
 			_declarations = declarations;
 			foreach (var declaration in _declarations)
 			{
 				if (declaration.Key.Type == _builtInTypes.LookSymbolUp(typeof(SlideAttributes))
 					&& declaration.Key.IsVisible)
-					slideCount++;
+					_slideCount++;
 			}
-			_variables = new VariableValueCollection(variables);
-			_variables.Add(new VariableSymbol("slideCount", true, PrimitiveTypeSymbol.Integer, false), slideCount);
-			_variables.Add(new VariableSymbol("totalTime", true, PrimitiveTypeSymbol.Integer, false), 0);
-			if (!variables.Any())
-			{
-				//TODO: This needs to be calculated in js!
-				_variables.Add(new VariableSymbol("elapsedTime", true, _builtInTypes.LookSymbolUp(typeof(float)), false), 5);
-				_variables.Add(new VariableSymbol("seperator", true, _builtInTypes.LookSymbolUp(typeof(LibrarySymbol)), false), Library.Seperator);
-				_variables.Add(new VariableSymbol("code", true, _builtInTypes.LookSymbolUp(typeof(LibrarySymbol)), false), Library.Code);
-				_variables.Add(new VariableSymbol("auto", true, _builtInTypes.LookSymbolUp(typeof(Unit)), false), new Unit(0, Unit.UnitKind.Auto));
-				foreach (var color in Color.GetStaticColors())
-				{
-					_variables.Add(new VariableSymbol(color.Key, true, _builtInTypes.LookSymbolUp(typeof(Color)), false), color.Value);
-				}
-				foreach (var typeName in _builtInTypes.GetAllTypesByName())
-				{
-					if (_builtInTypes.TryGetSymbol(typeName, out var type))
-						_variables.Add(new VariableSymbol(typeName, true, _builtInTypes.LookSymbolUp(typeof(TypeSymbol)), false), type);
-				}
-			}
+			_constants.Add(new VariableSymbol("slideCount", true, PrimitiveTypeSymbol.Integer, false), _slideCount);
+			_constants.Add(new VariableSymbol("totalTime", true, PrimitiveTypeSymbol.Integer, false), 0);
+			//TODO: This needs to be calculated in js!
+			//_variables.Add(new VariableSymbol("elapsedTime", true, _builtInTypes.LookSymbolUp(typeof(float)), false), 5);
 		}
 
 		public object Evaluate()
@@ -103,14 +90,16 @@ namespace Minsk.CodeAnalysis
 			Flags.StyleAllowed = true;
 			Flags.TemplatesAllowed = true;
 			Flags.CodeHighlighter = CodeHighlighter.None;
-			while (index < _root.Statements.Length)
+			var root = (BoundBlockStatement)_root;
+			while (index < root.Statements.Length)
 			{
-				var s = _root.Statements[index];
-				Evaluate(s);
+				var s = root.Statements[index];
+				EvaluateStatement(s);
 				index++;
 
 			}
 
+			object result = null;
 			if (Flags.IsLibrarySymbol)
 			{
 				library = new LibrarySymbol(library.Name, _referenced, _customTypes.Values.ToArray(), _styles.Values.ToArray(), _variables, _imports.ToArray());
@@ -118,7 +107,7 @@ namespace Minsk.CodeAnalysis
 				{
 					customType.Source = library;
 				}
-				_lastValue = library;
+				result = library;
 			}
 			else
 			{
@@ -129,78 +118,21 @@ namespace Minsk.CodeAnalysis
 					libraries[i] = new Library(_referenced[i].Name, _referenced[i].Libraries?.Select(l => new Library(l.Name, null, l.Styles)).ToArray(), _referenced[i].Styles);
 					_imports.AddRange(_referenced[i].Imports);
 				}
-				presentation = new Presentation(_slides.Values.ToArray(), _styles.Values.ToArray(), _filters.ToArray(), _transitions.ToArray(), libraries, _dependencies.ToArray(), _imports.ToArray(), _referencedFiles.ToArray(), Flags.CodeHighlighter);
-				_lastValue = presentation;
+				presentation = new Presentation(_slides.Values.ToArray(), _styles.Values.ToArray(), _filters.ToArray(), _transitions.ToArray(), libraries, _jsInsertions.ToArray(), _imports.ToArray(), _referencedFiles.ToArray(), Flags.CodeHighlighter);
+				result = presentation;
 			}
 
-			return _lastValue;
+			return result;
 		}
 
-		private void Evaluate(BoundStatement node)
-		{
-			switch (node.Kind)
-			{
-				case BoundNodeKind.VariableDeclaration:
-					EvaluateVariableDeclaration((BoundVariableDeclaration)node);
-					break;
-				case BoundNodeKind.ExpressionStatement:
-					EvaluateExpressionStatement((BoundExpressionStatement)node);
-					break;
-				case BoundNodeKind.IfStatement:
-					EvaluateIfStatement((BoundIfStatement)node);
-					break;
-				case BoundNodeKind.ForStatement:
-					EvaluateForStatement((BoundForStatement)node);
-					break;
-				case BoundNodeKind.BlockStatement:
-					EvaluateBlockStatement((BoundBlockStatement)node);
-					break;
-				case BoundNodeKind.TemplateStatement:
-					EvaluateTemplateStatement((BoundTemplateStatement)node);
-					break;
-				case BoundNodeKind.SlideStatement:
-					EvaluateSlideStatement((BoundSlideStatement)node);
-					break;
-				case BoundNodeKind.DataStatement:
-					EvaluateDataStatement((BoundDataStatement)node);
-					break;
-				case BoundNodeKind.GroupStatement:
-					EvaluateGroupStatement((BoundGroupStatement)node);
-					break;
-				case BoundNodeKind.SVGGroupStatement:
-					EvaluateSVGGroupStatement((BoundSVGGroupStatement)node);
-					break;
-				case BoundNodeKind.LibraryStatement:
-					EvaluateLibrarySymbolStatement((BoundLibraryStatement)node);
-					break;
-				case BoundNodeKind.StyleStatement:
-					EvaluateStyleStatement((BoundStyleStatement)node);
-					break;
-				case BoundNodeKind.AnimationStatement:
-					EvaluateAnimationStatement((BoundAnimationStatement)node);
-					break;
-				case BoundNodeKind.CaseStatement:
-					EvaluateCaseStatement((BoundCaseStatement)node);
-					break;
-				case BoundNodeKind.TransitionStatement:
-					EvaluateTransitionStatement((BoundTransitionStatement)node);
-					break;
-				case BoundNodeKind.FilterStatement:
-					EvaluateFilterStatement((BoundFilterStatement)node);
-					break;
-				default:
-					throw new Exception($"Unexpected node {node.Kind}");
-			}
-		}
-
-		private void EvaluateFilterStatement(BoundFilterStatement node)
+		protected override void EvaluateFilterStatement(BoundFilterStatement node)
 		{
 			var name = node.Variable.Name;
 			var filters = new List<SVGFilter>();
 			var filterNames = new List<string>();
 			_variables = _variables.Push();
 			_variables.Add(node.Parameter.Statements[0].Variable, new SourceGraphicFilterInput());
-			Evaluate(node.Body);
+			EvaluateStatement(node.Body);
 			_variables = _variables.Pop(out var children);
 			foreach (var child in children)
 			{
@@ -215,14 +147,14 @@ namespace Minsk.CodeAnalysis
 			_filters.Add(result);
 		}
 
-		private void EvaluateLibrarySymbolStatement(BoundLibraryStatement node)
+		protected override void EvaluateLibraryStatement(BoundLibraryStatement node)
 		{
 			Flags.IsLibrarySymbol = true;
 			Flags.AnimationsAllowed = false;
 			Flags.DatasAllowed = false;
 			Flags.GroupsAllowed = false;
 			Flags.StyleAllowed = false;
-			Evaluate(node.BoundBody);
+			EvaluateStatement(node.BoundBody);
 			library = new LibrarySymbol(node.Variable.Name);
 		}
 
@@ -286,8 +218,8 @@ namespace Minsk.CodeAnalysis
 			throw new NotSupportedException();
 			//TODO(Time): hacky
 			//without setPadding() Idk when we use this actually...
-			var field = expression.Function.Function.Name;
-			var value = EvaluateExpression(expression.Function.Arguments[0]);
+			var field = expression.FunctionCall.Function.Name;
+			var value = EvaluateExpression(expression.FunctionCall.Arguments[0]);
 			var parent = expression.Parent;
 
 			var parentObject = EvaluateExpression(parent);
@@ -356,7 +288,7 @@ namespace Minsk.CodeAnalysis
 				case BoundNodeKind.BlockStatement:
 					return CollectStyleFields((BoundBlockStatement)statement, styleName);
 				case BoundNodeKind.VariableDeclaration:
-					Evaluate(statement);
+					EvaluateStatement(statement);
 					return new List<TypedModifications>();
 				default:
 					Logger.LogUnexpectedSyntaxKind(statement.Kind, "CollectStyleFields");
@@ -371,14 +303,14 @@ namespace Minsk.CodeAnalysis
 
 		private List<TypedModifications> CollectStyleFields(BoundIfStatement statement, string styleName)
 		{
-			var condition = (bool)EvaluateExpression(statement.BoundCondition);
+			var condition = (bool)EvaluateExpression(statement.Condition);
 			if (condition)
 			{
-				return CollectStyleFields(statement.BoundBody, styleName);
+				return CollectStyleFields(statement.Body, styleName);
 			}
-			if (statement.BoundElse != null)
+			if (statement.Else != null)
 			{
-				return CollectStyleFields(statement.BoundElse, styleName);
+				return CollectStyleFields(statement.Else, styleName);
 			}
 			return new List<TypedModifications>();
 		}
@@ -427,21 +359,21 @@ namespace Minsk.CodeAnalysis
 
 		private List<TypedModifications> CollectStyleFields(BoundFunctionAccessExpression expression, string styleName)
 		{
-			switch (expression.Function.Function.Name)
+			switch (expression.FunctionCall.Function.Name)
 			{
 				case "applyStyle":
-					var style = (CustomStyle)EvaluateExpression(expression.Function.Arguments[0]);
+					var style = (CustomStyle)EvaluateExpression(expression.FunctionCall.Arguments[0]);
 					return new List<TypedModifications>()
 					{ new TypedModifications("*", style.ModifiedFields) };
 				default:
-					Logger.LogUnmatchedStyleFunction(expression.Function.Function.Name, styleName);
+					Logger.LogUnmatchedStyleFunction(expression.FunctionCall.Function.Name, styleName);
 
 					return new List<TypedModifications>();
 			}
 		}
 
 
-		private void EvaluateStyleStatement(BoundStyleStatement node)
+		protected override void EvaluateStyleStatement(BoundStyleStatement node)
 		{
 			//TODO(Time): I dont know. Can we EVER compute the same style twice?????
 			//aka do we need to store styles in _declarations?
@@ -471,7 +403,7 @@ namespace Minsk.CodeAnalysis
 			_variables = _variables.Pop(out var _);
 		}
 
-		private void EvaluateAnimationStatement(BoundAnimationStatement node)
+		protected override void EvaluateAnimationStatement(BoundAnimationStatement node)
 		{
 			if (!_declarations.ContainsKey(node.Variable))
 				return;
@@ -488,7 +420,7 @@ namespace Minsk.CodeAnalysis
 			_declarations.Remove(node.Variable);
 		}
 
-		private void EvaluateCaseStatement(BoundCaseStatement node)
+		protected override void EvaluateCaseStatement(BoundCaseStatement node)
 		{
 			if (_animationCases == null)
 				throw new Exception();
@@ -508,10 +440,10 @@ namespace Minsk.CodeAnalysis
 					var functionAccess = ((BoundFunctionAccessExpression)expression);
 					var parent = (functionAccess.Parent as BoundVariableExpression).Variable;
 					Time duration = new Time(1, Time.TimeUnit.Milliseconds);
-					var delay = (Time)EvaluateExpression(functionAccess.Function.Arguments[0]);
-					var name = functionAccess.Function.Function.Name;
+					var delay = (Time)EvaluateExpression(functionAccess.FunctionCall.Arguments[0]);
+					var name = functionAccess.FunctionCall.Function.Name;
 					if (name != "hide")
-						duration = (Time)EvaluateExpression(functionAccess.Function.Arguments[1]);
+						duration = (Time)EvaluateExpression(functionAccess.FunctionCall.Arguments[1]);
 					if (name == "hide")
 						name = "fadeOut";
 					if (parent == parameters[0].Variable)
@@ -531,7 +463,7 @@ namespace Minsk.CodeAnalysis
 			return true;
 		}
 
-		private void EvaluateTransitionStatement(BoundTransitionStatement node)
+		protected override void EvaluateTransitionStatement(BoundTransitionStatement node)
 		{
 			if (!_declarations.ContainsKey(node.Variable))
 				return;
@@ -542,7 +474,7 @@ namespace Minsk.CodeAnalysis
 			foreach (var statement in node.BoundBody.Statements)
 			{
 				if (TransitionStatementNeedsEvaluation(statement, node.BoundParameters.Statements, out var tempFrom, out var tempTo))
-					Evaluate(statement);
+					EvaluateStatement(statement);
 				else
 				{
 					if (from == null)
@@ -558,7 +490,7 @@ namespace Minsk.CodeAnalysis
 				switch (value.Key.Name)
 				{
 					case "background":
-						result.background = Brush.FromObject(value.Value);
+						result.background = SlidesConverter.ConvertToBrush(value.Value);
 						break;
 					case "duration":
 						result.duration = (Time)value.Value;
@@ -574,7 +506,7 @@ namespace Minsk.CodeAnalysis
 			_declarations.Remove(node.Variable);
 		}
 
-		private void EvaluateDataStatement(BoundDataStatement node)
+		protected override void EvaluateDataStatement(BoundDataStatement node)
 		{
 			if (!Flags.DatasAllowed)
 				throw new Exception();
@@ -585,7 +517,7 @@ namespace Minsk.CodeAnalysis
 			_declarations.Remove(new VariableSymbol(node.Type.Name, true, node.Type, false));
 		}
 
-		private void EvaluateGroupStatement(BoundGroupStatement node)
+		protected override void EvaluateGroupStatement(BoundGroupStatement node)
 		{
 			if (!Flags.GroupsAllowed)
 				throw new Exception();
@@ -600,7 +532,7 @@ namespace Minsk.CodeAnalysis
 			_declarations.Remove(new VariableSymbol(node.Type.Name, true, node.Type, false));
 		}
 
-		private void EvaluateSVGGroupStatement(BoundSVGGroupStatement node)
+		protected override void EvaluateSVGStatement(BoundSVGStatement node)
 		{
 			if (!Flags.GroupsAllowed)
 				throw new Exception();
@@ -618,7 +550,7 @@ namespace Minsk.CodeAnalysis
 		//TODO(Major): galore! Everythings missing. It's a wonder it's working!
 		//Thank you, that is really helpful! I see that this is a rather short function
 		//but is that your only problem with it? Is there something, that isn't working??
-		private void EvaluateTemplateStatement(BoundTemplateStatement node)
+		protected override void EvaluateTemplateStatement(BoundTemplateStatement node)
 		{
 			if (!_declarations.ContainsKey(node.Variable))
 				return;
@@ -633,7 +565,12 @@ namespace Minsk.CodeAnalysis
 			_declarations.Remove(node.Variable);
 		}
 
-		private void EvaluateSlideStatement(BoundSlideStatement node)
+		protected override void DeclareElement(Element e)
+		{
+			e.set_Step(_steps.Last());
+		}
+
+		protected override void EvaluateSlideStatement(BoundSlideStatement node)
 		{
 			//When _declarations doesn't contain our variable
 			//we already evaluated it.
@@ -649,7 +586,7 @@ namespace Minsk.CodeAnalysis
 			_steps = new List<Step>();
 			foreach (var statement in node.Statements)
 			{
-				_steps.Add(EvaluateStepStatement(statement));
+				EvaluateStepStatement(statement);
 			}
 			Template template = null;
 			if (node.Template != null)
@@ -658,26 +595,16 @@ namespace Minsk.CodeAnalysis
 				var currentTemplate = _templates[node.Template];
 				_variables[currentTemplate.SlideParameter.Variable] = _currentSlide;
 				_variables = _variables.Push();
-				Evaluate(_templates[node.Template].Body);
+				EvaluateStatement(_templates[node.Template].Body);
 				_variables = _variables.Pop(out var children);
 				var dataChildren = new List<object>();
 				var visualChildren = new List<Element>();
 				foreach (var value in children)
 				{
-					if (value.Key.IsVisible && value.Value is Element e)
-					{
-						e.name = value.Key.Name;
-						e.set_Step(_steps.Last());
-						if (e.isVisible)
-							visualChildren.Add(e);
-					}
+					if (value.Value is Element e && e.isVisible)
+						visualChildren.Add(e);
 					else
-						switch (value.Key.Name)
-						{
-							default:
-								dataChildren.Add(value);
-								break;
-						}
+						dataChildren.Add(value);
 				}
 				template = new Template(node.Template.Name, visualChildren.ToArray(), dataChildren.ToArray());
 			}
@@ -687,10 +614,15 @@ namespace Minsk.CodeAnalysis
 			_declarations.Remove(node.Variable);
 		}
 
-		private Step EvaluateStepStatement(BoundStepStatement node)
+
+		private void EvaluateStepStatement(BoundStepStatement node)
 		{
+			_currentIdBase = _currentSlide.name;
+			if (node.Variable != null) _currentIdBase += $"-{node.Variable.Name}";
 			//_variables = _variables.Push();
-			Evaluate(node.Body);
+			var step = new Step(node.Variable?.Name, _currentSlide);
+			_steps.Add(step);
+			EvaluateStatement(node.Body);
 
 			//_variables.Pop(out var slideValues);
 			var animationCalls = _animations.Values.ToArray();
@@ -700,7 +632,7 @@ namespace Minsk.CodeAnalysis
 			var visualChildren = new List<Element>();
 			foreach (var value in _variables)
 			{
-				if (_steps.Any(s => s.DataChildren.Contains(value.Value) || s.VisualChildren.Contains(value.Value)))
+				if (_steps.TakeWhile(s => s != step).Any(s => s.DataChildren.Contains(value.Value) || s.VisualChildren.Contains(value.Value)))
 					continue;
 				if (value.Key.IsVisible && value.Value is Element e)
 				{
@@ -711,7 +643,7 @@ namespace Minsk.CodeAnalysis
 					switch (value.Key.Name)
 					{
 						case "background":
-							_currentSlide.background = Brush.FromObject(value.Value);
+							_currentSlide.background = SlidesConverter.ConvertToBrush(value.Value);
 							break;
 						case "padding":
 							_currentSlide.padding = (Thickness)value.Value;
@@ -737,138 +669,65 @@ namespace Minsk.CodeAnalysis
 							break;
 					}
 			}
-			var step = new Step(node.Variable?.Name, _currentSlide, animationCalls, visualChildren.ToArray(), dataChildren.ToArray(), dataChildrenNames.ToArray());
-			return step;
+			step.Finalize(animationCalls, visualChildren.ToArray(), dataChildren.ToArray(), dataChildrenNames.ToArray());
+
 		}
 
-		private void EvaluateBlockStatement(BoundBlockStatement node)
+		protected override void EvaluateUseStatement(BoundUseStatement node)
 		{
-			foreach (var statement in node.Statements)
+			if (!_currentSlide.isVisible) return;
+			foreach (var dependency in node.Dependencies)
 			{
-				Evaluate(statement);
-			}
-		}
+				var kind = dependency.GetJSInsertionKind();
+				var functionNameBase = _currentIdBase;
 
-		private void EvaluateIfStatement(BoundIfStatement node)
-		{
-			var condition = EvaluateExpression(node.BoundCondition);
-			if (node.BoundCondition.Type.Type == TypeType.Nullable)
-			{
-				if (condition != null)
-					Evaluate(node.BoundBody);
-				else if (node.BoundElse != null)
-					Evaluate(node.BoundElse);
-			}
-			else if (condition.Equals(true))
-				Evaluate(node.BoundBody);
-			else if (node.BoundElse != null)
-				Evaluate(node.BoundElse);
-		}
-
-		private void EvaluateForStatement(BoundForStatement node)
-		{
-			_variables = _variables.Push();
-			var collection = EvaluateExpression(node.Collection);
-			if (collection is Range r)
-			{
-				if (r.Step >= 0)
-					for (int i = r.From; i < r.To; i += r.Step)
-					{
-						_variables[node.Variable] = i;
-						Evaluate(node.Body);
-					}
-				else
-					for (int i = r.From; i > r.To; i += r.Step)
-					{
-						_variables[node.Variable] = i;
-						Evaluate(node.Body);
-					}
-			}
-			else
-			{
-				if (!(collection is IEnumerable<object> e))
-					throw new Exception();
-
-				foreach (var item in e)
+				var jsCode = _jsEmitter.Emit(node.Body, _variables, functionNameBase);
+				var insertion = new JSInsertionBlock(functionNameBase, jsCode.Code, jsCode.VariableDefinitions, kind);
+				_jsInsertions.Add(insertion);
+				if (kind == JSInsertionKind.Slider)
 				{
-					_variables[node.Variable] = item;
-					Evaluate(node.Body);
+					var fieldExpression = (BoundFieldAccessExpression)dependency;
+					var parent = (Slider)EvaluateExpression(fieldExpression.Parent);
+					parent.add_JSInsertion(insertion);
 				}
 			}
-			_variables = _variables.Pop(out var _);
 		}
 
-		private void EvaluateVariableDeclaration(BoundVariableDeclaration node)
+		protected override object CheckIfIsImport(object value)
 		{
-			var value = EvaluateExpression(node.Initializer);
-
 			if (value is ImportExpression<LibrarySymbol> importLibrary)
 			{
-				value = importLibrary.Value;
 				_libraryUsed[importLibrary.Value.Name] = true;
+				return importLibrary.Value;
 			}
 			else if (value is ImportExpression<Font> importFont)
 			{
-				value = importFont.Value;
 				_imports.Add(importFont.Href);
+				return importFont.Value;
 			}
-
-
-			if (value != null && value.GetType() == typeof(LibrarySymbol) && _referenced != null)
-				return;
-			if (node.Variables.Length == 1)
-			{
-				var variable = node.Variables[0];
-				TryAddChildren(value, new BoundVariableExpression(variable));
-				_variables[variable] = value;
-				_lastValue = value;
-				if (value is Element e)
-				{
-					e.name = variable.Name;
-				}
-				if (value is MathFormula m)
-				{
-					m.Name = variable.Name;
-				}
-			}
-			else
-			{
-				var tuple = (TupleType)value;
-				for (int i = 0; i < node.Variables.Length; i++)
-				{
-					var variable = node.Variables[i];
-					//TupleType gets less and less supported. Lets see what the future will bring
-					//if (_groupChildren.Count > 0 && variable.IsVisible && !variable.Type.IsData)
-					//	_groupChildren.Peek().Add(variable, (Element)tuple[i]);
-					_variables[variable] = tuple[i];
-					_lastValue = value;
-					if (tuple[i] is Element e)
-					{
-						e.name = variable.Name;
-					}
-				}
-			}
+			return value;
 		}
 
-		private void TryAddChildren(object value, BoundVariableExpression variable)
+
+		protected override void TryAddChildren(VariableSymbol variable, object value)
 		{
-			if (_isInSVGGroup)
+			if (_isInSVG)
 				TryAddSVGGroupChildren(value, variable);
 			else
 				TryAddGroupChildren(value, variable);
 		}
 
-		private void TryAddGroupChildren(object value, BoundVariableExpression variable)
+		private void TryAddGroupChildren(object value, VariableSymbol variable)
 		{
 			if (!(value is Element || value is object[]))
 				return;
-			if (_groupChildren.Count > 0 && variable.Variable.IsVisible && !variable.Type.IsData)
+			if (_groupChildren.Count > 0 && variable.IsVisible && !variable.Type.IsData)
 			{
 				if (variable.Type.Type != TypeType.Array)
 				{
 					if (value is Element element && element.isVisible)
 					{
-						_groupChildren.Peek().Add(variable.Variable, element);
+						_groupChildren.Peek().Add(variable, element);
 						//if(variable.BoundArrayIndex != null)
 						//{
 						//	var i = (int)EvaluateExpression(variable.BoundArrayIndex.BoundIndex);
@@ -883,25 +742,25 @@ namespace Minsk.CodeAnalysis
 						var e = ((object[])value)[i];
 						if (e is Element element && element.isVisible)
 						{
-							var t = ((ArrayTypeSymbol)variable.Variable.Type).Child;
-							var variableArray = new VariableSymbol($"{variable.Variable.Name}#{i}", variable.Variable.IsReadOnly, t, variable.Variable.NeedsDataFlag);
+							var t = ((ArrayTypeSymbol)variable.Type).Child;
+							var variableArray = new VariableSymbol($"{variable.Name}#{i}", variable.IsReadOnly, t, variable.NeedsDataFlag);
 							_groupChildren.Peek().Add(variableArray, element);
 						}
 					}
 			}
 		}
 
-		private void TryAddSVGGroupChildren(object value, BoundVariableExpression variable)
+		private void TryAddSVGGroupChildren(object value, VariableSymbol variable)
 		{
-			if (!(value is SVGElement || value is object[]))
+			if (!(value is SVGGraphicsElement || value is object[]))
 				return;
-			if (_svggroupChildren.Count > 0 && variable.Variable.IsVisible && !variable.Type.IsData)
+			if (_svgChildren.Count > 0 && variable.IsVisible && !variable.Type.IsData)
 			{
 				if (variable.Type.Type != TypeType.Array)
 				{
-					if (value is SVGElement element && element.isVisible)
+					if (value is SVGGraphicsElement element && element.IsVisible)
 					{
-						_svggroupChildren.Peek().Add(variable.Variable, element);
+						_svgChildren.Peek()[variable] = element;
 						//if (variable.BoundArrayIndex != null)
 						//		{
 						//	var i = (int)EvaluateExpression(variable.BoundArrayIndex.BoundIndex);
@@ -914,248 +773,18 @@ namespace Minsk.CodeAnalysis
 					for (int i = 0; i < ((object[])value).Length; i++)
 					{
 						var e = ((object[])value)[i];
-						if (e is SVGElement element && element.isVisible)
+						if (e is SVGGraphicsElement element && element.IsVisible)
 						{
-							var t = ((ArrayTypeSymbol)variable.Variable.Type).Child;
-							var variableArray = new VariableSymbol($"{variable.Variable.Name}#{i}", variable.Variable.IsReadOnly, t, variable.Variable.NeedsDataFlag);
-							_svggroupChildren.Peek().Add(variableArray, element);
+							var t = ((ArrayTypeSymbol)variable.Type).Child;
+							var variableArray = new VariableSymbol($"{variable.Name}#{i}", variable.IsReadOnly, t, variable.NeedsDataFlag);
+							_svgChildren.Peek().Add(variableArray, element);
 						}
 					}
 			}
 		}
 
-		private void EvaluateExpressionStatement(BoundExpressionStatement node)
-		{
-			_lastValue = EvaluateExpression(node.Expression);
-		}
-
-		internal object EvaluateExpression(BoundExpression node)
-		{
-			switch (node.Kind)
-			{
-				case BoundNodeKind.StringExpression:
-					return EvaluateStringExpression((BoundStringExpression)node);
-				case BoundNodeKind.LiteralExpression:
-					return EvaluateLiteralExpression((BoundLiteralExpression)node);
-				case BoundNodeKind.VariableExpression:
-					return EvaluateVariableExpression((BoundVariableExpression)node);
-				case BoundNodeKind.AssignmentExpression:
-					return EvaluateAssignmentExpression((BoundAssignmentExpression)node);
-				case BoundNodeKind.UnaryExpression:
-					return EvaluateUnaryExpression((BoundUnaryExpression)node);
-				case BoundNodeKind.BinaryExpression:
-					return EvaluateBinaryExpression((BoundBinaryExpression)node);
-				case BoundNodeKind.FunctionExpression:
-					return EvaluateFunctionExpression((BoundFunctionExpression)node);
-				case BoundNodeKind.EmptyArrayConstructorExpression:
-					return EvaluateEmptyArrayConstructorExpression((BoundEmptyArrayConstructorExpression)node);
-				case BoundNodeKind.ArrayExpression:
-					return EvaluateArrayExpression((BoundArrayExpression)node);
-				case BoundNodeKind.EnumExpression:
-					return EvaluateEnumExpression((BoundEnumExpression)node);
-				case BoundNodeKind.FieldAccessExpression:
-					return EvaluateFieldAccessExpression((BoundFieldAccessExpression)node);
-				case BoundNodeKind.FunctionAccessExpression:
-					return EvaluateFunctionAccessExpression((BoundFunctionAccessExpression)node);
-				case BoundNodeKind.Conversion:
-					return EvaluateConversion((BoundConversion)node);
-				case BoundNodeKind.MathExpression:
-					return EvaluateMathExpression((BoundMathExpression)node);
-				case BoundNodeKind.LambdaExpression:
-					return EvaluateLambdaExpression((BoundLambdaExpression)node);
-				case BoundNodeKind.ArrayAccessExpression:
-					return EvaluateArrayAccessExpression((BoundArrayAccessExpression)node);
-				default:
-					throw new Exception($"Unexpected node {node.Kind}");
-			}
-		}
-
-		private object EvaluateConversion(BoundConversion node)
-		{
-			var value = EvaluateExpression(node.Expression);
-			if (node.Type == PrimitiveTypeSymbol.Unit)
-				switch (value)
-				{
-					//TODO(Improvement): Maybe don't differntiate between int and float. It's confusing
-					case float f:
-						return new Unit(f * 100, Unit.UnitKind.Percent);
-					case int i:
-						return new Unit(i, Unit.UnitKind.Pixel);
-					default:
-						throw new NotSupportedException();
-				}
-			if (node.Type == PrimitiveTypeSymbol.Float)
-				return Convert.ToSingle(value);
-			if (node.Expression.Type.Type == TypeType.Nullable &&
-				((NullableTypeSymbol)node.Expression.Type).BaseType == node.Type)
-			{
-				if (value == null)
-					throw new Exception();
-				return value;
-			}
-			throw new Exception();
-		}
-
-		private object EvaluateMathExpression(BoundMathExpression node)
-		{
-			return new MathFormula(node.Expression);
-		}
-
-		private object EvaluateLambdaExpression(BoundLambdaExpression node)
-		{
-			int length = CountLambdaArgs(node.Expression, node.Variable) + 1;
-			float[] values = new float[length];
-
-			for (int i = 0; i < length; i++)
-			{
-				values[i] = GetLambdaValue(node.Expression, node.Variable, i);
-			}
-
-			return new Polynom(values);
-		}
 
 
-
-		private float GetLambdaValue(BoundExpression expression, VariableSymbol variable, int index)
-		{
-			bool IsRightOne(BoundExpression e, VariableSymbol vs, int i)
-			{
-				if (i == 0)
-				{
-					if (CountLambdaArgs(e, vs) == 0)
-						return true;
-				}
-				if (e is BoundVariableExpression single)
-					if (single.Variable == vs && i == 1)
-						return true;
-				if (e is BoundBinaryExpression b && b.Op.Kind == BoundBinaryOperatorKind.Exponentiation)
-					if (b.Left is BoundVariableExpression v)
-						if (v.Variable == vs && (int)EvaluateExpression(b.Right) == i)
-							return true;
-				return false;
-			}
-			if (IsRightOne(expression, variable, index))
-			{
-				if (index > 0)
-					throw new Exception();
-				else
-					return (float)EvaluateExpression(expression);
-			}
-			if (expression is BoundBinaryExpression be)
-			{
-				if (be.Op.Kind == BoundBinaryOperatorKind.Multiplication)
-				{
-					if (IsRightOne(be.Left, variable, index) && (index != 0 && CountLambdaArgs(be.Right, variable) != 0))
-						return (float)EvaluateExpression(be.Right);
-					else if (IsRightOne(be.Right, variable, index) && (index != 0 && CountLambdaArgs(be.Right, variable) != 0))
-						return (float)EvaluateExpression(be.Left);
-				}
-				{
-					if (HasLambdaArgsIndex(be.Left, variable, index) && HasLambdaArgsIndex(be.Right, variable, index))
-					{
-						switch (be.Op.Kind)
-						{
-							case BoundBinaryOperatorKind.Addition:
-								return GetLambdaValue(be.Left, variable, index) + GetLambdaValue(be.Right, variable, index);
-							case BoundBinaryOperatorKind.Subtraction:
-								return GetLambdaValue(be.Left, variable, index) - GetLambdaValue(be.Right, variable, index);
-							case BoundBinaryOperatorKind.Multiplication:
-								return GetLambdaValue(be.Left, variable, index) * GetLambdaValue(be.Right, variable, index);
-							case BoundBinaryOperatorKind.Division:
-								return GetLambdaValue(be.Left, variable, index) / GetLambdaValue(be.Right, variable, index);
-							case BoundBinaryOperatorKind.Exponentiation:
-								return (float)Math.Pow(GetLambdaValue(be.Left, variable, index), GetLambdaValue(be.Right, variable, index));
-							default:
-								throw new Exception();
-						}
-					}
-					else if (HasLambdaArgsIndex(be.Left, variable, index))
-						return GetLambdaValue(be.Left, variable, index);
-					else if (HasLambdaArgsIndex(be.Right, variable, index))
-						return GetLambdaValue(be.Right, variable, index);
-					if (index == 0) //TODO
-						return 0;
-					throw new Exception();
-				}
-			}
-			throw new Exception();
-		}
-
-		private int CountLambdaArgs(BoundExpression expression, VariableSymbol variable)
-		{
-			if (expression is BoundBinaryExpression b && b.Op.Kind == BoundBinaryOperatorKind.Exponentiation)
-				if (b.Left is BoundVariableExpression ve)
-					if (ve.Variable == variable)
-						return (int)EvaluateExpression(b.Right);
-			if (expression is BoundVariableExpression v)
-			{
-				if (v.Variable == variable)
-					return 1;
-			}
-			int result = 0;
-			foreach (var child in expression.GetChildren())
-			{
-				if (!(child is BoundExpression e))
-					continue;
-				result = Math.Max(CountLambdaArgs(e, variable), result);
-			}
-			return result;
-		}
-		private bool HasLambdaArgsIndex(BoundExpression expression, VariableSymbol variable, int index)
-		{
-			if (expression is BoundBinaryExpression b && b.Op.Kind == BoundBinaryOperatorKind.Exponentiation)
-				if (b.Left is BoundVariableExpression ve)
-					if (ve.Variable == variable)
-						return (int)EvaluateExpression(b.Right) == index;
-			if (expression is BoundVariableExpression v)
-			{
-				if (v.Variable == variable)
-					return 1 == index;
-			}
-			bool result = false;
-			foreach (var child in expression.GetChildren())
-			{
-				if (!(child is BoundExpression e))
-					continue;
-				result = result || HasLambdaArgsIndex(e, variable, index);
-			}
-			return result;
-		}
-
-		private object EvaluateStringExpression(BoundStringExpression node)
-		{
-			object[] values = new object[node.Expressions.Length];
-			for (int i = 0; i < values.Length; i++)
-			{
-				values[i] = EvaluateExpression(node.Expressions[i]);
-			}
-			return string.Join("", values);
-		}
-
-		private object EvaluateFunctionAccessExpression(BoundFunctionAccessExpression node)
-		{
-			var parent = EvaluateExpression(node.Parent);
-			var function = node.Function;
-			var args = new object[function.Arguments.Length];
-			for (int i = 0; i < function.Arguments.Length; i++)
-			{
-				args[i] = EvaluateExpression(function.Arguments[i]);
-				//TODO: I don't think the binder always catches this. But he should. - p
-				if (args[i] == null && !function.Arguments[i].Type.AllowsNone)
-					throw new Exception();
-			}
-			var type = parent.GetType();
-			if (type == typeof(AnimationSymbol))
-				return EvaluateAnimationCall((AnimationSymbol)parent, function, args);
-			var parameters = new Type[function.Function.Parameter.Count];
-			for (int i = 0; i < parameters.Length; i++)
-			{
-				parameters[i] = args[i]?.GetType() ?? _builtInTypes.LookTypeUp(function.Function.Parameter[i].Type);
-			}
-
-
-			return EvaluateFunctionAccessCall(function.Function, parent, args);
-		}
 
 		private object GetValue(Element element, string field)
 		{
@@ -1208,92 +837,18 @@ namespace Minsk.CodeAnalysis
 			return result;
 		}
 
-		private object EvaluateFunctionAccessCall(FunctionSymbol function, object obj, object[] args)
-		{
-			switch (function.Name)
-			{
-				case "len":
-					return ((ICollection<object>)obj).Count;
-				default:
-					var type = obj.GetType();
-					var parameters = function.Parameter.Select(p => _builtInTypes.LookTypeUp(p.Type)).ToArray();
-					var method = type.GetMethod(function.Name, parameters);
-					return MethodInvoke(method, obj, args);
-			}
-		}
 
-		private object EvaluateEnumExpression(BoundEnumExpression node)
-		{
-			var type = _builtInTypes.LookTypeUp(node.Type);
-			foreach (var value in type.GetEnumValues())
-			{
-				if (value.ToString() == node.Value)
-					return value;
-			}
-			throw new Exception();
-		}
-
-		private object EvaluateFieldAccessExpression(BoundFieldAccessExpression node)
-		{
-			var parent = EvaluateExpression(node.Parent);
-			var type = parent.GetType();
-			if (type == typeof(DataObject))
-			{
-				var data = (DataObject)parent;
-				if (!data.TryLookUp(node.Field.Variable.Name, out var value))
-					throw new Exception();
-				return value;
-			}
-			var v = type.GetProperty(node.Field.Variable.Name).GetValue(parent);
-			return v;
-		}
-
-		private object EvaluateEmptyArrayConstructorExpression(BoundEmptyArrayConstructorExpression node)
-		{
-			var length = (int)EvaluateExpression(node.Length);
-			var result = new object[length];
-			for (int i = 0; i < length; i++)
-			{
-				result[i] = ((ArrayTypeSymbol)node.Type).Child.DefaultValue;
-			}
-			return result;
-		}
-
-		private object EvaluateArrayExpression(BoundArrayExpression node)
-		{
-			var result = new object[node.Expressions.Length];
-			for (int i = 0; i < result.Length; i++)
-			{
-				result[i] = EvaluateExpression(node.Expressions[i]);
-			}
-			return result;
-		}
-
-		private object EvaluateGroupConstructorExpression(BoundExpression[] arguments, BodySymbol group)
+		protected override object EvaluateGroupConstructorExpression(object[] args, BodySymbol group)
 		{
 			if (!(group.Symbol.Type is AdvancedTypeSymbol advanced))
 				throw new Exception();
 
-			var isSVGGroup = group.Symbol.Type.CanBeConvertedTo(_builtInTypes.LookSymbolUp(typeof(SVGElement)));
-			_isInSVGGroup = isSVGGroup;
+			var isSVG = group.Symbol.Type.CanBeConvertedTo(_builtInTypes.LookSymbolUp(typeof(SVGElement)));
+			_isInSVG = isSVG;
 			var cVariables = _variables.Push();
-			var constructor = advanced.Constructor.FirstOrDefault(c => c.Parameter.Count == arguments.Length);
-			var args = new object[constructor.Parameter.Count];
+			var constructor = advanced.Constructor.FirstOrDefault(c => c.Parameter.Count == args.Length);
 			for (int i = 0; i < constructor.Parameter.Count; i++)
 			{
-				args[i] = EvaluateExpression(arguments[i]);
-				//TODO(BigDecision): Maybe allow multiple Constructors for custom groups.
-				//For example:
-				//group a(i : int):
-				//	print(i);
-				//endgroup
-				//
-				//group a(f : float):
-				//	print(f);
-				//endgroup
-				//
-				//Probably not, because why should we? Seems like quite
-				//an edge case
 				cVariables.Add(constructor.Parameter[i], args[i]);
 			}
 
@@ -1303,9 +858,9 @@ namespace Minsk.CodeAnalysis
 			_currentReferenced = group.Source;
 			if (_currentReferenced != null)
 				_libraryUsed[_currentReferenced.Name] = true;
-			if (isSVGGroup)
+			if (isSVG)
 			{
-				_svggroupChildren.Push(new Dictionary<VariableSymbol, SVGElement>());
+				_svgChildren.Push(new Dictionary<VariableSymbol, SVGGraphicsElement>());
 			}
 			else
 			{
@@ -1313,7 +868,7 @@ namespace Minsk.CodeAnalysis
 				_groupAppliedStyles.Push(new List<CustomStyle>());
 			}
 			if (group.Body != null)
-				Evaluate(group.Body);
+				EvaluateStatement(group.Body);
 
 			_currentReferenced = oldReferenced;
 
@@ -1331,11 +886,11 @@ namespace Minsk.CodeAnalysis
 
 			//As of now they are included in the _groupChildren. You just need to give them
 			//a better name!
-			SVGElement[] svgValues = null;
+			SVGGraphicsElement[] svgValues = null;
 			Element[] groupValues = null;
-			if (isSVGGroup)
+			if (isSVG)
 			{
-				svgValues = _svggroupChildren.Pop().Select(c => c.Value).Where(c => c.isVisible).ToArray();
+				svgValues = _svgChildren.Pop().Select(c => c.Value).Where(c => c.IsVisible).ToArray();
 			}
 			else
 			{
@@ -1348,11 +903,10 @@ namespace Minsk.CodeAnalysis
 			{
 				result = new DataObject(advanced, args);
 			}
-			else if (isSVGGroup)
+			else if (isSVG)
 			{
-				var initWidth = (int)cVariables.FirstOrDefault(v => v.Key.Name == "width").Value;
-				var initHeight = (int)cVariables.FirstOrDefault(v => v.Key.Name == "height").Value;
-				result = new SVGGroup(svgValues, initWidth, initHeight);
+				var viewBox = (ViewBox)cVariables.FirstOrDefault(v => v.Key.Name == "viewBox").Value;
+				result = new SVGTag(viewBox, svgValues);
 			}
 			else
 			{
@@ -1375,7 +929,7 @@ namespace Minsk.CodeAnalysis
 						element.orientation = (Orientation)variable.Value;
 						break;
 					case "background":
-						element.background = Brush.FromObject(variable.Value);
+						element.background = SlidesConverter.ConvertToBrush(variable.Value);
 						break;
 					case "width":
 						element.width = Unit.Convert(variable.Value);
@@ -1406,189 +960,92 @@ namespace Minsk.CodeAnalysis
 			}
 		}
 
-		private object EvaluateFunctionExpression(BoundFunctionExpression expression)
+		protected override object EvaluateConstructorCall(FunctionSymbol function, object[] args, LibrarySymbol source)
 		{
-			var args = new object[expression.Arguments.Length];
-			for (int i = 0; i < expression.Arguments.Length; i++)
+			if (_customTypes.TryGetValue(function.Type, out var group))
 			{
-				args[i] = EvaluateExpression(expression.Arguments[i]);
+				return EvaluateGroupConstructorExpression(args, group);
 			}
-			if (expression.Function.Name == "constructor")
+			if (_currentReferenced != null)
 			{
-				if (_customTypes.TryGetValue(expression.Function.Type, out var group))
+				var customType = _currentReferenced.CustomTypes.FirstOrDefault(ct => ct.Symbol.Type == function.Type);
+				if (customType != null)
 				{
-					return EvaluateGroupConstructorExpression(expression.Arguments, group);
+					return EvaluateGroupConstructorExpression(args, customType);
 				}
-				if (_currentReferenced != null)
-				{
-					var customType = _currentReferenced.CustomTypes.FirstOrDefault(ct => ct.Symbol.Type == expression.Function.Type);
-					if (customType != null)
-					{
-						return EvaluateGroupConstructorExpression(expression.Arguments, customType);
-					}
-				}
-				if (expression.Source != null)
-				{
-					var customType = expression.Source.CustomTypes.FirstOrDefault(ct => ct.Symbol.Type == expression.Function.Type);
-					if (customType != null)
-					{
-						return EvaluateGroupConstructorExpression(expression.Arguments, customType);
-					}
-				}
-				return EvaluateConstructorCall(expression.Function, args);
 			}
+			if (source != null)
+			{
+				var customType = source.CustomTypes.FirstOrDefault(ct => ct.Symbol.Type == function.Type);
+				if (customType != null)
+				{
+					return EvaluateGroupConstructorExpression(args, customType);
+				}
+			}
+			var constructor = ConstructorSymbolConverter.Instance.LookConstructorInfoUp(function);
+			return ConstructorInvoke(constructor, args);
 
-			switch (expression.Function.Name)
+		}
+
+		protected override object EvaluateNativeFunction(string name, object[] args)
+		{
+			switch (name)
 			{
 				case "useStyle":
 					Flags.StyleAllowed = true;
-					return null;
+					break;
 				case "useGroup":
 					Flags.GroupsAllowed = true;
-					return null;
+					break;
 				case "useData":
 					Flags.DatasAllowed = true;
-					return null;
+					break;
 				case "useAnimation":
 					Flags.AnimationsAllowed = true;
-					return null;
+					break; ;
 				case "applyStyle":
 					var style = (CustomStyle)args[0];
 					if (_groupAppliedStyles.Count == 0)
 						_currentSlide.applyStyle(style);
 					else
 						_groupAppliedStyles.Peek().Add(style);
-					return null;
+					break;
 				case "setData":
 					_currentSlide.setData((string)args[0], (string)args[1]);
-					return null;
-				case "lib": return null;
+					break;
+				case "lib": break;
+				default:
+					throw new Exception();
 			}
-			MethodInfo method = null;
-			if (expression.Source != null)
-			{
-				method = expression.Source.LookMethodInfoUp(expression.Function);
-				_libraryUsed[expression.Source.Name] = true;
-			}
-			else
-			{
-				method = GlobalFunctionsConverter.Instance.LookMethodInfoUp(expression.Function);
-			}
-			if (expression.Function.Name == "image")
-			{
-				var fileName = args[0].ToString();
-				if (!_referencedFiles.Contains(fileName))
-					_referencedFiles.Add(fileName);
-			}
-			return MethodInvoke(method, null, args);
+			return null;
+
 		}
 
-		private object MethodInvoke(MethodInfo method, object obj, object[] args)
+		protected override void AddReferencedLibrary(LibrarySymbol source) => _libraryUsed[source.Name] = true;
+		protected override void AddReferencedFile(string fileName) => _referencedFiles.Add(fileName);
+
+		public override object LookVariableUp(VariableSymbol variable)
 		{
-
-			object convertArray(Type type, object value)
+			var value = _constants[variable];
+			if (value == null)
+				value = _variables[variable];
+			if (value == null && _currentReferenced != null)
 			{
-				var localValue = value;
-				if (type.IsArray)
-				{
-					var array = (object[])localValue;
-					for (int i = 0; i < array.Length; i++)
-					{
-						array[i] = convertArray(type.GetElementType(), array[i]);
-					}
-					localValue = array;
-				}
-				if (type == typeof(float))
-				{
-					var l = new List<float>();
-					foreach (var v in (object[])localValue)
-					{
-						l.Add(Convert.ToSingle(v));
-					}
-					return l.ToArray();
-				}
-				object converted = null;
-				var m = typeof(Enumerable).GetMethod("Cast").MakeGenericMethod(type);
-				converted = m.Invoke(null, new object[] { localValue });
-				m = typeof(Enumerable).GetMethod("ToArray").MakeGenericMethod(type);
-				return m.Invoke(null, new object[] { converted });
-
+				value = _currentReferenced.GlobalVariables[variable];
 			}
-			object[] convertedArgs = new object[args.Length];
-			for (int i = 0; i < args.Length; i++)
+			if (value == null)
 			{
-				convertedArgs[i] = args[i];
-
-				//C-Sharp cannot convert a object[] to a string[] or whatever. So
-				//we use the helper method convertArray, which takes the target type
-				//and a array to convert it. Even though this function makes use of 
-				//Enumerable.OfType(), so maybe that will cause problems. Theoretically
-				//convertArray should also work for not-arrays. - p
-				if (args[i].GetType().IsArray)
-				{
-					var type = method.GetParameters()[i].ParameterType.GetElementType();
-					convertedArgs[i] = convertArray(type, convertedArgs[i]);
-				}
+				EvaluateStatement(_declarations[variable]);
+				value = _variables[variable];
+				if (value != null)
+					_declarations.Remove(variable);
 			}
-
-			return method.Invoke(obj, convertedArgs);
+			if (value == null)
+				throw new Exception();
+			return value;
 		}
 
-		private object ConstructorInvoke(ConstructorInfo constructor, object[] args)
-		{
-
-			object convertArray(Type type, object value)
-			{
-				var localValue = value;
-				if (type.IsArray)
-				{
-					var array = (object[])localValue;
-					for (int i = 0; i < array.Length; i++)
-					{
-						array[i] = convertArray(type.GetElementType(), array[i]);
-					}
-					localValue = array;
-				}
-				var m = typeof(Enumerable).GetMethod("OfType").MakeGenericMethod(type);
-				var converted = m.Invoke(null, new object[] { localValue });
-				m = typeof(Enumerable).GetMethod("ToArray").MakeGenericMethod(type);
-				return m.Invoke(null, new object[] { converted });
-
-			}
-			object[] convertedArgs = new object[args.Length];
-			for (int i = 0; i < args.Length; i++)
-			{
-				convertedArgs[i] = args[i];
-
-				//C-Sharp cannot convert a object[] to a string[] or whatever. So
-				//we use the helper method convertArray, which takes the target type
-				//and a array to convert it. Even though this function makes use of 
-				//Enumerable.OfType(), so maybe that will cause problems. Theoretically
-				//convertArray should also work for not-arrays. - p
-				if (args[i].GetType().IsArray)
-				{
-					var type = constructor.GetParameters()[i].ParameterType.GetElementType();
-					convertedArgs[i] = convertArray(type, convertedArgs[i]);
-				}
-			}
-
-			return constructor.Invoke(convertedArgs);
-		}
-
-		private object EvaluateConstructorCall(FunctionSymbol function, object[] args)
-		{
-			var constructor = ConstructorSymbolConverter.Instance.LookConstructorInfoUp(function);
-			return ConstructorInvoke(constructor, args);
-		}
-
-
-
-		private object EvaluateLiteralExpression(BoundLiteralExpression n)
-		{
-			return n.Value;
-		}
-
-		private object EvaluateVariableExpression(BoundVariableExpression v)
+		protected override object EvaluateVariableExpression(BoundVariableExpression v)
 		{
 			if (v.Type == _builtInTypes.LookSymbolUp(typeof(StdStyle)))
 			{
@@ -1606,120 +1063,71 @@ namespace Minsk.CodeAnalysis
 					return style;
 				}
 			}
-			var value = _variables[v.Variable];
-			if (value == null && _currentReferenced != null)
-			{
-				value = _currentReferenced.GlobalVariables[v.Variable];
-			}
-			if (value == null)
-			{
-				Evaluate(_declarations[v.Variable]);
-				value = _variables[v.Variable];
-				if (value != null)
-					_declarations.Remove(v.Variable);
-			}
-			if (value == null)
-				throw new Exception();
-			return value;
+			return LookVariableUp(v.Variable);
 		}
 
-		private object EvaluateArrayAccessExpression(BoundArrayAccessExpression arrayIndex)
+		protected override void AssignVariable(VariableSymbol variable, object value)
 		{
-			var index = (int)EvaluateExpression(arrayIndex.Index);
-			var value = (object[])EvaluateExpression(arrayIndex.Child);
-			return value[index];
+			TryAddChildren(variable, value);
+			_variables[variable] = value;
 		}
-		struct FormulaDependency
+
+		protected override void AssignArray(object[] array, int index, object value)
 		{
-			public enum Type
-			{
-				Slider,
-				Time
-			}
-			public Formula Formula { get; }
-			public Type DependentType { get; }
-
-			public BoundExpression Dependent { get; }
-
-			public FormulaDependency(Formula formula, BoundExpression dependent, Type dependentType)
-			{
-				Formula = formula;
-				DependentType = dependentType;
-				Dependent = dependent;
-			}
+			array[index] = value;
 		}
-		private object EvaluateAssignmentExpression(BoundAssignmentExpression node)
-		{
-			var value = EvaluateExpression(node.Expression);
 
-			FormulaDependency? formulaDependency = null;
-			if (FormulaCreator.NeedsDependency(node.Expression, out BoundExpression dependent))
+
+		protected override void AssignField(object parent, VariableSymbol field, object value)
+		{
+			var parentType = parent.GetType();
+
+			if (parentType == typeof(DataObject))
 			{
-				var formula = this.CreateFunction(node.Expression, dependent);
-				var type = FormulaDependency.Type.Time;
-				if (dependent.Kind == BoundNodeKind.FieldAccessExpression)
-					type = FormulaDependency.Type.Slider;
-				formulaDependency = new FormulaDependency(formula, dependent, type);
-			}
-			switch (node.LValue.Kind)
-			{
-				case BoundNodeKind.VariableExpression:
-					AssignVariable((BoundVariableExpression)node.LValue, value);
-					break;
-				case BoundNodeKind.ArrayAccessExpression:
-					AssignArrayAccess((BoundArrayAccessExpression)node.LValue, value, formulaDependency);
-					break;
-				case BoundNodeKind.FieldAccessExpression:
-					AssignFieldAccess((BoundFieldAccessExpression)node.LValue, value, formulaDependency);
-					break;
-				default:
+				var data = (DataObject)parent;
+				if (!data.TrySet(field.Name, value))
 					throw new Exception();
 			}
-			return value;
-		}
+			else if (parentType == typeof(MathFormula))
+			{
+				var math = (MathFormula)parent;
+				if (!math.TrySet(field.Name, Convert.ToSingle(value)))
+					throw new Exception();
 
-		private void AssignVariable(BoundVariableExpression lValue, object value, Stack<int> indices = null)
-		{
-			TryAddChildren(value, lValue);
-			if (indices == null)
-				_variables[lValue.Variable] = value;
+			}
 			else
 			{
-				var variable = (object[])_variables[lValue.Variable];
-				while (indices.Count > 1)
+				var result = SetField(parent, field.Name, value);
+				if (!result)
 				{
-					variable = (object[])variable[indices.Pop()];
+					result = SetField(parent, field.Name.ToVariableUpper(), value);
+					if (!result)
+						throw new Exception($"Could not find Field '{field.Name}'");
 				}
-				variable[indices.Pop()] = value;
 			}
 		}
 
-		private void AssignArrayAccess(BoundArrayAccessExpression lValue, object value, FormulaDependency? formulaDependency)
+
+		private static bool SetField(object parent, string fieldName, object value)
 		{
-			var expression = lValue.Child;
-			var indices = new Stack<int>();
-			indices.Push((int)EvaluateExpression(lValue.Index));
-			while (expression.Kind == BoundNodeKind.ArrayAccessExpression)
+			var parentType = parent.GetType();
+			var field = parentType.GetField(fieldName);
+			var property = parentType.GetProperty(fieldName);
+			if (field != null)
 			{
-				var arrayAccessExpression = (BoundArrayAccessExpression)expression;
-				indices.Push((int)EvaluateExpression(arrayAccessExpression.Index));
-				expression = arrayAccessExpression.Child;
+				field.SetValue(parent, value);
 			}
-			switch (expression.Kind)
+			else if (property != null)
 			{
-				case BoundNodeKind.VariableExpression:
-					Debug.Assert(!formulaDependency.HasValue);
-					AssignVariable((BoundVariableExpression)expression, value, indices);
-					break;
-				case BoundNodeKind.FieldAccessExpression:
-					AssignFieldAccess((BoundFieldAccessExpression)expression, value, formulaDependency, indices);
-					break;
-				default:
-					throw new Exception();
+				property.SetValue(parent, SlidesConverter.Convert(value, property.PropertyType));
 			}
+			else return false;
+			return true;
 		}
 
-		private void AssignFieldAccess(BoundFieldAccessExpression lValue, object value, FormulaDependency? formulaDependency, Stack<int> indices = null)
+
+		/*
+		private void AssignFieldAccess(BoundFieldAccessExpression lValue, object value, JSInsertion? formulaDependency, Stack<int> indices = null)
 		{
 			var parent = EvaluateExpression(lValue.Parent);
 			var parentType = parent.GetType();
@@ -1740,54 +1148,26 @@ namespace Minsk.CodeAnalysis
 			}
 			else
 			{
-				var field = parentType.GetField(fieldName);
-				var property = parentType.GetProperty(fieldName);
-				if (field != null)
+				var result = SetField(parent, fieldName, indices, value);
+				if (!result)
 				{
-					if (indices == null)
-						field.SetValue(parent, value);
-					else
-					{
-						var obj = (object[])field.GetValue(parent);
-						while (indices.Count > 1)
-						{
-							obj = (object[])obj[indices.Pop()];
-						}
-						obj[indices.Pop()] = value;
-					}
+					result = SetField(parent, fieldName.ToVariableUpper(), indices, value);
+					if (!result)
+						throw new Exception($"Could not find Field '{fieldName}'");
 				}
-				else if (property != null)
-				{
-					if (property.PropertyType == typeof(Brush))
-						property.SetValue(parent, Brush.FromObject(value));
-					else if (indices == null)
-						property.SetValue(parent, value);
-					else
-					{
-						var obj = (object[])property.GetValue(parent);
-						while (indices.Count > 1)
-						{
-							obj = (object[])obj[indices.Pop()];
-						}
-						obj[indices.Pop()] = value;
-					}
-				}
-				else throw new Exception($"Could not match Field or Property '{fieldName}'");
 			}
 			if (formulaDependency != null)
 			{
 				var fd = formulaDependency.Value;
-				var formula = fd.Formula;
-				var type = fd.DependentType;
-				FieldDependency d = new FieldDependency(parent, fieldName, formula);
-				switch (type)
+				FieldDependency d = new FieldDependency(parent, fieldName, new Formula(fd.JSCode));
+				switch (fd.Kind)
 				{
-					case FormulaDependency.Type.Slider:
+					case JSInsertionKind.Slider:
 						var fieldAccess = (BoundFieldAccessExpression)fd.Dependent;
 						var slider = (Slider)EvaluateExpression(fieldAccess.Parent);
 						slider.add_Dependency(d);
 						break;
-					case FormulaDependency.Type.Time:
+					case JSInsertionKind.Time:
 						_dependencies.Add(d);
 						break;
 					default:
@@ -1795,6 +1175,45 @@ namespace Minsk.CodeAnalysis
 
 				}
 			}
+		}
+		*/
+
+		private static bool _SetField(object parent, string fieldName, Stack<int> indices, object value)
+		{
+			var parentType = parent.GetType();
+			var field = parentType.GetField(fieldName);
+			var property = parentType.GetProperty(fieldName);
+			if (field != null)
+			{
+				if (indices == null)
+					field.SetValue(parent, value);
+				else
+				{
+					var obj = (object[])field.GetValue(parent);
+					while (indices.Count > 1)
+					{
+						obj = (object[])obj[indices.Pop()];
+					}
+					obj[indices.Pop()] = value;
+				}
+			}
+			else if (property != null)
+			{
+				if (indices == null)
+					property.SetValue(parent, SlidesConverter.Convert(value, property.PropertyType));
+				else
+				{
+					var obj = (object[])property.GetValue(parent);
+					while (indices.Count > 1)
+					{
+						obj = (object[])obj[indices.Pop()];
+					}
+					var index = indices.Pop();
+					obj[index] = SlidesConverter.Convert(value, obj[index].GetType());
+				}
+			}
+			else return false;
+			return true;
 		}
 
 		//private object EvaluateFieldAssignmentExpression(BoundFieldAssignmentExpression node)
@@ -1865,168 +1284,5 @@ namespace Minsk.CodeAnalysis
 		//	throw new Exception();
 		//}
 
-		private object EvaluateUnaryExpression(BoundUnaryExpression u)
-		{
-			var operand = EvaluateExpression(u.Operand);
-
-			switch (u.Op.Kind)
-			{
-				case BoundUnaryOperatorKind.Identity:
-					return (int)operand;
-				case BoundUnaryOperatorKind.Negation:
-					if (operand.GetType() == typeof(int))
-						return -(int)operand;
-					if (operand.GetType() == typeof(float))
-						return -(float)operand;
-					var oldUnit = (Unit)operand;
-					return new Unit(-oldUnit.Value, oldUnit.Kind);
-				case BoundUnaryOperatorKind.LogicalNegation:
-					return !(bool)operand;
-				case BoundUnaryOperatorKind.OnesComplement:
-					return ~(int)operand;
-				default:
-					throw new Exception($"Unexpected unary operator {u.Op}");
-			}
-		}
-
-		private object EvaluateBinaryExpression(BoundBinaryExpression b)
-		{
-			var left = EvaluateExpression(b.Left);
-			var right = EvaluateExpression(b.Right);
-
-			switch (b.Op.Kind)
-			{
-				case BoundBinaryOperatorKind.Addition:
-					if (left is Unit && right is Unit)
-						return (Unit)left + (Unit)right;
-					if (left.GetType() == typeof(float) && right.GetType() == typeof(float))
-						return (float)left + (float)right;
-					return (int)left + (int)right;
-				case BoundBinaryOperatorKind.Concatination:
-					return left.ToString() + right.ToString();
-				case BoundBinaryOperatorKind.Subtraction:
-					if (left is Unit && right is Unit)
-						return (Unit)left - (Unit)right;
-					if (left.GetType() == typeof(float) && right.GetType() == typeof(float))
-						return (float)left - (float)right;
-					return (int)left - (int)right;
-				case BoundBinaryOperatorKind.Multiplication:
-					if (left.GetType() == typeof(Unit) && right.GetType() == typeof(float))
-						return new Unit(((Unit)left).Value * (float)right, ((Unit)left).Kind);
-					if (right.GetType() == typeof(Unit) && left.GetType() == typeof(float))
-						return new Unit(((Unit)right).Value * (float)left, ((Unit)right).Kind);
-					if (left.GetType() == typeof(float) && right.GetType() == typeof(float))
-						return (float)left * (float)right;
-					return (int)left * (int)right;
-				case BoundBinaryOperatorKind.Division:
-					if (left.GetType() == typeof(Unit) && right.GetType() == typeof(float))
-						return new Unit(((Unit)left).Value / (float)right, ((Unit)left).Kind);
-					if (left.GetType() == typeof(float) && right.GetType() == typeof(float))
-						return (float)left / (float)right;
-					return (int)left / (int)right;
-				case BoundBinaryOperatorKind.Exponentiation:
-					if (left.GetType() == typeof(int) && right.GetType() == typeof(int))
-						return (int)Math.Pow((int)left, (int)right);
-					//if (left.GetType() == typeof(float) && right.GetType() == typeof(float))
-					return (float)Math.Pow((float)left, (float)right);
-				case BoundBinaryOperatorKind.BitwiseAnd:
-					if (b.Type == PrimitiveTypeSymbol.Integer)
-						return (int)left & (int)right;
-					else
-						return (bool)left & (bool)right;
-				case BoundBinaryOperatorKind.BitwiseOr:
-					if (b.Type == PrimitiveTypeSymbol.Integer)
-						return (int)left | (int)right;
-					else
-						return (bool)left | (bool)right;
-				case BoundBinaryOperatorKind.BitwiseXor:
-					if (b.Type == PrimitiveTypeSymbol.Integer)
-						return (int)left ^ (int)right;
-					else
-						return (bool)left ^ (bool)right;
-				case BoundBinaryOperatorKind.LogicalAnd:
-					return (bool)left && (bool)right;
-				case BoundBinaryOperatorKind.LogicalOr:
-					return (bool)left || (bool)right;
-				case BoundBinaryOperatorKind.Equals:
-					return Equals(left, right);
-				case BoundBinaryOperatorKind.NotEquals:
-					return !Equals(left, right);
-				case BoundBinaryOperatorKind.Less:
-					return (int)left < (int)right;
-				case BoundBinaryOperatorKind.LessOrEquals:
-					return (int)left <= (int)right;
-				case BoundBinaryOperatorKind.Greater:
-					return (int)left > (int)right;
-				case BoundBinaryOperatorKind.GreaterOrEquals:
-					return (int)left >= (int)right;
-				case BoundBinaryOperatorKind.EnumAddition:
-					var horizontal = Horizontal.Left;
-					if (left is Horizontal hl)
-						horizontal = hl;
-					else if (right is Horizontal hr)
-						horizontal = hr;
-					var vertical = Vertical.Top;
-					if (left is Vertical vl)
-						vertical = vl;
-					else if (right is Vertical vr)
-						vertical = vr;
-					return AddEnum(horizontal, vertical);
-				case BoundBinaryOperatorKind.FilterAddition:
-					return new FilterAddition((Filter)left, (Filter)right);
-				case BoundBinaryOperatorKind.Range:
-					int il = (int)left;
-					int ir = (int)right;
-					if (il <= ir)
-						return new Range(il, ir, 1);
-					return new Range(il, ir, -1);
-				default:
-					throw new Exception($"Unexpected binary operator {b.Op}");
-			}
-		}
-
-		private Orientation AddEnum(Horizontal h, Vertical v)
-		{
-			switch (h)
-			{
-				case Horizontal.Left:
-					switch (v)
-					{
-						case Vertical.Top: return Orientation.LeftTop;
-						case Vertical.Stretch: return Orientation.LeftStretch;
-						case Vertical.Center: return Orientation.LeftCenter;
-						case Vertical.Bottom: return Orientation.LeftBottom;
-					}
-					break;
-				case Horizontal.Stretch:
-					switch (v)
-					{
-						case Vertical.Top: return Orientation.StretchTop;
-						case Vertical.Stretch: return Orientation.Stretch;
-						case Vertical.Center: return Orientation.StretchCenter;
-						case Vertical.Bottom: return Orientation.StretchBottom;
-					}
-					break;
-				case Horizontal.Center:
-					switch (v)
-					{
-						case Vertical.Top: return Orientation.CenterTop;
-						case Vertical.Stretch: return Orientation.CenterStretch;
-						case Vertical.Center: return Orientation.Center;
-						case Vertical.Bottom: return Orientation.CenterBottom;
-					}
-					break;
-				case Horizontal.Right:
-					switch (v)
-					{
-						case Vertical.Top: return Orientation.RightTop;
-						case Vertical.Stretch: return Orientation.RightStretch;
-						case Vertical.Center: return Orientation.RightCenter;
-						case Vertical.Bottom: return Orientation.RightBottom;
-					}
-					break;
-			}
-			throw new Exception();
-		}
 	}
 }

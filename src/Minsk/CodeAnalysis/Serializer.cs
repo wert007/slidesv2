@@ -91,7 +91,7 @@ namespace Minsk.CodeAnalysis
 				case BoundNodeKind.BinaryExpression:
 					result = SerializeBinaryExpression((BoundBinaryExpression)expression);
 					break;
-				case BoundNodeKind.Conversion:
+				case BoundNodeKind.ConversionExpression:
 					result = SerializeConversion((BoundConversion)expression);
 					break;
 				case BoundNodeKind.EnumExpression:
@@ -171,9 +171,9 @@ namespace Minsk.CodeAnalysis
 		private static string SerializeIfStatement(BoundIfStatement statement)
 		{
 			var elseClause = string.Empty;
-			if (statement.BoundElse != null)
-				elseClause = ">" + Serialize(statement.BoundElse);
-			return $"{Serialize(statement.BoundCondition)}>{Serialize(statement.BoundBody)}{elseClause}";
+			if (statement.Else != null)
+				elseClause = ">" + Serialize(statement.Else);
+			return $"{Serialize(statement.Condition)}>{Serialize(statement.Body)}{elseClause}";
 		}
 
 		//Maybe use something special here. just maybe
@@ -219,7 +219,7 @@ namespace Minsk.CodeAnalysis
 		private static string SerializeTransitionStatement(BoundTransitionStatement statement)
 			=> $"{statement.Variable.Name}<{Serialize(statement.BoundParameters)}:{Serialize(statement.BoundBody)}";
 		private static string SerializeVariableDeclaration(BoundVariableDeclaration declaration)
-			=> $"{string.Join(",", declaration.Variables.Select(s => SerializeMin(s)))}={Serialize(declaration.Initializer)}";
+			=> $"{SerializeMin(declaration.Variable)}={Serialize(declaration.Initializer)}";
 
 
 
@@ -238,7 +238,7 @@ namespace Minsk.CodeAnalysis
 			=> $"{Serialize(expression.Parent)}.{Serialize(expression.Field)}";
 
 		private static string SerializeFunctionAccessExpression(BoundFunctionAccessExpression expression)
-			=> $"{Serialize(expression.Parent)}.{Serialize(expression.Function)}";
+			=> $"{Serialize(expression.Parent)}.{Serialize(expression.FunctionCall)}";
 		private static string SerializeFunctionExpression(BoundFunctionExpression expression)
 		{
 			var source = string.Empty;

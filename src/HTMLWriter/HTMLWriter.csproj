@@ -63,17 +63,10 @@
       <Project>{297FD628-5222-45A4-BE79-B23C740442AD}</Project>
       <Name>Slides</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="datatypes.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="core.css">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="core.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <ProjectReference Include="..\SVGLib\SVGLib.csproj">
+      <Project>{B2521BAB-4F8E-4655-A2DD-61BA3B295440}</Project>
+      <Name>SVGLib</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

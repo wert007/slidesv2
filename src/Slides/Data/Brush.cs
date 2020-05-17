@@ -26,18 +26,5 @@ namespace Slides
 			Image = image;
 			Mode = BrushMode.ImageSource;
 		}
-
-		public static Brush FromObject(object value)
-		{
-			switch (value)
-			{
-				case Color color:
-					return new Brush(color);
-				case ImageSource image:
-					return new Brush(image);
-				default:
-					throw new ArgumentException();
-			}
-		}
 	}
 }

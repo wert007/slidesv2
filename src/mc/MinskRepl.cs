@@ -77,7 +77,7 @@ namespace Minsk
             var syntaxTree = SyntaxTree.Parse(text, "REPL");
 
             var compilation = _previous == null
-                                ? new Compilation(syntaxTree)
+                                ? new Compilation(syntaxTree, false)
                                 : _previous.ContinueWith(syntaxTree);
 
             if (_showTree)

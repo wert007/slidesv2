@@ -1,6 +1,7 @@
 using System;
 using Minsk.CodeAnalysis.Symbols;
 using Minsk.CodeAnalysis.Syntax;
+using Slides;
 
 namespace Minsk.CodeAnalysis.Binding
 {
@@ -24,6 +25,8 @@ namespace Minsk.CodeAnalysis.Binding
 		public TypeSymbol OperandType { get; }
 		public TypeSymbol Type { get; }
 
+		private static TypeSymbol unitTypeSymbol = BuiltInTypes.Instance.LookSymbolUp(typeof(Unit));
+
 		private static BoundUnaryOperator[] _operators =
 		{
 				new BoundUnaryOperator(SyntaxKind.BangToken, BoundUnaryOperatorKind.LogicalNegation, PrimitiveTypeSymbol.Bool),
@@ -34,9 +37,8 @@ namespace Minsk.CodeAnalysis.Binding
 				new BoundUnaryOperator(SyntaxKind.PlusToken, BoundUnaryOperatorKind.Identity, PrimitiveTypeSymbol.Float),
 				new BoundUnaryOperator(SyntaxKind.MinusToken, BoundUnaryOperatorKind.Negation, PrimitiveTypeSymbol.Float),
 
-				new BoundUnaryOperator(SyntaxKind.PlusToken, BoundUnaryOperatorKind.Identity, TypeSymbol.FromString("Unit")),
-				new BoundUnaryOperator(SyntaxKind.MinusToken, BoundUnaryOperatorKind.Negation, TypeSymbol.FromString("Unit")),
-			//	new BoundUnaryOperator(SyntaxKind.TildeToken, BoundUnaryOperatorKind.OnesComplement, PrimitiveTypeSymbol.Integer),
+				new BoundUnaryOperator(SyntaxKind.PlusToken, BoundUnaryOperatorKind.Identity, unitTypeSymbol),
+				new BoundUnaryOperator(SyntaxKind.MinusToken, BoundUnaryOperatorKind.Negation, unitTypeSymbol),
 		  };
 
 		public static BoundUnaryOperator Bind(SyntaxKind syntaxKind, TypeSymbol operandType)

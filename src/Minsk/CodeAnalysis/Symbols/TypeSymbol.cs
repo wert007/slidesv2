@@ -11,44 +11,19 @@ namespace Minsk.CodeAnalysis.Symbols
 		Array,
 		Primitive,
 		Advanced,
-		Nullable,
+		Noneable,
 		Tuple,
 	}
 
 	[Serializable]
 	public abstract class TypeSymbol
 	{
-		private static Dictionary<string, TypeSymbol> registeredTypes = new Dictionary<string, TypeSymbol>();
 		private static uint id = 0;
 
 		public TypeSymbol(string name)
 		{
 			Name = name;
 			Id = id++;
-			if (Type != TypeType.Array && Type != TypeType.Nullable && Type != TypeType.Tuple)
-			{
-				if (registeredTypes.ContainsKey(name))
-				{
-					Logger.LogAlreadyRegisteredTypeSymbol(name, Type.ToString(), registeredTypes[name].Type.ToString());
-					return;
-				}
-				registeredTypes.Add(name, this);
-
-			}
-		}
-
-		public static void RegisterType(TypeSymbol type)
-		{
-			if (type.Type != TypeType.Array && type.Type != TypeType.Nullable && type.Type != TypeType.Tuple)
-			{
-				if (registeredTypes.ContainsKey(type.Name))
-				{
-					Logger.LogAlreadyRegisteredTypeSymbol(type.Name, type.Type.ToString(), registeredTypes[type.Name].Type.ToString());
-					return;
-				}
-				registeredTypes.Add(type.Name, type);
-
-			}
 		}
 
 		public static readonly TypeSymbol Undefined = new PrimitiveTypeSymbol(PrimitiveType.Undefined); 
@@ -80,11 +55,6 @@ namespace Minsk.CodeAnalysis.Symbols
 			return !(symbol1 == symbol2);
 		}
 
-		public virtual bool TryLookUpStaticField(string name, out VariableSymbol field)
-		{
-			field = null;
-			return false;
-		}
 
 		public virtual bool TryLookUpField(string name, out VariableSymbol field)
 		{
@@ -118,9 +88,9 @@ namespace Minsk.CodeAnalysis.Symbols
 				return true;
 			if (this == PrimitiveTypeSymbol.Object || to == PrimitiveTypeSymbol.Object)
 				return true;
-			if (Type != TypeType.Nullable && to.Type == TypeType.Nullable)
+			if (Type != TypeType.Noneable && to.Type == TypeType.Noneable)
 			{
-				var baseType = ((NullableTypeSymbol)to).BaseType;
+				var baseType = ((NoneableTypeSymbol)to).BaseType;
 				return this == baseType || InnerCanBeConvertedTo(baseType);
 			}
 			return this == to || InnerCanBeConvertedTo(to);
@@ -129,13 +99,6 @@ namespace Minsk.CodeAnalysis.Symbols
 		public virtual bool InnerCanBeConvertedTo(TypeSymbol to)
 		{
 			return false;
-		}
-
-		public static TypeSymbol FromString(string name)
-		{
-			if (registeredTypes.ContainsKey(name))
-				return registeredTypes[name];
-			return null;
 		}
 
 		public override int GetHashCode()

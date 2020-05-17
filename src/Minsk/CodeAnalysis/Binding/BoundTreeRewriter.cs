@@ -87,6 +87,8 @@ namespace Minsk.CodeAnalysis.Binding
 					return RewriteGroupStatement((BoundGroupStatement)node);
 				case BoundNodeKind.IfStatement:
 					return RewriteIfStatement((BoundIfStatement)node);
+				case BoundNodeKind.UseStatement:
+					return RewriteUseStatement((BoundUseStatement)node);
 				case BoundNodeKind.LibraryStatement:
 					return RewriteLibraryStatement((BoundLibraryStatement)node);
 				case BoundNodeKind.ParameterBlockStatement:
@@ -97,8 +99,8 @@ namespace Minsk.CodeAnalysis.Binding
 					return RewriteSlideStatement((BoundSlideStatement)node);
 				case BoundNodeKind.StyleStatement:
 					return RewriteStyleStatement((BoundStyleStatement)node);
-				case BoundNodeKind.SVGGroupStatement:
-					return RewriteSVGGroupStatement((BoundSVGGroupStatement)node);
+				case BoundNodeKind.SVGStatement:
+					return RewriteSVGGroupStatement((BoundSVGStatement)node);
 				case BoundNodeKind.TemplateStatement:
 					return RewriteTemplateStatement((BoundTemplateStatement)node);
 				case BoundNodeKind.TransitionStatement:
@@ -181,14 +183,43 @@ namespace Minsk.CodeAnalysis.Binding
 
 		protected virtual BoundStatement RewriteIfStatement(BoundIfStatement node)
 		{
-			var newCondition = RewriteExpression(node.BoundCondition);
-			var newBody = RewriteStatement(node.BoundBody);
+			var newCondition = RewriteExpression(node.Condition);
+			var newBody = RewriteStatement(node.Body);
 			BoundStatement newElse = null;
-			if (node.BoundElse != null)
-				newElse = RewriteStatement(node.BoundElse);
-			if (newCondition == node.BoundCondition && newBody == node.BoundBody && newElse == node.BoundElse)
+			if (node.Else != null)
+				newElse = RewriteStatement(node.Else);
+			if (newCondition == node.Condition && newBody == node.Body && newElse == node.Else)
 				return node;
 			return new BoundIfStatement(newCondition, newBody, newElse);
+		}
+
+		protected virtual BoundStatement RewriteUseStatement(BoundUseStatement node)
+		{
+			var newBody = RewriteStatement(node.Body);
+			List<BoundExpression> newDependencies = null;
+
+			for (var i = 0; i < node.Dependencies.Length; i++)
+			{
+				var oldExpression = node.Dependencies[i];
+				var newExpression = RewriteExpression(oldExpression);
+				if (newExpression != oldExpression)
+				{
+					if (newDependencies == null)
+					{
+						newDependencies = new List<BoundExpression>();
+
+						for (var j = 0; j < i; j++)
+							newDependencies.Add(node.Dependencies[j]);
+					}
+				}
+
+				if (newDependencies != null)
+					newDependencies.Add(newExpression);
+			}
+			if (newDependencies == null && node.Body == newBody)
+				return node;
+
+			return new BoundUseStatement(newDependencies.ToArray(), newBody);
 		}
 
 		protected virtual BoundStatement RewriteLibraryStatement(BoundLibraryStatement node)
@@ -246,13 +277,13 @@ namespace Minsk.CodeAnalysis.Binding
 			return new BoundStyleStatement(node.Variable, (BoundParameterStatement)newParameter, (BoundBlockStatement)newBody);
 		}
 
-		protected virtual BoundStatement RewriteSVGGroupStatement(BoundSVGGroupStatement node)
+		protected virtual BoundStatement RewriteSVGGroupStatement(BoundSVGStatement node)
 		{
 			var newBody = RewriteStatement(node.Body);
 			var newParameters = RewriteStatement(node.Parameters);
 			if (newBody == node.Body && newParameters == node.Parameters)
 				return node;
-			return new BoundSVGGroupStatement(node.Type, (BoundParameterBlockStatement)newParameters, (BoundBlockStatement)newBody);
+			return new BoundSVGStatement(node.Type, (BoundParameterBlockStatement)newParameters, (BoundBlockStatement)newBody);
 		}
 
 		protected virtual BoundStatement RewriteTemplateStatement(BoundTemplateStatement node)
@@ -308,7 +339,7 @@ namespace Minsk.CodeAnalysis.Binding
 			if (initializer == node.Initializer)
 				return node;
 
-			return new BoundVariableDeclaration(node.Variables, initializer);
+			return new BoundVariableDeclaration(node.Variable, initializer);
 		}
 
 		protected virtual BoundStatement RewriteExpressionStatement(BoundExpressionStatement node)
@@ -340,7 +371,7 @@ namespace Minsk.CodeAnalysis.Binding
 					return RewriteArrayAccessExpression((BoundArrayAccessExpression)node);
 				case BoundNodeKind.ArrayExpression:
 					return RewriteArrayExpression((BoundArrayExpression)node);
-				case BoundNodeKind.Conversion:
+				case BoundNodeKind.ConversionExpression:
 					return RewriteConversion((BoundConversion)node);
 				case BoundNodeKind.EmptyArrayConstructorExpression:
 					return RewriteEmptyArrayConstructorExpression((BoundEmptyArrayConstructorExpression)node);
@@ -355,8 +386,6 @@ namespace Minsk.CodeAnalysis.Binding
 					return RewriteFunctionAccessExpression((BoundFunctionAccessExpression)node);
 				case BoundNodeKind.FunctionExpression:
 					return RewriteFunctionExpression((BoundFunctionExpression)node);
-				case BoundNodeKind.LambdaExpression:
-					throw new NotImplementedException();
 				case BoundNodeKind.MathExpression:
 					return RewriteMathExpression((BoundMathExpression)node);
 				case BoundNodeKind.StringExpression:
@@ -442,8 +471,8 @@ namespace Minsk.CodeAnalysis.Binding
 		protected virtual BoundExpression RewriteFunctionAccessExpression(BoundFunctionAccessExpression node)
 		{
 			var newParent = RewriteExpression(node.Parent);
-			var newFunction = RewriteFunctionExpression(node.Function);
-			if (newParent == node.Parent && newFunction == node.Function)
+			var newFunction = RewriteFunctionExpression(node.FunctionCall);
+			if (newParent == node.Parent && newFunction == node.FunctionCall)
 				return node;
 			return new BoundFunctionAccessExpression(newParent, (BoundFunctionExpression)newFunction);
 		}

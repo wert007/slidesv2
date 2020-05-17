@@ -5,11 +5,10 @@ namespace Minsk.CodeAnalysis.Binding
 {
 	internal class BoundMathExpression : BoundExpression
 	{
-		public BoundMathExpression(string expression, AdvancedTypeSymbol type, int unknowns)
+		public BoundMathExpression(string expression, AdvancedTypeSymbol type)
 		{
 			Expression = expression;
 			Type = type;
-			Unknowns = unknowns;
 			Fields = new VariableSymbol[type.Fields.Count];
 			for (int i = 0; i < Fields.Length; i++)
 			{
@@ -19,7 +18,6 @@ namespace Minsk.CodeAnalysis.Binding
 
 		public string Expression { get; }
 		public override TypeSymbol Type { get; }
-		public int Unknowns { get; }
 		public VariableSymbol[] Fields { get; }
 
 		public override BoundNodeKind Kind => BoundNodeKind.MathExpression;

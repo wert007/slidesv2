@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SVGColor = SVGLib.Datatypes.Color;
+using System;
 using System.Collections.Generic;
 
 namespace Slides
@@ -23,6 +24,7 @@ namespace Slides
 			G = (byte)(255 * g);
 			B = (byte)(255 * b);
 			A = (byte)(255 * a);
+			//var re = new Rect();
 		}
 
 		public Color(byte r, byte g, byte b, byte a)
@@ -62,6 +64,30 @@ namespace Slides
 		public string ToHex()
 		{
 			return "#" + A.ToString("X2") + R.ToString("X2") + G.ToString("X2") + B.ToString("X2");
+		}
+
+		
+		public static implicit operator Color(SVGColor c)
+		{
+			return new Color(c.R, c.G, c.B, c.A);
+		}
+
+		public static implicit operator SVGColor(Color c)
+		{
+			if (c.IsRGBA)
+				return SVGColor.FromRGBA(c.R, c.G, c.B, c.A);
+			throw new NotImplementedException();
+			return SVGColor.Transparent;
+		}
+
+		public static bool operator ==(Color left, Color right)
+		{
+			return EqualityComparer<Color>.Default.Equals(left, right);
+		}
+
+		public static bool operator !=(Color left, Color right)
+		{
+			return !(left == right);
 		}
 
 		public static IEnumerable<KeyValuePair<string, Color>> GetStaticColors()
@@ -132,6 +158,20 @@ namespace Slides
 
 
 
+		}
+
+		public override int GetHashCode()
+		{
+			var hashCode = 1013418333;
+			hashCode = hashCode * -1521134295 + R.GetHashCode();
+			hashCode = hashCode * -1521134295 + G.GetHashCode();
+			hashCode = hashCode * -1521134295 + B.GetHashCode();
+			hashCode = hashCode * -1521134295 + A.GetHashCode();
+			hashCode = hashCode * -1521134295 + Hue.GetHashCode();
+			hashCode = hashCode * -1521134295 + Saturation.GetHashCode();
+			hashCode = hashCode * -1521134295 + Lightness.GetHashCode();
+			hashCode = hashCode * -1521134295 + IsRGBA.GetHashCode();
+			return hashCode;
 		}
 	}
 }

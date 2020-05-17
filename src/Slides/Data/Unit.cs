@@ -81,7 +81,7 @@ namespace Slides
 				return b;
 			if (b.Value == 0 && b.Kind != UnitKind.Auto)
 				return a;
-			
+
 			return new UnitAddition(a, b);
 		}
 
@@ -95,6 +95,10 @@ namespace Slides
 				return a;
 			return new UnitSubtraction(a, b);
 		}
+		public static Unit operator *(float a, Unit b) => new Unit(b.Value * a, b.Kind);
+		public static Unit operator *(Unit a, float b) => b * a;
+
+		public static Unit operator /(Unit a, float b) => new Unit(a.Value / b, a.Kind);
 
 		public static bool operator ==(Unit left, Unit right)
 		{

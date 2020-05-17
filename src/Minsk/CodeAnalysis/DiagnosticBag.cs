@@ -7,6 +7,7 @@ using Minsk.CodeAnalysis.SlidesTypes;
 using Minsk.CodeAnalysis.Symbols;
 using Minsk.CodeAnalysis.Syntax;
 using Minsk.CodeAnalysis.Text;
+using Slides;
 
 namespace Minsk.CodeAnalysis
 {
@@ -346,6 +347,12 @@ namespace Minsk.CodeAnalysis
 			Report(span, message, DiagnosticLevel.Error);
 		}
 
+		internal void ReportStatementNotStackable(TextSpan span, SyntaxKind kind)
+		{
+			var message = $"'{kind}'-statements can not be used again in itself.";
+			Report(span, message, DiagnosticLevel.Error);
+		}
+
 		public void ReportInvalidStringFormat(int start)
 		{
 			var message = $"The dollar sign must be placed directly in front of quotes.";
@@ -446,6 +453,63 @@ namespace Minsk.CodeAnalysis
 			//		let a = none;
 			//Something else!
 			var message = $"Could not determine type of expression.";
+			Report(span, message, DiagnosticLevel.Error);
+		}
+
+		internal void ReportOfflineNotSupported(TextSpan span, string identifier)
+		{
+			var message = $"'{identifier}' doesn't support offline viewing.";
+			Report(span, message, DiagnosticLevel.Warning);
+		}
+
+		public void ReportIntegerDivisonByZero(TextSpan span)
+		{
+			var message = $"Cannot divide integers by zero.";
+			Report(span, message, DiagnosticLevel.Error);
+		}
+
+		public void ReportIndexOutOfRange(TextSpan span, int index, int arrayLength)
+		{
+			var message = $"Index '{index}' was out ouf range.";
+			if(index >= arrayLength) message += $" It has to be lower than '{arrayLength}'.";
+			if(index < 0) message += $" It has to be higher than '0'.";
+			Report(span, message, DiagnosticLevel.Error);
+		}
+
+		public void ReportDependencyInArrayIndex(TextSpan span, JSInsertionKind kind)
+		{
+			var message = $"Only fixed values are as indecies allowed. No '{kind}' dependencies.";
+			Report(span, message, DiagnosticLevel.Error);
+		}
+
+		public void ReportExpressionNotAllowedInUseStatement(TextSpan span, SyntaxKind kind)
+		{
+			var message = $"Expression '{kind}' are not allowed inside of a use statement.";
+			Report(span, message, DiagnosticLevel.Error);
+		}
+
+		public void ReportJSInsertionNotInUseStatement(TextSpan span, JSInsertionKind kind, int coveredJSInsertions)
+		{
+			var message = $"The current use statement does not cover '{kind}' JavaScript insertions.";
+			if (coveredJSInsertions == 0) message = $"Please wrap this statement with a use statement for '{kind}'.";
+			Report(span, message, DiagnosticLevel.Error);
+		}
+
+		public void ReportInvalidUseDependency(TextSpan span)
+		{
+			var message = "This is not a valid use statement dependency.";
+			Report(span, message, DiagnosticLevel.Error);
+		}
+
+		public void ReportCannotAssignLibraries(TextSpan span)
+		{
+			var message = "Libraries can only be assigned to a variable in the import statement. Otherwise you cannot assign libraries.";
+			Report(span, message, DiagnosticLevel.Error);
+		}
+
+		public void ReportNoDefaultValueForType(TextSpan span, TypeSymbol type)
+		{
+			var message = $"There is no default value for type '{type}'. Maybe try '{type}?' instead with the default value 'none'.";
 			Report(span, message, DiagnosticLevel.Error);
 		}
 	}

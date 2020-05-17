@@ -4,6 +4,7 @@ using Minsk.CodeAnalysis.Symbols;
 using Minsk.CodeAnalysis.Syntax;
 using Slides;
 using Slides.Debug;
+using Slides.Elements;
 using Slides.Filters;
 using System;
 using System.Collections.Generic;
@@ -16,7 +17,7 @@ namespace Minsk.CodeAnalysis
 	{
 		private int _position = 0;
 		private string _text;
-		private TypeSymbolTypeConverter _builtInTypes = TypeSymbolTypeConverter.Instance;
+		private BuiltInTypes _builtInTypes = BuiltInTypes.Instance;
 		private LibrarySymbol[] _referenced;
 
 		public Deserializer(string text, LibrarySymbol[] referenced)
@@ -148,7 +149,7 @@ namespace Minsk.CodeAnalysis
 					return DeserializeAssignmentExpression();
 				case BoundNodeKind.BinaryExpression:
 					return DeserializeBinaryExpression();
-				case BoundNodeKind.Conversion:
+				case BoundNodeKind.ConversionExpression:
 					return DeserializeConversion();
 				case BoundNodeKind.EnumExpression:
 					return DeserializeEnumExpression();
@@ -675,19 +676,12 @@ namespace Minsk.CodeAnalysis
 		{
 			ConsumeStatementHeader();
 
-			var variables = new List<VariableSymbol>();
-			BoundExpression initializer = null;
-			variables.Add(DeserializeVariableSymbol());
-			while (PeekToken() == ",")
-			{
-				ConsumeToken();
-				variables.Add(DeserializeVariableSymbol());
-			}
+			var variable = DeserializeVariableSymbol();
 			ConsumeToken();//=
-			initializer = DeserializeExpression();
+			var initializer = DeserializeExpression();
 
 			ConsumeStatementTail();
-			return new BoundVariableDeclaration(variables.ToArray(), initializer);
+			return new BoundVariableDeclaration(variable, initializer);
 		}
 
 		private VariableSymbol DeserializeVariableSymbol()
@@ -731,24 +725,22 @@ namespace Minsk.CodeAnalysis
 				return new TupleTypeSymbol(childTypes.ToArray());
 
 			}
-			else
-			{
-				var type = TypeSymbol.FromString(identifier);
-				if (type == null)
-					throw new Exception();
-				if (PeekToken() == "?" ||
-					PeekToken() == "[]")
-					return DeserializeSubTypeSymbol(type);
-				return type;
-			}
 
+			//else
+			//{
+			//	if (PeekToken() == "?" ||
+			//		PeekToken() == "[]")
+			//		return DeserializeSubTypeSymbol(null);
+			//}
+
+			return null;
 		}
 
 		private TypeSymbol DeserializeSubTypeSymbol(TypeSymbol type)
 		{
 			var token = ConsumeToken();
 			if (token == "?")
-				return new NullableTypeSymbol(type);
+				return new NoneableTypeSymbol(type);
 			if (token == "[]") //TODO: Store Length!
 			{
 				if (PeekToken() == "?" ||

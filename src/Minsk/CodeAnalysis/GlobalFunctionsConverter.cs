@@ -29,7 +29,7 @@ namespace Minsk.CodeAnalysis
 		private Dictionary<FunctionSymbol, MethodInfo> _toMethod = new Dictionary<FunctionSymbol, MethodInfo>();
 		private Dictionary<MethodInfo, FunctionSymbol> _toSymbol = new Dictionary<MethodInfo, FunctionSymbol>();
 		private Dictionary<string, FunctionSymbol[]> _fromString = new Dictionary<string, FunctionSymbol[]>();
-		private TypeSymbolTypeConverter _typeConverter = TypeSymbolTypeConverter.Instance;
+		private BuiltInTypes _typeConverter = BuiltInTypes.Instance;
 
 		private GlobalFunctionsConverter()
 		{

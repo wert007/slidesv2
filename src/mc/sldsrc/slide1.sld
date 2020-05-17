@@ -6,27 +6,49 @@ import gfont('Quicksand') as quicksand;
 // - Support custom css files included during compiletime.
 //		import css('myStyle.css');
 
+//Cleanup:
+// - Move filters into the SVG project.
+// - JSInsertions:
+//    - Multiple Sliders on one page => unique function names for each slide
+//    - Overthink use statement. Should we really specify what we need? 
+//					+								-
+//       You know exactly which slider		you don't really need it for time..
+//		 is meant.
+//
+//    - Would it be enough to just specify the slider and not slider.value? (yes,
+//		but is it understandable, that that is just about slider.value even though
+//      you use the whole slider in the use statement?)
+// - Rename Data to struct
+// - Add all functions in js
+// - Add all Element fields in js/css
+
+
 //Possible Features:
-// - offline compile flag (--offline). With warnings when using youtube() or such!
-// - Advanced SVGSupport?
-//		- PathOperations. (Intersection/Union/Divide)
-//		- SVGParser.
-// - Time 'constant'. totalTime, slideTime
-//   Done. Very basicly at least. But we need to rework the whole system
-//   right now there is only totalTime, which is the time in milliseconds.
-//   And we can only use this on element fields. And not on all..
-// - multitype indeces?
-//   data['title'] = 'lol';
 // - make arrays safe. What do we do if we have an IndexOutOfBoundsException?
-//   Should we throw a runtime exception? Should we try our best to don't do that
-//   and only sometimes throw a runtime exception? Should we treat runtime exceptions
+//   Should we throw a runtime exception? **Should we try our best to don't do that
+//   and only sometimes throw a runtime exception?** Should we treat runtime exceptions
 //   like compile time errors, because they are so similiar?
 //   PRO: Right now our program is deterministic. There is no random nor user input
-//   BUT: Once we have randomness we would need to make sure, that for no random value
-//        We would have a Exception/Error.
+//   BUT: Once we have randomness we would need to make sure, that no matter what random value
+//        We would not have an Exception/Error.
+// - multitype indeces?
+//   data['title'] = 'lol';
 // - Binder needs to warn when a empty style is found. He does now. At least if it is 
 //   literally empty. Once you have anything in it, it doesn't warn you. Because you would
 //   need to compute the style which we only do during evaluation.
+// - Virtual Machine. Mostly to serialize Libraries. And because it is interesting
+// - Advanced SVGSupport?
+//		- SVGParser. Incomplete but working. Needs testing
+//
+//		- PathOperations. (Intersection/Union/Divide)
+//		  As good as it's going to be.  
+//				
+//				let a = arrow(Direction.North, 100, 100, 0.5f, 0.5f);
+//				let b = arrow(Direction.South, 100, 100, 0.5f, 0.5f);
+//
+//		  This doesn't work, because we don't know which lines are important and which not
+//		  Right now only LineTo and their kind are implemented.
+
 
 //
 // - support github code in javascript! just important, if you don't want to rebuild
@@ -35,17 +57,30 @@ import gfont('Quicksand') as quicksand;
 //   Probably not. Because when would you need it? And how would you make it work in sld?
 //   Just use a iframe if you need to. then you can use clean javascript.
 
+
+//toTime(5) = "5ms";
+//toTime(10000) = "10s";
+//toTime(10050) = "10s 50ms"
+
+
 /// Displays the total time
 template stressMe(child: Slide):
 	let label = new Label('no time defined');
-	label.text = $'{totalTime / 1000}s';
 	label.orientation = Horizontal.Left | Vertical.Top;
 	label.fontsize = 12pt;
 	label.margin = margin(10px);
+	
+	//Throws compiletime error! 
+	//Only inside use block!
+	//let a = totalTime; 
 
-	//let rect = new Rectangle(pct(100), 50px);
-	child.background = hsl(mod(totalTime / 500, 360), 55, 55);
-	//rect.orientation = Vertical.Bottom | Horizontal.Left;
+	use totalTime:
+		label.text = toTime(totalTime);
+		if totalTime > 5000:
+			child.background = red;
+		endif
+		//child.background = hsl(mod(totalTime / 40, 360), 40, 90);
+	enduse
 endtemplate
 
 template pagenumber(child: Slide):
@@ -53,16 +88,16 @@ template pagenumber(child: Slide):
 	if child.getData('name'):
 		name = child.getData('name');
 	endif
-	let text = $'{name}:   {child.index + 1}/{slideCount}';
+	let text = $'{name}: {fixedWidth(child.index + 1, 3)}/{fixedWidth(slideCount, 3)}';
 	let label = new Label(text);
 	label.orientation = Horizontal.Right | Vertical.Top;
 	label.fontsize = 12pt;
 	label.margin = margin(10px);
 
-	let progress = float(child.index) / float(slideCount - 1);
-	let rect = new Rectangle(pct(progress * 100), 10px);
-	rect.fill = rgb(int(255f * progress), 0, int(255f * (1f - progress)));
-	rect.orientation = Vertical.Bottom | Horizontal.Left;
+	let progress = child.index / float(slideCount - 1);
+	//let rect = rect(pct(progress * 100), 10px);
+	//rect.fill = rgb(int(255 * progress), 0, int(255 * (1 - progress)));
+	//rect.orientation = Vertical.Bottom | Horizontal.Left;
 endtemplate
 
 style std:
@@ -92,7 +127,7 @@ endfilter
 
 animation quoteGoesUp(element: any, duration: Time):
 	case init:
-		interpolation = Interpolation.Linear;
+		//interpolation = Interpolation.Linear;
 		//It's a bug on the js side. I'm not to sure why...
 		//Maybe because of missing subscribe/broadcast functions
 		//in the js Color class
@@ -103,7 +138,7 @@ endanimation
 
 animation unblur(element: any, duration: Time):
 	case init:
-		interpolation = Interpolation.Linear;
+		//interpolation = Interpolation.Linear;
 		//element.filter = blur(5);
 	case done:
 		//Because of the cases progress always has a specific value and you cant use it
@@ -118,8 +153,27 @@ animation unblur(element: any, duration: Time):
 		//element.filter = blur(0);
 endanimation
 
-slide possFeatureMaybe < stressMe:
-endslide
+//TODO: Introduce test slide
+svg test(operation: int):
+	let a = arrow(Direction.North, 100, 100, 0.5f, 0.5f);
+	a.fill = alpha(blue, 0.5f);
+	let b = arrow(Direction.South, 100, 100, 0.5f, 0.5f);
+	b.fill = alpha(red, 0.5f);
+	let comb = new Rect(0, 0, 1, 1).toPath();
+	if operation == 0:
+		comb = intersectPaths(a, b);
+	else if operation == 1:
+		comb = differPaths(a, b);
+	else if operation == 2:
+		comb = unitePaths(a, b);
+	else
+		println($'Warning: {operation} is no valid Operation');
+	endif
+	comb.stroke = black;
+	comb.strokeWidth = 1f;
+	comb.fill = alpha(purple, 0.5f);
+	viewBox = new ViewBox(100, 100);
+endsvg
 
 style algoTable(tbl: Table):
 	tbl.orientation = Orientation.Stretch;
@@ -127,11 +181,29 @@ style algoTable(tbl: Table):
 	tbl.align = Alignment.Center;
 endstyle
 
+slide divisionByZeroAndArrayOutOfRange < stressMe:
+	print($'{5 / 0f}');
+	//print($'{5 / 0}');
+	//print($'{5 / (0 * 18)}');
+	//print($'{5 / int(min(5, 0))}');
+	//let six = 6;
+	//print($'{5 / min(six, 0)}');
+	let array = [:int;99];
+	//let lul = [:bool;5][99];
+	//print($'{array[100]}');
+	let slider = new Slider(-1..1);
+	//slider.isVisible = false;
+	//print($'{5 / slider.value}');	
+	slider = new Slider(-8900..9000);
+	//print($'{array[totalTime * 555]}');
+	
+endslide
+
 slide algo < pagenumber:
 	setData('name', 'gti presentation 1');
 	let tbl = new Table(7, 7);
 	tbl.applyStyle(algoTable);
-	//println(tbl.getRow(4)[0].content);
+	//Possible feature..
 	//let hr = tbl.getRow(0)[..].content;
 	//
 	//let hr = [:string; tbl.getRow(0).len()];
@@ -169,10 +241,8 @@ slide algo2 < pagenumber:
 	for j in 0..4:
 		tbl.cells[j + 2][j + 1].content = 'x';
 	endfor
-	for i in 0..tbl.columns:
-		tbl.cells[3][i].background = red;
-		tbl.cells[5][i].background = red;
-	endfor
+	tbl.cells[3][..].background = red;
+	tbl.cells[5][..].background = red;
 endslide
 
 slide table < pagenumber:
@@ -194,18 +264,18 @@ enddata
 
 slide github < pagenumber:
 	code.setStyle(CodeHighlighter.Tomorrow);
-	let repository = code.github('wert007/GTIProject');
-	let codeBlockB = code.codeblock(repository, 'main.c', 3..14);
-	codeBlockB.fontsize = 10pt;
-	codeBlockB.margin = margin(5%, 15%);
-	codeBlockB.orientation = Horizontal.Stretch | Vertical.Center;
+	//let repository = code.github('wert007/GTIProject');
+	//let codeBlockB = code.codeblock(repository, 'main.c', 3..14);
+	//codeBlockB.fontsize = 10pt;
+	//codeBlockB.margin = margin(5%, 15%);
+	//codeBlockB.orientation = Horizontal.Stretch | Vertical.Center;
 endslide
 
 slide ~noneableBinding:
 	let a = [:noneable?;99];
 	a[0] = new noneable(42);
 	//a[0] safe
-	for i in 3..50:
+	for i in 3..4:
 		a[i] = new noneable(i);
 		//a[0]|a[i] safe
 		if a[i].i > i:
@@ -223,7 +293,7 @@ slide ~noneableBinding:
 	let b = [:int?;99];
 	b[0] = 42;
 	//b[0] safe
-	for i in 3..50:
+	for i in 3..4:
 		//b[0] safe
 		//b[i] unsafe
 		b[i] = i;
@@ -263,9 +333,10 @@ slide mathTwo:
 	let f = #math 'b * x^2 + a * c';
 	
 	f.a = 2;
-	f.b = sld.value;
-	f.c = -2 * sld.value;
-
+	use sld.value:
+		f.b = sld.value;
+		f.c = -2 * sld.value;
+	enduse
 	//TODO: Make mathematical expressions beautiful!
 	//let expression = new MathExpression(f);
 	
@@ -290,7 +361,9 @@ slide a < pagenumber:
 	//different locations and this formula always just sets
 	//the margin, there is confusion.
 	//	lbl.margin.top = pct(sld.value * 10);
-	lbl.color = hsl(sld.value, 100, 50);
+	use sld.value, totalTime:
+		lbl.color = hsl(mod(totalTime / 100, 360), 255, sld.value);
+	enduse
 	lbl.orientation = Vertical.Top | Horizontal.Stretch;
 	lbl.align = Alignment.Center;
 
@@ -419,14 +492,16 @@ slide city < pagenumber:
 	padding = padding(10%, 5%);
 endslide
 
+
+
 slide overview:
 	let la = image(@'city\los-angeles-picture.jpg');
 	let imgBackground = new Image(la);
 	//imgBackground.filter = blur(5);
 	imgBackground.orientation = Orientation.Stretch;
 	imgBackground.stretching = ImageStretching.Cover;
-	let whitePane = new Rectangle(100%, 100%);
-	whitePane.fill = argb(160, 255, 255, 255);
+	//let whitePane = rect(100%, 100%);
+	//whitePane.fill = argb(160, 255, 255, 255);
 
 	let map = image(@'city\map.png'); //TODO: Change image
 	let imgMap = new Image(map);
@@ -438,11 +513,13 @@ slide overview:
 	step:
 		//filter = grayscale(1);
 
-		let svgSrc = svg(@'city\overlay.svg');
-		let imgSvg = new Image(svgSrc);
+		let svgSrc = loadSVG(@'city\overlay.svg');
+		let viewerComb = new SVGContainer(svgSrc);
+		//TODO: Bring back!
+		//viewerComb.filter = grayscale(0.5f);
+		viewerComb.orientation = Orientation.Stretch;
+		viewerComb.margin = margin(5%);
 endslide
-
-
 
 
 
@@ -494,3 +571,45 @@ endslide
 ////		vid.filter = discrete;
 ////		vid.margin = margin(0, 0, 0, 50%);
 //endslide
+
+
+
+
+
+
+
+
+
+
+slide ~singleLineStatementBlocks:
+	let sld = new Slider(0..360);
+	use totalTime, sld.value:
+		background = hsl(sld.value, mod(totalTime, 255), mod(totalTime, 255));
+	enduse
+	/*
+	use sld.value:
+		let sld_value = document.getElementById('singleLineStatementBlocks-sld').value;
+		let singleLineStatementBlocks = document.getElementById('singleLineStatementBlocks');
+		singleLineStatementBlocks.style.background = 'hsl(' + sld_value + ', ' + (totalTime % 255) + ', ' + (totalTime % 255) + ')';
+	enduse
+
+	UseBlock::
+		jsCode : string;
+		variables : Dictionary<string, string>;
+		type : JSInsertionType;
+		functionName : string;
+
+	function use_singleLineStatementBlocks_sld_value_changed(...)
+	{
+		let sld_value = document.getElementById('singleLineStatementBlocks-sld').value;
+		let singleLineStatementBlocks = document.getElementById('singleLineStatementBlocks');
+		singleLineStatementBlocks.style.background = 'hsl(' + sld_value + ', ' + (totalTime % 255) + ', ' + (totalTime % 255) + ')';
+	}
+
+	use totalTime:
+		let sld_value = document.getElementById('singleLineStatementBlocks-sld').value;
+		let singleLineStatementBlocks = document.getElementById('singleLineStatementBlocks');
+		singleLineStatementBlocks.style.background = 'hsl(' + sld_value + ', ' + (totalTime % 255) + ', ' + (totalTime % 255) + ')';
+	enduse
+	*/
+endslide

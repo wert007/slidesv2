@@ -22,13 +22,14 @@ namespace Minsk.CodeAnalysis
 		private readonly Dictionary<string, LibrarySymbol> _collectedLibraries = new Dictionary<string, LibrarySymbol>();
 		private readonly List<string> _referencedInFile = new List<string>();
 		private readonly Queue<Compilation> _toCollectReferences = new Queue<Compilation>();
-		private bool _completeRebuild;
-
+		private readonly bool _completeRebuild;
+		private readonly bool _offlineView;
 		private DiagnosticBag _diagnostics;
 
-		public Linker(bool completeRebuild)
+		public Linker(bool completeRebuild, bool offlineView)
 		{
 			_completeRebuild = completeRebuild;
+			_offlineView = offlineView;
 		}
 
 
@@ -181,7 +182,7 @@ namespace Minsk.CodeAnalysis
 					}
 					return;
 				}
-				var compilation = Loader.LoadCompilationFromFile(CompilationFlags.Directory, path);
+				var compilation = Loader.LoadCompilationFromFile(CompilationFlags.Directory, path, _offlineView);
 				if (compilation == null)
 				{
 					//This will hopefully be reported later!

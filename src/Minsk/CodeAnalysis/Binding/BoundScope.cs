@@ -14,7 +14,7 @@ namespace Minsk.CodeAnalysis.Binding
 		internal List<BoundExpression> SafeExpressions { get; } = new List<BoundExpression>();
 
 
-		private static TypeSymbolTypeConverter _builtInTypes = TypeSymbolTypeConverter.Instance;
+		private static BuiltInTypes _builtInTypes = BuiltInTypes.Instance;
 		private static GlobalFunctionsConverter _builtInFunctions = GlobalFunctionsConverter.Instance;
 
 		public BoundScope(BoundScope parent)

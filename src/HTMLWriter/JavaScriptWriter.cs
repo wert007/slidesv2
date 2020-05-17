@@ -4,20 +4,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using Slides;
+using Slides.Helpers;
 
 namespace HTMLWriter
 {
-	public class JSObj
-	{
-		public JSObj(string name)
-		{
-			Name = name;
-		}
-
-		public override string ToString() => Name;
-
-		public string Name { get; }
-	}
 	public class JavaScriptWriter : IDisposable
 	{
 		private IndentedTextWriter _writer;
@@ -213,26 +203,7 @@ namespace HTMLWriter
 
 		public void WriteValue(object value)
 		{
-			CurrentWriter.Write(ValueToString(value));
-		}
-
-		public static string ValueToString(object value)
-		{
-			switch (value)
-			{
-				case string s:
-					return $"'{s}'";
-				case Color c:
-					return $"'{CSSWriter.GetValue(c)}'";
-				case int i:
-					return $"{i}";
-				case bool b:
-					return $"{b.ToString().ToLower()}";
-				case float f:
-					return f.ToString(_usCulture);
-				default:
-					return value.ToString();
-			}
+			CurrentWriter.EmitObject(value);
 		}
 
 		public void StartForLoop(string variable, Range range)

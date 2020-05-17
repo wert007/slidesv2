@@ -48,11 +48,13 @@ group map():
 	let lblMap = new Label('(c) wikimedia');
 	lblMap.orientation = Horizontal.Right | Vertical.Bottom;
 
+	/*
 	let marker = new Rectangle(50, 50);
 	marker.orientation = Horizontal.Right | Vertical.Top;
 	marker.margin = margin(80%, 70%, 0, 0);
 	marker.borderStyle = BorderStyle.Dashed;
 	marker.borderColor = red;
+	*/
 
 	initWidth = 100%;
 	initHeight = 40%;

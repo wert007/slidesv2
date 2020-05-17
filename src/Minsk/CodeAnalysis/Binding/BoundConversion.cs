@@ -11,7 +11,7 @@ namespace Minsk.CodeAnalysis.Binding
 		}
 
 
-		public override BoundNodeKind Kind => BoundNodeKind.Conversion;
+		public override BoundNodeKind Kind => BoundNodeKind.ConversionExpression;
 
 		public BoundExpression Expression { get; }
 		public override TypeSymbol Type { get; }

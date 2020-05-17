@@ -1,9 +1,19 @@
 ﻿using Slides;
 using Slides.SVG;
+using SVGLib;
+using SVGLib.ContainerElements;
+using SVGLib.GraphicsElements;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using SVGGroup = SVGLib.ContainerElements.Group;
+using SVGText = SVGLib.GraphicsElements.Text;
+using SVGPath = SVGLib.GraphicsElements.Path;
+using SVGColor = SVGLib.Datatypes.Color;
+using SVGTransform = SVGLib.Datatypes.Transform;
+using SVGLib.PathOperations;
+using SVGLib.Datatypes;
 
 namespace HTMLWriter
 {
@@ -11,16 +21,23 @@ namespace HTMLWriter
 	{
 		internal static void Write(HTMLWriter writer, SVGElement element)
 		{
-
-			writer.PushAttribute("width", element.width.ToString());
-			writer.PushAttribute("height", element.height.ToString());
-			if(element.fill != Color.Transparent)
-				writer.PushAttribute("fill", CSSWriter.GetValue(element.fill));
-			if(element.stroke != Color.Transparent)
-			writer.PushAttribute("stroke", CSSWriter.GetValue(element.stroke));
-			if(element.strokeWidth != 0)
-				writer.PushAttribute("stroke-width", element.strokeWidth.ToString());
-			switch (element.kind)
+			var viewBox = GetViewBox(element);
+			if (viewBox.HasValue)
+			{
+				writer.PushAttribute("width", viewBox.Value.Width.ToString());
+				writer.PushAttribute("height", viewBox.Value.Height.ToString());
+			}
+			if(element.Transform.Any())
+			{
+				writer.PushAttribute("transform", string.Join<SVGTransform>(";", element.Transform));
+			}
+			if(element.Fill != SVGColor.Black)
+				writer.PushAttribute("fill", CSSWriter.GetValue(element.Fill));
+			if(element.Stroke != SVGColor.Transparent)
+			writer.PushAttribute("stroke", CSSWriter.GetValue(element.Stroke));
+			if(element.StrokeWidth != 0)
+				writer.PushAttribute("stroke-width", element.StrokeWidth.ToString());
+			switch (element.Kind)
 			{
 				case SVGElementKind.Group:
 					WriteGroup(writer, (SVGGroup)element);
@@ -49,6 +66,9 @@ namespace HTMLWriter
 				case SVGElementKind.Text:
 					WriteSVGText(writer, (SVGText)element);
 					break;
+				case SVGElementKind.SVGTag:
+					WriteSVGTag(writer, (SVGTag)element);
+					break;
 				default:
 					throw new Exception();
 			}
@@ -56,11 +76,10 @@ namespace HTMLWriter
 
 		private static void WriteGroup(HTMLWriter writer, SVGGroup element)
 		{
-			writer.PushAttribute("transform", $"translate({element.x}, {element.y})");
 			writer.StartTag("g");
 			foreach (var child in element.Children)
 			{
-				Write(writer, child);
+				Write(writer, (SVGGraphicsElement)child);
 			}
 			writer.EndTag();
 		}
@@ -133,6 +152,40 @@ namespace HTMLWriter
 			writer.StartTag("text");
 			writer.Write(element.Content);
 			writer.EndTag();
+		}
+
+		private static void WriteSVGTag(HTMLWriter writer, SVGTag element)
+		{
+			writer.PushAttribute("viewBox", element.ViewBox.ToString());
+			writer.StartTag("svg");
+			foreach (var child in element.Children)
+			{
+				Write(writer, child);
+			}
+			writer.EndTag();
+		}
+
+		public static ViewBox? GetViewBox(SVGElement element)
+		{
+			switch (element.Kind)
+			{
+				case SVGElementKind.Group:
+					return null;
+				case SVGElementKind.Rect:
+				case SVGElementKind.Circle:
+				case SVGElementKind.Ellipse:
+				case SVGElementKind.Line:
+				case SVGElementKind.Path:
+				case SVGElementKind.Polygon:
+				case SVGElementKind.Polyline:
+				case SVGElementKind.Text:
+					var graphicsElement = (SVGGraphicsElement)element;
+					return new ViewBox(graphicsElement.x, graphicsElement.y, graphicsElement.width, graphicsElement.height);
+				case SVGElementKind.SVGTag:
+					return ((SVGTag)element).ViewBox;
+				default:
+					throw new Exception();
+			}
 		}
 	}
 }

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Slides;
+using Slides.Elements;
+using Slides.Helpers;
 using Slides.MathExpressions;
 
 namespace HTMLWriter
@@ -39,7 +41,7 @@ namespace HTMLWriter
 			writer.WriteFunctionCall($"chart_{chart.name}.render");
 
 			if(isPlot)
-				writer.WriteFunctionCall("plots.push", new JSObj($"{{ id: '{id}', value: chart_{chart.name} }}"));
+				writer.WriteFunctionCall("plots.push", new JavaScriptEmitter.JavaScriptObject($"{{ id: '{id}', value: chart_{chart.name} }}"));
 
 		}
 
@@ -125,7 +127,7 @@ let options_{plot.name} = {{
 			writer.EndVariableDeclaration();
 
 			writer.WriteVariableDeclarationInline("i", "0");
-			writer.StartForLoop("x", plot.Range.From.ToString(), plot.Range.To.ToString(), JavaScriptWriter.ValueToString(plot.Step));
+			writer.StartForLoop("x", plot.Range.From.ToString(), plot.Range.To.ToString(), JavaScriptEmitter.ObjectToString(plot.Step));
 			writer.WriteAssignment($"{scope}.{plot.InputVariable}", $"x");
 			writer.WriteAssignment($"data[i]", "{}");
 			writer.WriteAssignment($"data[i].x", $"x");
@@ -143,10 +145,10 @@ let options_{plot.name} = {{
 			writer.StartArray();
 			writer.StartObject();
 			writer.WriteField("name", "x");
-			writer.WriteField("data", new JSObj("data"));
+			writer.WriteField("data", new JavaScriptEmitter.JavaScriptObject("data"));
 			writer.EndObject();
 			writer.EndArray();
-			writer.WriteFunctionCall("plot.updateSeries", new JSObj("tmp"));
+			writer.WriteFunctionCall("plot.updateSeries", new JavaScriptEmitter.JavaScriptObject("tmp"));
 			writer.EndFunction();
 		}
 

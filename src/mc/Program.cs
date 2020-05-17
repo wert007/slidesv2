@@ -19,6 +19,7 @@ namespace Minsk
 		private static void Main(string[] args)
 		{
 			bool completeRebuild = false;
+			bool offlineView = false;
 			foreach (var arg in args)
 			{
 				Console.WriteLine($">> arg '{arg}' received");
@@ -27,7 +28,9 @@ namespace Minsk
 			{
 				if (args.Contains("-build-fresh"))
 					completeRebuild = true;
-				LoadFromFile(args[0], args[1], completeRebuild);
+				if (args.Contains("-offline"))
+					offlineView = true;
+				LoadFromFile(args[0], args[1], completeRebuild, offlineView);
 			}
 			else
 			{
@@ -36,12 +39,12 @@ namespace Minsk
 		}
 
 
-		private static void LoadFromFile(string path, string targetDirectory, bool completeRebuild)
+		private static void LoadFromFile(string path, string targetDirectory, bool completeRebuild, bool offlineView)
 		{
 			var fileName = Path.GetFileName(path);
 			var directory = Path.GetDirectoryName(path);
 			CompilationFlags.Init(directory, fileName, completeRebuild);
-			var result = Loader.LoadFromFile(directory, fileName, false, false, completeRebuild);
+			var result = Loader.LoadFromFile(directory, fileName, false, false, completeRebuild, offlineView);
 			if(!result.Diagnostics.Any(d => d.Level == DiagnosticLevel.Error))
 			{
 				var presentation = result.Value as Presentation;
@@ -59,7 +62,7 @@ namespace Minsk
 			{
 				if (time.Value <= 0)
 					continue;
-				Console.WriteLine($"It took {time.Value.ToString().PadLeft(4, ' ')}ms to {time.Key}.");
+				Console.WriteLine($"It took {time.Value.ToString().PadLeft(4)}ms to {time.Key}.");
 			}
 			Console.WriteLine($"It took {result.Timewatch.GetTotal()}ms complete.");
 			Console.WriteLine("");

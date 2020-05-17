@@ -2,16 +2,55 @@
 using Minsk.CodeAnalysis.Symbols;
 using Slides;
 using Slides.Debug;
+using Slides.Elements;
 using System;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
 
 namespace Minsk.CodeAnalysis.SlidesTypes
 {
 
 	public static class GlobalFunctions
 	{
+		public static string toTime(int time)
+		{
+			var result = new StringBuilder();
+			if(time % 1000 != 0)
+				result.Insert(0, $" {time % 1000}ms");
+			time /= 1000;
+			if(time % 60 != 0)
+				result.Insert(0, $" {time % 60}s");
+			time /= 60;
+			if(time % 60 != 0)
+				result.Insert(0, $" {time % 60}m");
+			time /= 60;
+			if (time % 24 != 0)
+				result.Insert(0, $" {time % 24}h");
+			time /= 24;
+			if (time != 0)
+				result.Insert(0, $"{time}d");
+			return result.ToString().Trim();
+		}
+
+		public static string fixedWidth(object source, int length)
+		{
+			var result = source.ToString().Trim();
+			if (result.Length > length)
+			{
+				result = $"{result.Remove(length - 3).Trim()}...";
+			}
+			else if(result.Length < length)
+			{
+				if (source.GetType().IsPrimitive && source.GetType() != typeof(bool))
+					result = result.PadLeft(length, '0');
+				else
+					result = result.PadRight(length);
+			}
+			return result;
+		}
+
 		//TODO: Do this smarter
 		public static float @float(int i)
 		{
@@ -35,14 +74,11 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			if (a < b) return a;
 			return b;
 		}
-		public static CSVFile csv(string path)
+		public static CSVFile csv(string fileName)
 		{
-			string fileContents = null;
-			using (FileStream fs = new FileStream(path, FileMode.Open))
-			using (StreamReader reader = new StreamReader(fs))
-			{
-				fileContents = reader.ReadToEnd();
-			}
+			//TODO: This isn't needed for some reason..
+			//var path = Path.Combine(CompilationFlags.Directory, fileName);
+			var fileContents = File.ReadAllText(fileName);
 			return new CSVFile(fileContents);
 		}
 

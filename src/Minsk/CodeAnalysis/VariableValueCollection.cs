@@ -28,6 +28,13 @@ namespace Minsk.CodeAnalysis
 		}
 
 		public VariableValueCollection Parent { get; private set; }
+
+		public bool HasKey(VariableSymbol variable)
+		{
+			if (ContainsKey(variable)) return true;
+			if (Parent != null) return Parent.HasKey(variable);
+			return false;
+		}
 		
 		/// <summary>
 		/// 

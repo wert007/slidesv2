@@ -1,8 +1,8 @@
 ﻿namespace Minsk.CodeAnalysis.Syntax
 {
-	internal class SVGGroupStatementSyntax : StatementSyntax
+	internal class SVGStatementSyntax : StatementSyntax
 	{
-		public SVGGroupStatementSyntax(SyntaxToken svgGroupKeyword, SyntaxToken identifier, ParameterBlockStatementSyntax parameterStatement, SyntaxToken colonToken, BlockStatementSyntax body, SyntaxToken endSVGGroupKeyword)
+		public SVGStatementSyntax(SyntaxToken svgGroupKeyword, SyntaxToken identifier, ParameterBlockStatementSyntax parameterStatement, SyntaxToken colonToken, BlockStatementSyntax body, SyntaxToken endSVGGroupKeyword)
 		{
 			SVGGroupKeyword = svgGroupKeyword;
 			Identifier = identifier;
@@ -12,7 +12,7 @@
 			EndSVGGroupKeyword = endSVGGroupKeyword;
 		}
 
-		public override SyntaxKind Kind => SyntaxKind.SVGGroupStatement;
+		public override SyntaxKind Kind => SyntaxKind.SVGStatement;
 
 		public SyntaxToken SVGGroupKeyword { get; }
 		public SyntaxToken Identifier { get; }

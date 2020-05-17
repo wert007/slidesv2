@@ -1,4 +1,6 @@
-﻿namespace Slides.MathExpressions
+﻿using Slides.Elements;
+
+namespace Slides.MathExpressions
 {
 	public class MathPlot : Chart
 	{
@@ -32,7 +34,9 @@
 		public float Step { get; }
 		public string InputVariable { get; }
 
-		public override ElementType type => ElementType.MathPlot;
+		//TODO: Should the kind still be chart, but the chartType
+		// be MathPlot? I mean probably
+		public override ElementKind kind => ElementKind.MathPlot;
 
 		public override ChartType chartType => ChartType.LineChart;
 

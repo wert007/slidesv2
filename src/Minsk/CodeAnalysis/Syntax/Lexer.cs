@@ -178,6 +178,11 @@ namespace Minsk.CodeAnalysis.Syntax
 				case '?':
 					_kind = SyntaxKind.QuestionMarkToken;
 					_position++;
+					if(Current == '?')
+					{
+						_kind = SyntaxKind.QuestionMarkQuestionMarkToken;
+						_position++;
+					}
 					break;
 				case '[':
 					_kind = SyntaxKind.OpenBracketToken;
@@ -219,12 +224,7 @@ namespace Minsk.CodeAnalysis.Syntax
 					break;
 				case '=':
 					_position++;
-					if (Current == '>')
-					{
-						_kind = SyntaxKind.EqualsGreaterToken;
-						_position++;
-					}
-					else if (Current == '=')
+					if (Current == '=')
 					{
 						_kind = SyntaxKind.EqualsEqualsToken;
 						_position++;

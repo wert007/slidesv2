@@ -32,21 +32,28 @@ namespace Github
 		}
 		public static Repository GetRepository(string owner, string name)
 		{
-			Repository result;
+			Repository result = null;
 
-			var client = new WebClient();
-			client.Headers.Add("User-Agent", "Nothing");
-
-			var url = $"https://api.github.com/repos/{owner}/{name}";
-			var content = client.DownloadString(url);
-
-			var serializer = new DataContractJsonSerializer(typeof(Repository));
-			using (var ms = new MemoryStream(Encoding.Unicode.GetBytes(content)))
+			try
 			{
-				result = (Repository)serializer.ReadObject(ms);
-			}
-			result.Contents = GetFiles(owner, name);
+				var client = new WebClient();
+				client.Headers.Add("User-Agent", "Nothing");
 
+				var url = $"https://api.github.com/repos/{owner}/{name}";
+				var content = client.DownloadString(url);
+
+				var serializer = new DataContractJsonSerializer(typeof(Repository));
+				using (var ms = new MemoryStream(Encoding.Unicode.GetBytes(content)))
+				{
+					result = (Repository)serializer.ReadObject(ms);
+				}
+				result.Contents = GetFiles(owner, name);
+			}
+			catch { }
+			if(result == null)
+			{
+				result = new Repository();
+			}
 			return result;
 		}
 	}
