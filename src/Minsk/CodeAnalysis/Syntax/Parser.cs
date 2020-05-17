@@ -95,7 +95,7 @@ namespace Minsk.CodeAnalysis.Syntax
 					return ParseTransitionStatement();
 				case SyntaxKind.LibraryKeyword:
 					return ParseLibraryStatement();
-				case SyntaxKind.DataKeyword:
+				case SyntaxKind.StructKeyword:
 					return ParseDataStatement();
 				case SyntaxKind.ImportKeyword:
 					return ParseImportStatement();
@@ -120,8 +120,8 @@ namespace Minsk.CodeAnalysis.Syntax
 					return ParseForStatement();
 				case SyntaxKind.LetKeyword:
 					return ParseVariableDeclaration();
-				case SyntaxKind.UseKeyword:
-					return ParseUseStatement();
+				case SyntaxKind.JSInsertionKeyword:
+					return ParseJSInsertionStatement();
 				default:
 					return ParseExpressionStatement();
 			}
@@ -262,7 +262,7 @@ namespace Minsk.CodeAnalysis.Syntax
 			var statements = new List<VariableTypeDeclarationStatement>();
 
 			while (Current.Kind != SyntaxKind.EndOfFileToken &&
-				Current.Kind != SyntaxKind.EndDataKeyword)
+				Current.Kind != SyntaxKind.EndStructKeyword)
 			{
 				var startToken = Current;
 				var statement = ParseVariableTypeDeclaration();
@@ -277,21 +277,48 @@ namespace Minsk.CodeAnalysis.Syntax
 
 		private DataStatementSyntax ParseDataStatement()
 		{
-			var dataKeyword = MatchToken(SyntaxKind.DataKeyword);
+			var dataKeyword = MatchToken(SyntaxKind.StructKeyword);
 			var identifier = MatchToken(SyntaxKind.IdentifierToken);
 			var colonToken = MatchToken(SyntaxKind.ColonToken);
 			var body = ParseDataBlockStatement();
-			var endDataKeyword = MatchToken(SyntaxKind.EndDataKeyword);
+			var endDataKeyword = MatchToken(SyntaxKind.EndStructKeyword);
 
 			return new DataStatementSyntax(dataKeyword, identifier, colonToken, body, endDataKeyword);
 		}
+
+		private UseStatement ParseUseStatement()
+		{
+			var keyword = MatchToken(SyntaxKind.UseKeyword);
+			var token = NextToken();
+			var semicolon = MatchToken(SyntaxKind.SemicolonToken);
+			return new UseStatement(keyword, token, semicolon);
+		}
+
+		private LibraryBlockStatementSyntax ParseLibraryBlockStatement()
+		{
+			var statements = new List<UseStatement>();
+
+			while (Current.Kind != SyntaxKind.EndOfFileToken &&
+				Current.Kind != SyntaxKind.EndLibraryKeyword)
+			{
+				var startToken = Current;
+				var statement = ParseUseStatement();
+				statements.Add(statement);
+
+				if (Current == startToken)
+					NextToken();
+			}
+
+			return new LibraryBlockStatementSyntax(statements.ToArray());
+		}
+
 
 		private LibraryStatementSyntax ParseLibraryStatement()
 		{
 			var libraryKeyword = MatchToken(SyntaxKind.LibraryKeyword);
 			var identifier = MatchToken(SyntaxKind.IdentifierToken);
 			var colonToken = MatchToken(SyntaxKind.ColonToken);
-			var body = ParseBlockStatement(SyntaxKind.LibraryKeyword);
+			var body = ParseLibraryBlockStatement();
 			var endLibraryKeyword = MatchToken(SyntaxKind.EndLibraryKeyword);
 
 			return new LibraryStatementSyntax(libraryKeyword, identifier, colonToken, body, endLibraryKeyword);
@@ -591,7 +618,7 @@ namespace Minsk.CodeAnalysis.Syntax
 				var startToken = Current;
 
 				var statement = ParseStatement();
-				if(starter == SyntaxKind.UseKeyword && statement.Kind == SyntaxKind.UseStatement)
+				if(starter == SyntaxKind.JSInsertionKeyword && statement.Kind == SyntaxKind.UseStatement)
 				{
 					//TODO:
 					throw new NotImplementedException();
@@ -624,9 +651,9 @@ namespace Minsk.CodeAnalysis.Syntax
 			return new VariableDeclarationSyntax(keyword, variable, equals, initializer, semicolonToken);
 		}
 
-		private StatementSyntax ParseUseStatement()
+		private StatementSyntax ParseJSInsertionStatement()
 		{
-			var keyword = MatchToken(SyntaxKind.UseKeyword);
+			var keyword = MatchToken(SyntaxKind.JSInsertionKeyword);
 
 			var commaToken = new List<SyntaxToken>();
 			var expressions = new List<ExpressionSyntax>();
@@ -637,10 +664,10 @@ namespace Minsk.CodeAnalysis.Syntax
 				expressions.Add(ParseFieldAccessExpression());
 			}
 			var colonToken = MatchToken(SyntaxKind.ColonToken);
-			var body = ParseBlockStatement(SyntaxKind.UseKeyword);
-			var endKeyword = MatchToken(SyntaxKind.EndUseKeyword);
+			var body = ParseBlockStatement(SyntaxKind.JSInsertionKeyword);
+			var endKeyword = MatchToken(SyntaxKind.EndJSInsertionKeyword);
 
-			return new UseStatementSyntax(keyword, expressions.ToArray(), commaToken.ToArray(), colonToken, body, endKeyword);
+			return new JSInsertionStatementSyntax(keyword, expressions.ToArray(), commaToken.ToArray(), colonToken, body, endKeyword);
 		}
 
 

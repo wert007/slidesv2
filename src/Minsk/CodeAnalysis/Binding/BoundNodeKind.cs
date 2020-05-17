@@ -19,14 +19,13 @@ namespace Minsk.CodeAnalysis.Binding
 		DataStatement,
 		GroupStatement,
 		FilterStatement,
-		LibraryStatement,
 		SlideStatement,
 		StepStatement,
 		StyleStatement,
 		SVGStatement,
 		TemplateStatement,
 		TransitionStatement,
-		UseStatement,
+		JSInsertionKind,
 
 		// Expressions
 		ErrorExpression,
@@ -51,5 +50,6 @@ namespace Minsk.CodeAnalysis.Binding
 		ConversionExpression,
 		AssignmentExpression,
 		AnonymForExpression,
+		NopStatement,
 	}
 }

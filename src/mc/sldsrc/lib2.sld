@@ -2,9 +2,9 @@
 import gfont('Amatic SC') as quoteFont;
 
 library custom:
-    useStyle();
-    useGroup();
-	useData();
+    use style;
+    use group;
+	use struct;
 endlibrary
 
 style transparentWhiteBackground(element: Element):
@@ -75,12 +75,12 @@ group imageBanner():
 	initHeight = 100%;
 endgroup
 
-data cityDevelopmentParameter:
+struct cityDevelopmentParameter:
 	header: string;
 	contents: string[][];
 	populationFile: string;
 	populationSource: string;
-enddata
+endstruct
 
 group cityDevelopmentText(args: cityDevelopmentParameter):
 	let populationData = csv(args.populationFile);

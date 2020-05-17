@@ -5,13 +5,14 @@ namespace Minsk.CodeAnalysis.Binding
 {
 	internal sealed class BoundGlobalScope
 	{
-		public BoundGlobalScope(BoundGlobalScope previous, Diagnostic[] diagnostics, VariableSymbol[] variables, BoundStatement statement, Dictionary<VariableSymbol, BoundStatement> declarations)
+		public BoundGlobalScope(BoundGlobalScope previous, Diagnostic[] diagnostics, VariableSymbol[] variables, BoundStatement statement, Dictionary<VariableSymbol, BoundStatement> declarations, PresentationFlags flags)
 		{
 			Previous = previous;
 			Diagnostics = diagnostics;
 			Variables = variables;
 			Statement = statement;
 			Declarations = declarations;
+			Flags = flags;
 		}
 
 		public BoundGlobalScope Previous { get; }
@@ -19,5 +20,6 @@ namespace Minsk.CodeAnalysis.Binding
 		public VariableSymbol[] Variables { get; }
 		public BoundStatement Statement { get; }
 		public Dictionary<VariableSymbol, BoundStatement> Declarations { get; }
+		public PresentationFlags Flags { get; }
 	}
 }

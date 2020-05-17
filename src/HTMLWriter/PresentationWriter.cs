@@ -179,10 +179,10 @@ namespace HTMLWriter
 		{
 			var timeFunctions = new List<string>();
 			var sortedInsertions = new List<Stack<JSInsertionBlock>>();
-			foreach(var insertion in insertions)
+			foreach (var insertion in insertions)
 			{
 				var foundIndex = sortedInsertions.FindIndex(e => e.First().FunctionName == insertion.FunctionName && e.First().Kind == insertion.Kind);
-				if(foundIndex < 0)
+				if (foundIndex < 0)
 				{
 					foundIndex = sortedInsertions.Count;
 					sortedInsertions.Add(new Stack<JSInsertionBlock>());
@@ -193,7 +193,7 @@ namespace HTMLWriter
 			{
 				var kind = insertionStack.Peek().Kind;
 				var functionName = insertionStack.Peek().FunctionName + "_" + kind;
-				if(kind == JSInsertionKind.Time)
+				if (kind == JSInsertionKind.Time)
 					timeFunctions.Add(functionName);
 				_jsWriter.StartFunction(functionName);
 				foreach (var insertion in insertionStack)
@@ -230,7 +230,7 @@ namespace HTMLWriter
 				}
 				return name;
 			}
-			if(obj is SlideAttributes s)
+			if (obj is SlideAttributes s)
 			{
 				var name = s.name;
 				if (!declaredVariables.Contains(name))
@@ -493,7 +493,7 @@ namespace HTMLWriter
 			var viewBox = SVGWriter.GetViewBox(child);
 			_htmlWriter.PushAttribute("viewBox", $"{viewBox}");
 			_htmlWriter.StartTag("svg", id: id, classes: "svgcontainer " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
-			if(child is SVGTag svg) //TODO: FIXME: Put fill etc on this css. Right now it just gets discarded..
+			if (child is SVGTag svg) //TODO: FIXME: Put fill etc on this css. Right now it just gets discarded..
 			{
 				foreach (var svgChild in svg.Children)
 				{
@@ -733,7 +733,7 @@ namespace HTMLWriter
 							break;
 						}
 						int spaces = 1;
-						while(text[i + spaces] == ' ' && spaces < 4)
+						while (text[i + spaces] == ' ' && spaces < 4)
 						{
 							spaces++;
 							if (i + spaces >= text.Length)

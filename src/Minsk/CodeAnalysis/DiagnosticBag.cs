@@ -397,6 +397,12 @@ namespace Minsk.CodeAnalysis
 			Report(span, message, DiagnosticLevel.Error);
 		}
 
+		public void ReportUnrecognizedUseToken(TextSpan span, SyntaxKind token)
+		{
+			var message = $"Unrecognized token '{token}' in use statement.";
+			Report(span, message, DiagnosticLevel.Error);
+		}
+
 		public void ReportParameterNeedsTypeDeclaration(VariableExpressionSyntax variable)
 		{
 			var message = $"Parameter '{variable.Identifier.Text}' needs a TypeDeclaration (like this: {variable.Identifier.Text}: TypeName).";
@@ -482,15 +488,16 @@ namespace Minsk.CodeAnalysis
 			Report(span, message, DiagnosticLevel.Error);
 		}
 
-		public void ReportExpressionNotAllowedInUseStatement(TextSpan span, SyntaxKind kind)
+		public void ReportExpressionNotAllowedInJSInsertionStatement(TextSpan span, SyntaxKind kind)
 		{
-			var message = $"Expression '{kind}' are not allowed inside of a use statement.";
+			var message = $"Expression '{kind}' are not allowed inside of a JSInsertion statement.";
 			Report(span, message, DiagnosticLevel.Error);
 		}
 
-		public void ReportJSInsertionNotInUseStatement(TextSpan span, JSInsertionKind kind, int coveredJSInsertions)
+		public void ReportJSInsertionNotInJSInsertionStatement(TextSpan span, JSInsertionKind kind, int coveredJSInsertions)
 		{
-			var message = $"The current use statement does not cover '{kind}' JavaScript insertions.";
+			//TDOD This is deprecated. or it should be.
+			var message = $"This is deprecated. Or it should be. The current use statement does not cover '{kind}' JavaScript insertions.";
 			if (coveredJSInsertions == 0) message = $"Please wrap this statement with a use statement for '{kind}'.";
 			Report(span, message, DiagnosticLevel.Error);
 		}

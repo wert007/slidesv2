@@ -79,8 +79,6 @@ namespace Minsk.CodeAnalysis.Syntax
 		AnimationKeyword,
 		CaseKeyword,
 		EndAnimationKeyword,
-		DataKeyword,
-		EndDataKeyword,
 		FilterKeyword, // -> Replace by IdentifierToken???
 		EndFilterKeyword,
 		GroupKeyword,
@@ -92,15 +90,19 @@ namespace Minsk.CodeAnalysis.Syntax
 		EndSlideKeyword,
 		StyleKeyword,
 		EndStyleKeyword,
+		StructKeyword,
+		EndStructKeyword,
 		SVGKeyword,
 		EndSVGKeyword,
 		TemplateKeyword,
 		EndTemplateKeyword,
 		TransitionKeyword,
 		EndTransitionKeyword,
-		UseKeyword,
-		EndUseKeyword,
+		//TODO: Tbc
+		JSInsertionKeyword,
+		EndJSInsertionKeyword,
 		
+		UseKeyword,
 		ImportKeyword,
 		AsKeyword,
 		ForKeyword,
@@ -125,6 +127,7 @@ namespace Minsk.CodeAnalysis.Syntax
 		ExpressionStatement,
 		ForStatement,
 		IfStatement,
+		UseStatement,
 		
 		//Top Level Statements
 		AnimationStatement,
@@ -141,7 +144,7 @@ namespace Minsk.CodeAnalysis.Syntax
 		SVGStatement,
 		TemplateStatement,
 		TransitionStatement,
-		UseStatement,
+		JSInsertionStatement,
 
 		//Parameter Statements
 		ParameterBlockStatement,

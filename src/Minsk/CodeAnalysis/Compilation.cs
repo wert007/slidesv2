@@ -23,7 +23,6 @@ namespace Minsk.CodeAnalysis
 		public Compilation(SyntaxTree syntaxTree, bool offlineView)
 			 : this(null, syntaxTree, offlineView)
 		{
-
 		}
 
 		private Compilation(Compilation previous, SyntaxTree syntaxTree, bool offlineView)
@@ -46,6 +45,7 @@ namespace Minsk.CodeAnalysis
 				{
 					var globalScope = Binder.BindGlobalScope(Previous?.GlobalScope, SyntaxTree, References, OfflineView);
 					Interlocked.CompareExchange(ref _globalScope, globalScope, null);
+					
 				}
 
 				return _globalScope;
@@ -74,7 +74,7 @@ namespace Minsk.CodeAnalysis
 			var syntacticSugar = new SyntaxSugarReplacer();
 			statement = (BoundBlockStatement)syntacticSugar.RewriteStatement(statement);
 
-			var evaluator = new Evaluator(statement, variables, References, declarations);
+			var evaluator = new Evaluator(statement, variables, References, declarations, GlobalScope.Flags);
 			timewatch.Record("create new evaluator");
 			var value = evaluator.Evaluate();
 			timewatch.Record("evaluate");

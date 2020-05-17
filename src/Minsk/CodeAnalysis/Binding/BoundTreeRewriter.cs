@@ -87,10 +87,8 @@ namespace Minsk.CodeAnalysis.Binding
 					return RewriteGroupStatement((BoundGroupStatement)node);
 				case BoundNodeKind.IfStatement:
 					return RewriteIfStatement((BoundIfStatement)node);
-				case BoundNodeKind.UseStatement:
-					return RewriteUseStatement((BoundUseStatement)node);
-				case BoundNodeKind.LibraryStatement:
-					return RewriteLibraryStatement((BoundLibraryStatement)node);
+				case BoundNodeKind.JSInsertionKind:
+					return RewriteUseStatement((BoundJSInsertionStatement)node);
 				case BoundNodeKind.ParameterBlockStatement:
 				case BoundNodeKind.ParameterStatement:
 					//TODO: idk.
@@ -193,7 +191,7 @@ namespace Minsk.CodeAnalysis.Binding
 			return new BoundIfStatement(newCondition, newBody, newElse);
 		}
 
-		protected virtual BoundStatement RewriteUseStatement(BoundUseStatement node)
+		protected virtual BoundStatement RewriteUseStatement(BoundJSInsertionStatement node)
 		{
 			var newBody = RewriteStatement(node.Body);
 			List<BoundExpression> newDependencies = null;
@@ -219,16 +217,9 @@ namespace Minsk.CodeAnalysis.Binding
 			if (newDependencies == null && node.Body == newBody)
 				return node;
 
-			return new BoundUseStatement(newDependencies.ToArray(), newBody);
+			return new BoundJSInsertionStatement(newDependencies.ToArray(), newBody);
 		}
 
-		protected virtual BoundStatement RewriteLibraryStatement(BoundLibraryStatement node)
-		{
-			var newBody = RewriteStatement(node.BoundBody);
-			if (newBody == node.BoundBody)
-				return node;
-			return new BoundLibraryStatement(node.Variable, newBody);
-		}
 
 		protected virtual BoundStatement RewriteSlideStatement(BoundSlideStatement node)
 		{

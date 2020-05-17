@@ -94,6 +94,8 @@ namespace Minsk.CodeAnalysis.Syntax
 					return SyntaxKind.LetKeyword;
 				case "true":
 					return SyntaxKind.TrueKeyword;
+				case "use":
+					return SyntaxKind.UseKeyword;
 				case "import":
 					return SyntaxKind.ImportKeyword;
 				case "as":
@@ -105,10 +107,6 @@ namespace Minsk.CodeAnalysis.Syntax
 					return SyntaxKind.CaseKeyword;
 				case "endanimation":
 					return SyntaxKind.EndAnimationKeyword;
-				case "data":
-					return SyntaxKind.DataKeyword;
-				case "enddata":
-					return SyntaxKind.EndDataKeyword;
 				case "filter":
 					return SyntaxKind.FilterKeyword;
 				case "endfilter":
@@ -127,6 +125,10 @@ namespace Minsk.CodeAnalysis.Syntax
 					return SyntaxKind.StepKeyword;
 				case "endslide":
 					return SyntaxKind.EndSlideKeyword;
+				case "struct":
+					return SyntaxKind.StructKeyword;
+				case "endstruct":
+					return SyntaxKind.EndStructKeyword;
 				case "style":
 					return SyntaxKind.StyleKeyword;
 				case "endstyle":
@@ -143,10 +145,10 @@ namespace Minsk.CodeAnalysis.Syntax
 					return SyntaxKind.TransitionKeyword;
 				case "endtransition":
 					return SyntaxKind.EndTransitionKeyword;
-				case "use":
-					return SyntaxKind.UseKeyword;
-				case "enduse":
-					return SyntaxKind.EndUseKeyword;
+				case "jsinsertion":
+					return SyntaxKind.JSInsertionKeyword;
+				case "endjsinsertion":
+					return SyntaxKind.EndJSInsertionKeyword;
 				default:
 					return SyntaxKind.IdentifierToken;
 			}
@@ -186,13 +188,13 @@ namespace Minsk.CodeAnalysis.Syntax
 					return SyntaxKind.EndAnimationKeyword;
 				case SyntaxKind.FilterKeyword:
 					return SyntaxKind.EndFilterKeyword;
-				case SyntaxKind.DataKeyword:
-					return SyntaxKind.EndDataKeyword;
 				case SyntaxKind.GroupKeyword:
 					return SyntaxKind.EndGroupKeyword;
 				case SyntaxKind.SlideKeyword:
 				case SyntaxKind.StepKeyword:
 					return SyntaxKind.EndSlideKeyword;
+				case SyntaxKind.StructKeyword:
+					return SyntaxKind.EndStructKeyword;
 				case SyntaxKind.StyleKeyword:
 					return SyntaxKind.EndStyleKeyword;
 				case SyntaxKind.SVGKeyword:
@@ -201,8 +203,8 @@ namespace Minsk.CodeAnalysis.Syntax
 					return SyntaxKind.EndTemplateKeyword;
 				case SyntaxKind.LibraryKeyword:
 					return SyntaxKind.EndLibraryKeyword;
-				case SyntaxKind.UseKeyword:
-					return SyntaxKind.EndUseKeyword;
+				case SyntaxKind.JSInsertionKeyword:
+					return SyntaxKind.EndJSInsertionKeyword;
 				case SyntaxKind.TransitionKeyword:
 					return SyntaxKind.EndTransitionKeyword;
 				default:
@@ -316,10 +318,6 @@ namespace Minsk.CodeAnalysis.Syntax
 					return "case";
 				case SyntaxKind.EndAnimationKeyword:
 					return "endanimation";
-				case SyntaxKind.DataKeyword:
-					return "data";
-				case SyntaxKind.EndDataKeyword:
-					return "enddata";
 				case SyntaxKind.FilterKeyword:
 					return "filter";
 				case SyntaxKind.EndFilterKeyword:
@@ -338,6 +336,10 @@ namespace Minsk.CodeAnalysis.Syntax
 					return "step";
 				case SyntaxKind.EndSlideKeyword:
 					return "endslide";
+				case SyntaxKind.StructKeyword:
+					return "struct";
+				case SyntaxKind.EndStructKeyword:
+					return "endstruct";
 				case SyntaxKind.StyleKeyword:
 					return "style";
 				case SyntaxKind.EndStyleKeyword:
@@ -354,9 +356,9 @@ namespace Minsk.CodeAnalysis.Syntax
 					return "transition";
 				case SyntaxKind.EndTransitionKeyword:
 					return "endtransition";
-				case SyntaxKind.UseKeyword:
+				case SyntaxKind.JSInsertionKeyword:
 					return "use";
-				case SyntaxKind.EndUseKeyword:
+				case SyntaxKind.EndJSInsertionKeyword:
 					return "enduse";
 					
 				case SyntaxKind.ImportKeyword:

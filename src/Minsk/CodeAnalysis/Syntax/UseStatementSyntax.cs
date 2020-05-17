@@ -3,10 +3,10 @@ using System.Collections.Generic;
 
 namespace Minsk.CodeAnalysis.Syntax
 {
-	internal class UseStatementSyntax : StatementSyntax
+	internal class JSInsertionStatementSyntax : StatementSyntax
 	{
 		
-		public UseStatementSyntax(SyntaxToken keyword, ExpressionSyntax[] dependencies, SyntaxToken[] commaToken, SyntaxToken colonToken, BlockStatementSyntax body, SyntaxToken endKeyword)
+		public JSInsertionStatementSyntax(SyntaxToken keyword, ExpressionSyntax[] dependencies, SyntaxToken[] commaToken, SyntaxToken colonToken, BlockStatementSyntax body, SyntaxToken endKeyword)
 		{
 			Keyword = keyword;
 			Dependencies = dependencies;
@@ -25,6 +25,6 @@ namespace Minsk.CodeAnalysis.Syntax
 
 		public TextSpan HeaderSpan => TextSpan.FromBounds(Keyword.Position, ColonToken.Span.End); 
 
-		public override SyntaxKind Kind => SyntaxKind.UseStatement;
+		public override SyntaxKind Kind => SyntaxKind.JSInsertionStatement;
 	}
 }

@@ -46,9 +46,6 @@ namespace Minsk.CodeAnalysis
 				case BoundNodeKind.IfStatement:
 					result = SerializeIfStatement((BoundIfStatement)statement);
 					break;
-				case BoundNodeKind.LibraryStatement:
-					result = SerializeLibraryStatement((BoundLibraryStatement)statement);
-					break;
 				case BoundNodeKind.ParameterBlockStatement:
 					result = SerializeParameterBlockStatement((BoundParameterBlockStatement)statement);
 					break;
@@ -176,10 +173,6 @@ namespace Minsk.CodeAnalysis
 			return $"{Serialize(statement.Condition)}>{Serialize(statement.Body)}{elseClause}";
 		}
 
-		//Maybe use something special here. just maybe
-		//Well.. I don't think so. it seems to be working just fine
-		private static string SerializeLibraryStatement(BoundLibraryStatement statement)
-			=> $"{statement.Variable.Name}:{Serialize(statement.BoundBody)}";
 		private static string SerializeParameterBlockStatement(BoundParameterBlockStatement statement)
 			=> $"{string.Join(",", statement.Statements.Select(s => Serialize(s)))}";
 

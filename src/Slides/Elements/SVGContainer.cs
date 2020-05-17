@@ -16,6 +16,11 @@ namespace Slides.SVG
 		}
 
 		public SVGElement Element { get; }
+		public Color fill
+		{
+			get => Element.Fill; 
+			set => Element.Fill = value;
+		}
 
 		public override ElementKind kind => ElementKind.SVGContainer;
 

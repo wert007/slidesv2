@@ -117,8 +117,6 @@ namespace Minsk.CodeAnalysis
 					return DeserializeForStatement();
 				case BoundNodeKind.IfStatement:
 					return DeserializeIfStatement();
-				case BoundNodeKind.LibraryStatement:
-					return DeserializeLibraryStatement();
 				case BoundNodeKind.ParameterBlockStatement:
 					return DeserializeParameterBlockStatement();
 				case BoundNodeKind.ParameterStatement:
@@ -538,17 +536,6 @@ namespace Minsk.CodeAnalysis
 			}
 			ConsumeStatementTail();
 			return new BoundIfStatement(boundCondition, boundBody, boundElse);
-		}
-
-		private BoundLibraryStatement DeserializeLibraryStatement()
-		{
-			ConsumeStatementHeader();
-			var identifier = ConsumeToken();
-			var variable = new VariableSymbol(identifier, true, _builtInTypes.LookSymbolUp(typeof(LibrarySymbol)), false);
-			ConsumeToken(); //:
-			var body = DeserializeStatement();
-			ConsumeStatementTail();
-			return new BoundLibraryStatement(variable, body);
 		}
 
 		private BoundSlideStatement DeserializeSlideStatement()

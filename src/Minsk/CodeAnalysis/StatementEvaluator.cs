@@ -52,9 +52,6 @@ namespace Minsk.CodeAnalysis
 				case BoundNodeKind.AnimationStatement:
 					EvaluateAnimationStatement((BoundAnimationStatement)node);
 					break;
-				case BoundNodeKind.LibraryStatement:
-					EvaluateLibraryStatement((BoundLibraryStatement)node);
-					break;
 				case BoundNodeKind.DataStatement:
 					EvaluateDataStatement((BoundDataStatement)node);
 					break;
@@ -76,8 +73,8 @@ namespace Minsk.CodeAnalysis
 				case BoundNodeKind.SVGStatement:
 					EvaluateSVGStatement((BoundSVGStatement)node);
 					break;
-				case BoundNodeKind.UseStatement:
-					EvaluateUseStatement((BoundUseStatement)node);
+				case BoundNodeKind.JSInsertionKind:
+					EvaluateUseStatement((BoundJSInsertionStatement)node);
 					break;
 				case BoundNodeKind.ParameterBlockStatement:
 				case BoundNodeKind.StepStatement:
@@ -170,7 +167,6 @@ namespace Minsk.CodeAnalysis
 		protected virtual void EvaluateGroupStatement(BoundGroupStatement node) { }
 		protected virtual void EvaluateStyleStatement(BoundStyleStatement node) { }
 		protected virtual void EvaluateAnimationStatement(BoundAnimationStatement node) { }
-		protected virtual void EvaluateLibraryStatement(BoundLibraryStatement node) { }
 		protected virtual void EvaluateDataStatement(BoundDataStatement node) { }
 
 		protected virtual void EvaluateIfStatement(BoundIfStatement node)
@@ -194,6 +190,6 @@ namespace Minsk.CodeAnalysis
 		protected virtual void EvaluateFilterStatement(BoundFilterStatement node) { }
 		protected virtual void EvaluateTemplateStatement(BoundTemplateStatement node) { }
 		protected virtual void EvaluateSVGStatement(BoundSVGStatement node) { }
-		protected virtual void EvaluateUseStatement(BoundUseStatement node) { }
+		protected virtual void EvaluateUseStatement(BoundJSInsertionStatement node) { }
 	}
 }

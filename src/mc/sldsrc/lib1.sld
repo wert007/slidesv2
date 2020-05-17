@@ -1,6 +1,6 @@
 ﻿library basics:
-    useGroup();
-	useData();
+    use group;
+	use struct;
 endlibrary
 
 group CaptionedImage(img: ImageSource, caption : string, stretching = ImageStretching.Contain):

@@ -61,10 +61,10 @@ namespace Minsk.CodeAnalysis
 		private Stack<Dictionary<VariableSymbol, SVGGraphicsElement>> _svgChildren = new Stack<Dictionary<VariableSymbol, SVGGraphicsElement>>();
 		private Stack<List<CustomStyle>> _groupAppliedStyles = new Stack<List<CustomStyle>>();
 
-		public Evaluator(BoundBlockStatement root, Dictionary<VariableSymbol, object> variables, LibrarySymbol[] referenced, Dictionary<VariableSymbol, BoundStatement> declarations)
+		public Evaluator(BoundBlockStatement root, Dictionary<VariableSymbol, object> variables, LibrarySymbol[] referenced, Dictionary<VariableSymbol, BoundStatement> declarations, PresentationFlags flags)
 			: base(root, new VariableValueCollection(variables))
 		{
-			Flags = new PresentationFlags();
+			Flags = flags;
 			_referenced = referenced;
 			_declarations = declarations;
 			foreach (var declaration in _declarations)
@@ -85,7 +85,7 @@ namespace Minsk.CodeAnalysis
 			var index = 0;
 
 			Flags.AnimationsAllowed = true;
-			Flags.DatasAllowed = true;
+			Flags.StructsAllowed = true;
 			Flags.GroupsAllowed = true;
 			Flags.StyleAllowed = true;
 			Flags.TemplatesAllowed = true;
@@ -102,7 +102,7 @@ namespace Minsk.CodeAnalysis
 			object result = null;
 			if (Flags.IsLibrarySymbol)
 			{
-				library = new LibrarySymbol(library.Name, _referenced, _customTypes.Values.ToArray(), _styles.Values.ToArray(), _variables, _imports.ToArray());
+				library = new LibrarySymbol(Flags.LibraryName, _referenced, _customTypes.Values.ToArray(), _styles.Values.ToArray(), _variables, _imports.ToArray());
 				foreach (var customType in library.CustomTypes)
 				{
 					customType.Source = library;
@@ -145,17 +145,6 @@ namespace Minsk.CodeAnalysis
 			var result = new CustomFilter(name, filters.ToArray(), filterNames.ToArray());
 			_variables[node.Variable] = result;
 			_filters.Add(result);
-		}
-
-		protected override void EvaluateLibraryStatement(BoundLibraryStatement node)
-		{
-			Flags.IsLibrarySymbol = true;
-			Flags.AnimationsAllowed = false;
-			Flags.DatasAllowed = false;
-			Flags.GroupsAllowed = false;
-			Flags.StyleAllowed = false;
-			EvaluateStatement(node.BoundBody);
-			library = new LibrarySymbol(node.Variable.Name);
 		}
 
 		private Slides.Attribute[] CollectAnimationFields(BoundBlockStatement statement, Type animatedObject)
@@ -508,7 +497,7 @@ namespace Minsk.CodeAnalysis
 
 		protected override void EvaluateDataStatement(BoundDataStatement node)
 		{
-			if (!Flags.DatasAllowed)
+			if (!Flags.StructsAllowed)
 				throw new Exception();
 			var data = new BodySymbol(node.Type, null);
 			_customTypes.Add(node.Type, data);
@@ -673,7 +662,7 @@ namespace Minsk.CodeAnalysis
 
 		}
 
-		protected override void EvaluateUseStatement(BoundUseStatement node)
+		protected override void EvaluateUseStatement(BoundJSInsertionStatement node)
 		{
 			if (!_currentSlide.isVisible) return;
 			foreach (var dependency in node.Dependencies)
@@ -991,18 +980,6 @@ namespace Minsk.CodeAnalysis
 		{
 			switch (name)
 			{
-				case "useStyle":
-					Flags.StyleAllowed = true;
-					break;
-				case "useGroup":
-					Flags.GroupsAllowed = true;
-					break;
-				case "useData":
-					Flags.DatasAllowed = true;
-					break;
-				case "useAnimation":
-					Flags.AnimationsAllowed = true;
-					break; ;
 				case "applyStyle":
 					var style = (CustomStyle)args[0];
 					if (_groupAppliedStyles.Count == 0)

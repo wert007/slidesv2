@@ -13,6 +13,7 @@ using SVGColor = SVGLib.Datatypes.Color;
 using SVGGraphicsElement = SVGLib.GraphicsElements.SVGGraphicsElement;
 using Circle = SVGLib.GraphicsElements.Circle;
 using Line = SVGLib.GraphicsElements.Line;
+using Rect = SVGLib.GraphicsElements.Rect;
 using SVGLib.Parsing;
 using SVGLib.PathOperations;
 using SVGLib.ContainerElements;
@@ -22,6 +23,15 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 
 	public static class GlobalSVGFunctions
 	{
+		public static SVGContainer rect(Unit width, Unit height)
+		{
+			var r = new Rect(0, 0, 100, 100);
+			var result = new SVGContainer(r);
+			result.width = width;
+			result.height = height;
+			return result;
+		}
+
 		public static SVGContainer line(Unit x1, Unit y1, Unit x2, Unit y2, Color fill)
 		{
 			var l = new Line(0, 0, 100, 100);

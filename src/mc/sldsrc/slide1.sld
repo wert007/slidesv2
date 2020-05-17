@@ -10,18 +10,24 @@ import gfont('Quicksand') as quicksand;
 // - Move filters into the SVG project.
 // - JSInsertions:
 //    - Multiple Sliders on one page => unique function names for each slide
-//    - Overthink use statement. Should we really specify what we need? 
-//					+								-
-//       You know exactly which slider		you don't really need it for time..
-//		 is meant.
+//    - Overthink use statement. There is no need for dependencies.. so what do we do?
+//      because 
+//       
+//           use:
+//           enduse
 //
-//    - Would it be enough to just specify the slider and not slider.value? (yes,
-//		but is it understandable, that that is just about slider.value even though
-//      you use the whole slider in the use statement?)
+//      Looks terrible and is not very descriptive. So we would need another name then
+//      use for this statement.
+//
+//           jsinsertion:
+//           endjsinsertion
+//
 // - Rename Data to struct
 // - Add all functions in js
 // - Add all Element fields in js/css
-
+// - Get rid of #math
+// - Support MathExpressions
+// - use the js youtube api
 
 //Possible Features:
 // - make arrays safe. What do we do if we have an IndexOutOfBoundsException?
@@ -47,7 +53,7 @@ import gfont('Quicksand') as quicksand;
 //				let b = arrow(Direction.South, 100, 100, 0.5f, 0.5f);
 //
 //		  This doesn't work, because we don't know which lines are important and which not
-//		  Right now only LineTo and their kind are implemented.
+//		- Right now only LineTo and their kind are implemented.
 
 
 //
@@ -69,18 +75,13 @@ template stressMe(child: Slide):
 	label.orientation = Horizontal.Left | Vertical.Top;
 	label.fontsize = 12pt;
 	label.margin = margin(10px);
-	
-	//Throws compiletime error! 
-	//Only inside use block!
-	//let a = totalTime; 
 
-	use totalTime:
+	jsinsertion totalTime:
 		label.text = toTime(totalTime);
 		if totalTime > 5000:
 			child.background = red;
 		endif
-		//child.background = hsl(mod(totalTime / 40, 360), 40, 90);
-	enduse
+	endjsinsertion
 endtemplate
 
 template pagenumber(child: Slide):
@@ -95,9 +96,9 @@ template pagenumber(child: Slide):
 	label.margin = margin(10px);
 
 	let progress = child.index / float(slideCount - 1);
-	//let rect = rect(pct(progress * 100), 10px);
-	//rect.fill = rgb(int(255 * progress), 0, int(255 * (1 - progress)));
-	//rect.orientation = Vertical.Bottom | Horizontal.Left;
+	let rect = rect(pct(progress * 100), 10px);
+	rect.fill = rgb(int(255 * progress), 0, int(255 * (1 - progress)));
+	rect.orientation = Vertical.Bottom | Horizontal.Left;
 endtemplate
 
 style std:
@@ -207,7 +208,7 @@ slide algo < pagenumber:
 	//let hr = tbl.getRow(0)[..].content;
 	//
 	//let hr = [:string; tbl.getRow(0).len()];
-	//for #anonymFor in tbl.getRow(0).len():
+	//for #anonymFor in 0..hr.len():
 	//	hr[#anonymFor] = tbl.getRow(0)[#anonymFor].content;
 	//endfor
 	let headerRow = ['abc', 'abC', 'aBc', 'AbC', 'ABc', 'ABC'];
@@ -258,17 +259,17 @@ slide table < pagenumber:
 	tbl.orientation = Horizontal.Right | Vertical.Bottom;
 endslide
 
-data noneable:
+struct noneable:
 	i : int;
-enddata
+endstruct
 
 slide github < pagenumber:
 	code.setStyle(CodeHighlighter.Tomorrow);
-	//let repository = code.github('wert007/GTIProject');
-	//let codeBlockB = code.codeblock(repository, 'main.c', 3..14);
-	//codeBlockB.fontsize = 10pt;
-	//codeBlockB.margin = margin(5%, 15%);
-	//codeBlockB.orientation = Horizontal.Stretch | Vertical.Center;
+	let repository = code.github('wert007/GTIProject');
+	let codeBlockB = code.codeblock(repository, 'main.c', 3..14);
+	codeBlockB.fontsize = 10pt;
+	codeBlockB.margin = margin(5%, 15%);
+	codeBlockB.orientation = Horizontal.Stretch | Vertical.Center;
 endslide
 
 slide ~noneableBinding:
@@ -333,10 +334,10 @@ slide mathTwo:
 	let f = #math 'b * x^2 + a * c';
 	
 	f.a = 2;
-	use sld.value:
+	jsinsertion sld.value:
 		f.b = sld.value;
 		f.c = -2 * sld.value;
-	enduse
+	endjsinsertion
 	//TODO: Make mathematical expressions beautiful!
 	//let expression = new MathExpression(f);
 	
@@ -361,9 +362,9 @@ slide a < pagenumber:
 	//different locations and this formula always just sets
 	//the margin, there is confusion.
 	//	lbl.margin.top = pct(sld.value * 10);
-	use sld.value, totalTime:
+	jsinsertion sld.value, totalTime:
 		lbl.color = hsl(mod(totalTime / 100, 360), 255, sld.value);
-	enduse
+	endjsinsertion
 	lbl.orientation = Vertical.Top | Horizontal.Stretch;
 	lbl.align = Alignment.Center;
 
@@ -388,15 +389,6 @@ slide cityDevelopment < pagenumber:
 	args.contents = contents;
 	args.populationFile = @'somefile.csv';
 	args.populationSource = '(c) surely wikipedia';
-
-	//How long are we going to keep tuples? idk.. there is no good use case anywhere?
-	//maybe in for loops. like 
-	//
-	//	for a~, i~ in array:
-	//
-	//Where i would be the index while a is the actual element.
-	//The only current use of tuples is dead. even though
-	//they are technically still supported.. just not used anymore..
 
 	let ~text = new custom.cityDevelopmentText(args);
 	~text.height = 100%;
@@ -500,8 +492,8 @@ slide overview:
 	//imgBackground.filter = blur(5);
 	imgBackground.orientation = Orientation.Stretch;
 	imgBackground.stretching = ImageStretching.Cover;
-	//let whitePane = rect(100%, 100%);
-	//whitePane.fill = argb(160, 255, 255, 255);
+	let whitePane = rect(100%, 100%);
+	whitePane.fill = argb(160, 255, 255, 255);
 
 	let map = image(@'city\map.png'); //TODO: Change image
 	let imgMap = new Image(map);
@@ -583,9 +575,10 @@ endslide
 
 slide ~singleLineStatementBlocks:
 	let sld = new Slider(0..360);
-	use totalTime, sld.value:
+	jsinsertion totalTime, sld.value:
 		background = hsl(sld.value, mod(totalTime, 255), mod(totalTime, 255));
-	enduse
+	endjsinsertion
+	
 	/*
 	use sld.value:
 		let sld_value = document.getElementById('singleLineStatementBlocks-sld').value;

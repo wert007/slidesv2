@@ -2,7 +2,7 @@
 {
 	internal class LibraryStatementSyntax : StatementSyntax
 	{
-		public LibraryStatementSyntax(SyntaxToken libraryKeyword, SyntaxToken identifier, SyntaxToken colonToken, BlockStatementSyntax body, SyntaxToken endLibraryKeyword)
+		public LibraryStatementSyntax(SyntaxToken libraryKeyword, SyntaxToken identifier, SyntaxToken colonToken, LibraryBlockStatementSyntax body, SyntaxToken endLibraryKeyword)
 		{
 			LibraryKeyword = libraryKeyword;
 			Identifier = identifier;
@@ -16,7 +16,7 @@
 		public SyntaxToken LibraryKeyword { get; }
 		public SyntaxToken Identifier { get; }
 		public SyntaxToken ColonToken { get; }
-		public BlockStatementSyntax Body { get; }
+		public LibraryBlockStatementSyntax Body { get; }
 		public SyntaxToken EndLibraryKeyword { get; }
 	}
 }
