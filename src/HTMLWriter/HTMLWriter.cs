@@ -68,6 +68,11 @@ namespace HTMLWriter
 			WriteInlineTag("script", "");
 		}
 
+		public void PushAttribute(string name)
+		{
+			_attributes.Push(new KeyValuePair<string, string>(name, null));
+		}
+
 		public void PushAttribute(string name, string value)
 		{
 			_attributes.Push(new KeyValuePair<string, string>(name, value));
@@ -83,7 +88,10 @@ namespace HTMLWriter
 			while(_attributes.Count != 0)
 			{
 				var attribute = _attributes.Pop();
-				_writer.Write($" {attribute.Key}=\"{attribute.Value}\"");
+				if (attribute.Value == null)
+					_writer.Write($" {attribute.Key}");
+				else
+					_writer.Write($" {attribute.Key}=\"{attribute.Value}\"");
 			}
 			if (needsEnding)
 				_writer.Write("/");

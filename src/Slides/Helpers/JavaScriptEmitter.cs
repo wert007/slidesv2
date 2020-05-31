@@ -23,7 +23,7 @@ namespace Slides.Helpers
 
 			public string Representation { get; }
 		}
-	
+
 		private static CultureInfo _usCulture = CultureInfo.CreateSpecificCulture("US-us");
 
 		public static string ObjectToString(object value)
@@ -72,6 +72,9 @@ namespace Slides.Helpers
 					break;
 				case Filter filter:
 					writer.EmitSVGFilter(filter);
+					break;
+				case YouTubePlayerParameters parameters:
+					writer.EmitYouTubePlayerParameters(parameters);
 					break;
 				default:
 					throw new NotImplementedException();
@@ -175,6 +178,68 @@ namespace Slides.Helpers
 					break;
 			}
 			writer.Write(")'");
+		}
+
+		private static void EmitYouTubePlayerParameters(this TextWriter writer, YouTubePlayerParameters parameters)
+		{
+			int BoolToInt(bool b) { return b ? 1 : 0; }
+			string ListTypeToString(YouTubePlayerParameters.ListType list)
+			{
+				switch (list)
+				{
+					case YouTubePlayerParameters.ListType.Playlist:
+					case YouTubePlayerParameters.ListType.Search:
+						return list.ToString();
+					case YouTubePlayerParameters.ListType.UserUploads:
+						return "user-uploads";
+					default:
+						throw new NotImplementedException();
+				}
+			}
+			writer.WriteLine("{");
+			var defaultValues = new YouTubePlayerParameters();
+			var w = new StringWriter();
+			if (parameters.autoplay != defaultValues.autoplay)
+				w.WriteLine($"autoplay: {BoolToInt(parameters.autoplay)},");
+			if (parameters.color != defaultValues.color)
+				w.WriteLine($"color: '{parameters.color}',");
+			if (parameters.controls != defaultValues.controls)
+				w.WriteLine($"controls: '{parameters.controls.ToString().ToLower()}',");
+			if (parameters.disablekb != defaultValues.disablekb)
+				w.WriteLine($"disablekb: {BoolToInt(parameters.disablekb)},");
+			if (parameters.enablejsapi != defaultValues.enablejsapi)
+				w.WriteLine($"enablejsapi: {BoolToInt(parameters.enablejsapi)},");
+			if (parameters.end != defaultValues.end)
+				w.WriteLine($"end: {parameters.end},");
+			if (parameters.fs != defaultValues.fs)
+				w.WriteLine($"fs: {BoolToInt(parameters.fs)},");
+			if (parameters.hl != defaultValues.hl)
+				w.WriteLine($"hl: '{parameters.hl}',");
+			if (parameters.iv_load_policy != defaultValues.iv_load_policy)
+				w.WriteLine($"iv_load_policy: {(parameters.iv_load_policy ? 1 : 3)},");
+			if (parameters.list != defaultValues.list)
+				w.WriteLine($"list: '{parameters.list}',");
+			if (parameters.listType != defaultValues.listType)
+				w.WriteLine($"listType: {ListTypeToString(parameters.listType.Value)},");
+			if (parameters.loop != defaultValues.loop)
+				w.WriteLine($"loop: {BoolToInt(parameters.loop)},");
+			if (parameters.modestbranding != defaultValues.modestbranding)
+				w.WriteLine($"modestbranding: {BoolToInt(parameters.modestbranding)},");
+			if (parameters.origin != defaultValues.origin)
+				w.WriteLine($"origin: '{parameters.origin}',");
+			if (parameters.playlist != defaultValues.playlist)
+				w.WriteLine($"playlist: '{string.Join(",", parameters.playlist)}',");
+			if (parameters.playsinline != defaultValues.playsinline)
+				w.WriteLine($"playsinline: {BoolToInt(parameters.playsinline)},");
+			if (parameters.rel != defaultValues.rel)
+				w.WriteLine($"rel: {BoolToInt(parameters.rel)},");
+			if (parameters.showinfo != defaultValues.showinfo)
+				w.WriteLine($"showinfo: {BoolToInt(parameters.showinfo)},");
+			if (parameters.start != defaultValues.start)
+				w.WriteLine($"start: {parameters.start},");
+			var sb = w.GetStringBuilder();
+			writer.WriteLine(sb.ToString().Trim().TrimEnd(','));
+			writer.WriteLine("}");
 		}
 	}
 }

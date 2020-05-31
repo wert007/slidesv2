@@ -9,6 +9,7 @@ namespace Slides
 		public string name { get; }
 		public int index { get; }
 		public bool isVisible { get; }
+		public int startTime { get; }
 		public Brush background { get; set; }
 		public Color color { get; set; }
 		public Font font { get; set; }
@@ -19,6 +20,7 @@ namespace Slides
 		public Color borderColor { get; set; }
 		public Thickness borderWidth { get; set; }
 		public Filter n_filter { get; set; }
+
 		private HashSet<CustomStyle> appliedStyles = new HashSet<CustomStyle>();
 		private Dictionary<string, string> _data = new Dictionary<string, string>();
 

@@ -71,6 +71,7 @@ namespace Minsk.CodeAnalysis
 			var tmp = new IndentedTextWriter(baseTmp);
 			EmitExpression(node.Initializer, tmp);
 			_variableDefinitions.Add(node.Variable.Name, baseTmp.ToString());
+			_registeredVariables.Add(node.Variable.Name);
 		}
 
 		private void EmitExpressionStatement(BoundExpressionStatement node)

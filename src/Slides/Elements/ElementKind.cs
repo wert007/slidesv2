@@ -18,6 +18,7 @@
 		Table,
 		TableChild,
 		SplittedContainer,
-		Rect
+		Rect,
+		YouTubePlayer
 	}
 }

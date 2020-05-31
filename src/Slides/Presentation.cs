@@ -38,9 +38,9 @@ namespace Slides
 		public JSInsertionBlock[] JSInsertions { get; }
 		public string[] Imports { get; }
 		public string[] ReferencedFiles { get; }
-		public CodeHighlighter CodeHighlighter { get; }
+		public PresentationFlags Flags { get; }
 
-		public Presentation(Slide[] slides, Style[] styles, CustomFilter[] customFilter, Transition[] transitions, Library[] libraries, JSInsertionBlock[] jsInsertions, string[] imports, string[] referencedFiles, CodeHighlighter codeHighlighter)
+		public Presentation(Slide[] slides, Style[] styles, CustomFilter[] customFilter, Transition[] transitions, Library[] libraries, JSInsertionBlock[] jsInsertions, string[] imports, string[] referencedFiles, PresentationFlags flags)
 		{
 			Slides = slides;
 			Styles = styles;
@@ -50,7 +50,7 @@ namespace Slides
 			JSInsertions = jsInsertions;
 			Imports = imports;
 			ReferencedFiles = referencedFiles;
-			CodeHighlighter = codeHighlighter;
+			Flags = flags;
 		}
 	}
 

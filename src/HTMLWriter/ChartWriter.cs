@@ -17,10 +17,10 @@ namespace HTMLWriter
 		public static void WritePlot(JavaScriptWriter writer, string parentName, MathPlot plot)
 		{
 			var id = $"{parentName}-{plot.name}";
-			writer.ToggleOnload();
+			writer.SwitchInto("loadInner");
 			WritePlotOptions(writer, plot);
 			WriteApexChart(writer, id, plot, true);
-			writer.ToggleOnload();
+			writer.ResetWriter();
 			_plots.Add(id, plot);
 			WriteUpdatePlot(writer, parentName, plot);
 		}
@@ -28,11 +28,11 @@ namespace HTMLWriter
 
 		public static void WriteChart(JavaScriptWriter writer, string id, Chart chart)
 		{
-			writer.ToggleOnload();
+			writer.SwitchInto("loadInner");
 			WriteOptions(writer, chart);
 
 			WriteApexChart(writer, id, chart, false);
-			writer.ToggleOnload();
+			writer.ResetWriter();
 		}
 
 		private static void WriteApexChart(JavaScriptWriter writer, string id, Chart chart, bool isPlot)
@@ -117,9 +117,9 @@ let options_{plot.name} = {{
 		private static void WriteUpdatePlot(JavaScriptWriter writer, string parentName, MathPlot plot)
 		{
 			var scope = $"{parentName}_{plot.Graph.Name}_scope";
-			writer.ToggleOnload();
+			writer.SwitchInto("loadInner");
 			writer.WriteFunctionCall($"recalculate_{scope}");
-			writer.ToggleOnload();
+			writer.ResetWriter();
 			writer.StartFunction($"recalculate_{scope}");
 			writer.StartVariableDeclaration("data");
 			writer.StartArray();

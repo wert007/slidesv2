@@ -93,7 +93,7 @@ namespace Minsk.CodeAnalysis
 					libraries[i] = new Library(referenced[i].Name, referenced[i].Libraries?.Select(l => new Library(l.Name, null, l.Styles)).ToArray(), referenced[i].Styles);
 					_presentationBuilder.AddImportRange(referenced[i].Imports);
 				}
-				return new Presentation(_presentationBuilder.GetSlides(), _presentationBuilder.GetStyles(), _presentationBuilder.GetFilters(), _presentationBuilder.GetTransitions(), libraries, _presentationBuilder.GetJSInsertions(), _presentationBuilder.GetImports(), _presentationBuilder.GetReferencedFiles(), Flags.CodeHighlighter);
+				return new Presentation(_presentationBuilder.GetSlides(), _presentationBuilder.GetStyles(), _presentationBuilder.GetFilters(), _presentationBuilder.GetTransitions(), libraries, _presentationBuilder.GetJSInsertions(), _presentationBuilder.GetImports(), _presentationBuilder.GetReferencedFiles(), Flags);
 			}
 		}
 

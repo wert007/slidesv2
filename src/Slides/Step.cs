@@ -10,7 +10,7 @@ namespace Slides
 		public Element[] VisualChildren { get; private set; }
 		public object[] DataChildren { get; private set; }
 		public string[] DataChildrenNames { get; private set; }
-		private string ParentName { get; }
+		public string ParentName { get; }
 
 		private static int nextID = 0;
 

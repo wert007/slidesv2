@@ -1,7 +1,7 @@
 ﻿using Slides.Code;
 using System;
 
-namespace Minsk.CodeAnalysis
+namespace Slides
 {
 	public struct PresentationFlags
 	{
@@ -13,6 +13,7 @@ namespace Minsk.CodeAnalysis
 		public bool StructsAllowed { get; set; }
 		public bool TemplatesAllowed { get; set; }
 		public CodeHighlighter CodeHighlighter { get; set; }
+		public bool UsesYouTube { get; set; }
 
 		public void IsLibrary(string name)
 		{
@@ -20,7 +21,7 @@ namespace Minsk.CodeAnalysis
 			LibraryName = name;
 		}
 
-		internal void SetPresentation()
+		public void SetPresentation()
 		{
 			StyleAllowed = true;
 			AnimationsAllowed = true;

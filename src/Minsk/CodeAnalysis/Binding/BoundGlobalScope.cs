@@ -1,4 +1,5 @@
 using Minsk.CodeAnalysis.Symbols;
+using Slides;
 using System.Collections.Generic;
 
 namespace Minsk.CodeAnalysis.Binding

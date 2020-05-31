@@ -79,6 +79,7 @@
     <Compile Include="Elements\IFrame.cs" />
     <Compile Include="Elements\Image.cs" />
     <Compile Include="Data\ImageSource.cs" />
+    <Compile Include="Elements\YouTubePlayer.cs" />
     <Compile Include="Filter.cs" />
     <Compile Include="Helpers\JavaScriptEmitter.cs" />
     <Compile Include="ImportExpression.cs" />
@@ -91,6 +92,7 @@
     <Compile Include="Math\MathFormula.cs" />
     <Compile Include="Math\MathPlot.cs" />
     <Compile Include="Presentation.cs" />
+    <Compile Include="PresentationFlags.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Step.cs" />
     <Compile Include="Template.cs" />

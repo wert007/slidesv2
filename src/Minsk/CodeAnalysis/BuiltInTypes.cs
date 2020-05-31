@@ -176,6 +176,11 @@ namespace Minsk.CodeAnalysis
 			Add(typeof(List));
 			Add(typeof(IFrame));
 			Add(typeof(Slider));
+			Add(typeof(YouTubeQuality));
+			Add(typeof(YouTubePlayerParameters.ShowControls));
+			Add(typeof(YouTubePlayerParameters.ListType));
+			Add(typeof(YouTubePlayerParameters));
+			Add(typeof(YouTubePlayer));
 			Add(typeof(TableChild));
 			Add(typeof(Table));
 

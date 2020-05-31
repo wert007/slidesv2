@@ -91,6 +91,7 @@ namespace Slides.Elements
 		private static int index = 0;
 		private Step step { get; set; }
 		public void set_Step(Step step) => this.step = step;
+		public Step get_Step() => step;
 		public string get_Id()
 		{
 			if (parent != null) return $"{parent.get_Id()}-{name}";

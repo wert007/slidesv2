@@ -10,22 +10,13 @@ namespace HTMLWriter
 {
 	public class JavaScriptWriter : IDisposable
 	{
-		private IndentedTextWriter _writer;
-		private IndentedTextWriter _onLoadWriter;
+		private IndentedTextWriter _mainWriter;
+		private IndentedTextWriter _currentWriter = null;
 
-		private static CultureInfo _usCulture = CultureInfo.CreateSpecificCulture("US-us");
+		private Dictionary<string, IndentedTextWriter> _functions = new Dictionary<string, IndentedTextWriter>();
 
-		private IndentedTextWriter CurrentWriter
-		{
-			get
-			{
-				if (writeInOnLoad)
-					return _onLoadWriter;
-				return _writer;
-			}
-		}
+		private IndentedTextWriter CurrentWriter => _currentWriter ?? _mainWriter;
 
-		private bool writeInOnLoad = false;
 
 		internal void WriteFunctionCall(string name, params object[] args)
 		{
@@ -43,45 +34,68 @@ namespace HTMLWriter
 
 		private Stack<string> _startedFunctions;
 
-		public int Indent => _writer.Indent;
+		public int Indent => _mainWriter.Indent;
 
 		public JavaScriptWriter(FileStream stream)
 		{
-			_writer = new IndentedTextWriter(new StreamWriter(stream));
-			_onLoadWriter = new IndentedTextWriter(new StringWriter());
+			_mainWriter = new IndentedTextWriter(new StreamWriter(stream));
+			StartFunctionCollector("loadInner");
 			_startedFunctions = new Stack<string>();
 		}
 
 		internal void Write(string s)
 		{
-			_writer.Write(s);
+			_mainWriter.Write(s);
 		}
 
 		internal void WriteLine(string s)
 		{
-			_writer.WriteLine(s);
+			_mainWriter.WriteLine(s);
 		}
 
 		public void Dispose()
 		{
-			WriteOnLoad();
-			_onLoadWriter.Flush();
-			_onLoadWriter.Dispose();
-			_writer.Flush();
-			_writer.Dispose();
+			foreach (var f in _functions)
+			{
+				var w = f.Value.InnerWriter;
+				EndFunctionCollector(f.Key, true);
+				_mainWriter.WriteLine(w.ToString());
+				w.Flush();
+				w.Dispose();
+			}
+			_mainWriter.Flush();
+			_mainWriter.Dispose();
 		}
 
-		public void ToggleOnload()
+		public void StartFunctionCollector(string name, params string[] parameters)
 		{
-			writeInOnLoad = !writeInOnLoad;
+			var writer = new IndentedTextWriter(new StringWriter());
+			writer.WriteLine($"function {name}({string.Join(", ", parameters)}){{");
+			writer.Indent++;
+			_functions.Add(name, writer);
 		}
 
-		private void WriteOnLoad()
+		public void SwitchInto(string name)
 		{
-			writeInOnLoad = false;
-			StartFunction("loadInner");
-			_writer.WriteLine(_onLoadWriter.InnerWriter.ToString());
-			EndFunction();
+			_currentWriter = _functions[name];
+		}
+
+		public void ResetWriter()
+		{
+			_currentWriter = null;
+		}
+
+		public void EndFunctionCollector(string name, bool keepEntry = false)
+		{
+			var writer = _functions[name];
+			writer.Indent--;
+			writer.WriteLine("}");
+			writer.Flush();
+			if (!keepEntry)
+			{
+				writer.Dispose();
+				_functions.Remove(name);
+			}
 		}
 
 		public void StartFunction(string name, params string[] parameters)

@@ -10,9 +10,12 @@ import gfont('Quicksand') as quicksand;
 // - Maybe rename borderThickness to borderWidth?
 //
 // - big cleanup
-//   - slides shouldn't play/update things while not active/seen
-//     this concerns mostly youtube. And totalTime needs something like
-//     slideTime/elapsedTime or a slideStartTime. 
+//   - right now every youtube video will be stopped once you leave its
+//     slide and every youtube video, which didn't come to an end will start playing
+//     once you enter its slide. but i think if the video wasn't auto paused because
+//     you went to the next slide it shouldn't autoplay as well once you enter again.
+//     And consider steps. if i create a video on the second step. it will still play
+//     and everything before hand. Which it shouldnt. But i like the progress.
 // - improve rect() function. 
 //   SVG in HTML is shit. you have to put things into a svg container.
 //   which i guess would be fine. But then you have to choose, if the
@@ -26,7 +29,8 @@ import gfont('Quicksand') as quicksand;
 //      display its child as expected. Which could be ugly if you have a line in 
 //      the bottom left quarter and a slider in the top right. the line could be
 //      on top of the slider, even though they are way apart. what would be the solution
-//      to that?
+//      to that? 
+//      pointer-events are quite supported for svg elements. so you could use these.
 // - JSInsertions:
 //    - Multiple Sliders on one page => unique function names for each slide
 //    - Think of a better name then jsinsertion. 
@@ -54,7 +58,6 @@ import gfont('Quicksand') as quicksand;
 //   - Add Thickness functions
 // - Add all Element fields in js/css
 // - Support MathExpressions
-// - use the js youtube api
 
 //Possible Features:
 // - Support Slide Parameters (from and to) in transitions
@@ -115,8 +118,10 @@ template stressMe(child: Slide):
 	label.margin = margin(10px);
 
 	jsinsertion:
-		label.text = toTime(totalTime);
-		if totalTime > 5000:
+		let slideTime = totalTime - child.startTime;
+		label.text = toTime(slideTime);
+		child.background = white;
+		if slideTime > 5000:
 			child.background = red;
 		endif
 	endjsinsertion
@@ -148,7 +153,7 @@ endstyle
 
 transition stdTransition(from: TransitionSlide, to: TransitionSlide):
 	background = white;
-	duration = 800ms;
+	duration = 10ms;
 	let test = new Label($'FIGHT!');
 	test.fontsize = 100pt;
 	test.align = Alignment.Center;
@@ -224,10 +229,13 @@ slide filterStepsTests:
 	jsinsertion:
 		background = hsl(mod(totalTime, 360), 120, 120);
 	endjsinsertion
-	let imgSrc = image(@'city\los-angeles-picture.jpg');
-	let img = new Image(imgSrc);
-	img.orientation = Orientation.Stretch;
-	img.stretching = ImageStretching.Contain;
+	let vid = youtube('VB4CCHHYOqY', YouTubeQuality.HD1080);
+	vid.orientation = Orientation.Stretch;
+	vid.margin = margin(15%);
+	vid.parameters.color = 'white';
+	vid.parameters.autoplay = true;
+	vid.parameters.fs = false;
+	vid.isMuted = false;
 	filter = discrete;
 	step:
 		filter = grayscale(0.75f);
@@ -295,13 +303,13 @@ struct noneable:
 	i : int;
 endstruct
 
-slide github < pagenumber:
+slide ~github < pagenumber:
 	code.setStyle(CodeHighlighter.Tomorrow);
-	let repository = code.github('wert007/GTIProject');
-	let codeBlockB = code.codeblock(repository, 'main.c', 3..14);
-	codeBlockB.fontsize = 10pt;
-	codeBlockB.margin = margin(5%, 15%);
-	codeBlockB.orientation = Horizontal.Stretch | Vertical.Center;
+	//let repository = code.github('wert007/GTIProject');
+	//let codeBlockB = code.codeblock(repository, 'main.c', 3..14);
+	//codeBlockB.fontsize = 10pt;
+	//codeBlockB.margin = margin(5%, 15%);
+	//codeBlockB.orientation = Horizontal.Stretch | Vertical.Center;
 endslide
 
 slide ~noneableBinding:
@@ -378,7 +386,7 @@ slide mathTwo:
 	plot.orientation = Orientation.Stretch;
 	plot.margin = margin(sld.bottomSide + 15%, 15%, 15%, 15%);
 
-	let vid = youtube('VB4CCHHYOqY', true);
+	let vid = youtube('VB4CCHHYOqY', YouTubeQuality.HD720);
 	vid.orientation = Orientation.Stretch;
 	vid.margin = margin(sld.bottomSide + 15%, 15%, 15%, 15%);
 endslide
@@ -516,7 +524,7 @@ endslide
 
 
 
-slide overview:
+slide ~overview:
 	let la = image(@'city\los-angeles-picture.jpg');
 	let imgBackground = new Image(la);
 	imgBackground.filter = blur(5);

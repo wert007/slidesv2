@@ -2,6 +2,7 @@
 using Slides;
 using Slides.Code;
 using Slides.Elements;
+using Slides.Helpers;
 using Slides.MathExpressions;
 using Slides.SVG;
 using SVGLib;
@@ -11,6 +12,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using static Slides.Helpers.JavaScriptEmitter;
 using Path = System.IO.Path;
 using SVGTag = SVGLib.ContainerElements.SVGTag;
 
@@ -57,7 +59,7 @@ namespace HTMLWriter
 			CopyFile("core.css", targetDirectory, alwaysCopyEverything);
 			CopyFile("core.js", targetDirectory, alwaysCopyEverything);
 			CopyFile("datatypes.js", targetDirectory, alwaysCopyEverything);
-			if (presentation.CodeHighlighter != CodeHighlighter.None)
+			if (presentation.Flags.CodeHighlighter != CodeHighlighter.None)
 			{
 				CopyFile("prism.js", targetDirectory, alwaysCopyEverything);
 				CopyFile("github.js", targetDirectory, alwaysCopyEverything);
@@ -81,6 +83,17 @@ namespace HTMLWriter
 						}
 						_htmlWriter.Start();
 						_htmlWriter.StartHead();
+
+						if(presentation.Flags.UsesYouTube)
+						{
+							_htmlWriter.PushAttribute("async");
+							_htmlWriter.UseJS("https://www.youtube.com/iframe_api");
+							_jsWriter.StartFunctionCollector("youtubeAPIReady");
+							_jsWriter.SwitchInto("youtubeAPIReady");
+							_jsWriter.WriteAssignment("ytPlayers", "[]");
+							_jsWriter.ResetWriter();
+						}
+
 						_htmlWriter.UseCSS("index.css");
 						_htmlWriter.UseJS("index.js");
 						_htmlWriter.UseCSS("core.css");
@@ -88,9 +101,9 @@ namespace HTMLWriter
 						_htmlWriter.UseJS("datatypes.js");
 						_htmlWriter.UseJS("https://cdnjs.cloudflare.com/ajax/libs/mathjs/6.2.5/math.min.js");
 						_htmlWriter.UseJS("https://cdn.jsdelivr.net/npm/apexcharts");
-						if (presentation.CodeHighlighter != CodeHighlighter.None)
+						if (presentation.Flags.CodeHighlighter != CodeHighlighter.None)
 						{
-							switch (presentation.CodeHighlighter)
+							switch (presentation.Flags.CodeHighlighter)
 							{
 								case CodeHighlighter.Coy:
 									_htmlWriter.UseCSS("https://cdnjs.cloudflare.com/ajax/libs/prism/1.17.1/themes/prism-coy.min.css");
@@ -137,7 +150,7 @@ namespace HTMLWriter
 
 						WriteStdOverlay();
 
-						if (presentation.CodeHighlighter != CodeHighlighter.None)
+						if (presentation.Flags.CodeHighlighter != CodeHighlighter.None)
 							_htmlWriter.UseJS("prism.js");
 
 						FilterWriter.Write(_htmlWriter, presentation.CustomFilter);
@@ -213,16 +226,6 @@ namespace HTMLWriter
 				}
 				_jsWriter.EndFunction();
 			}
-			//updateStep(step) {
-			//	switch(step.dataset.numericalId) {
-			//		case 1:
-			//      step_1();
-			//      break;
-			//    case 6:
-			//		  step_6();
-			//      break;
-			//	}
-			//}
 			_jsWriter.StartFunction($"update_totalTime");
 			foreach (var f in timeFunctions)
 			{
@@ -382,6 +385,9 @@ namespace HTMLWriter
 					break;
 				case ElementKind.TableChild:
 					WriteTableChild(parentName, (TableChild)element);
+					break;
+				case ElementKind.YouTubePlayer:
+					WriteYouTubePlayer(parentName, (YouTubePlayer)element);
 					break;
 				default:
 					throw new Exception($"ElementType unknown: {element.kind}");
@@ -555,6 +561,40 @@ namespace HTMLWriter
 			_htmlWriter.StartTag("td", id: id, classes: "tablecell " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
 			_htmlWriter.Write(element.content);
 			_htmlWriter.EndTag();
+		}
+
+		private static void WriteYouTubePlayer(string parentName, YouTubePlayer element)
+		{
+			var id = $"{parentName}-{element.name}";
+			if (string.IsNullOrEmpty(element.name))
+				id = null;
+			_htmlWriter.StartTag("div", id: id, classes: "youtubeplayer " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
+			_htmlWriter.EndTag();
+
+
+			_jsWriter.SwitchInto("youtubeAPIReady");
+			var size = YouTubePlayer.GetDefaultPlayerSize(element.quality);
+			var shouldMuteString = "";
+			if(element.isMuted)
+				shouldMuteString = "e.target.mute();";
+
+			var playerInit = $@"new YT.Player('{id}', {{
+			 height: '{(int)size.Y}',
+          width: '{(int)size.X}',
+          videoId: '{element.videoId}',
+          playerVars: {ObjectToString(element.parameters)},
+			 events: {{
+				 'onReady': function(e) {{
+					 {shouldMuteString}
+				 }}
+			 }}
+		}})";
+			_jsWriter.WriteAssignment("curPlayer", playerInit);
+			_jsWriter.WriteAssignment("curPlayer.stepNumericalId", element.get_Step().ID.ToString());
+			_jsWriter.WriteAssignment("curPlayer.slideId", $"'{element.get_Step().ParentName}'");
+
+			_jsWriter.WriteFunctionCall("ytPlayers.push", new JavaScriptObject("curPlayer"));
+			_jsWriter.ResetWriter();
 		}
 
 		private static void WriteContainer(string parentName, Container element)
