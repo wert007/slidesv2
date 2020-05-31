@@ -4,16 +4,18 @@ namespace Minsk.CodeAnalysis.Binding
 {
 	internal class BoundTransitionStatement : BoundStatement
 	{
-		public BoundTransitionStatement(VariableSymbol variable, BoundParameterBlockStatement boundParameters, BoundBlockStatement boundBody)
+		public BoundTransitionStatement(VariableSymbol variable, BoundParameterStatement fromParameter, BoundParameterStatement toParameter, BoundBlockStatement boundBody)
 		{
 			Variable = variable;
-			BoundParameters = boundParameters;
-			BoundBody = boundBody;
+			FromParameter = fromParameter;
+			ToParameter = toParameter;
+			Body = boundBody;
 		}
 
 		public VariableSymbol Variable { get; }
-		public BoundParameterBlockStatement BoundParameters { get; }
-		public BoundBlockStatement BoundBody { get; }
+		public BoundParameterStatement FromParameter { get; }
+		public BoundParameterStatement ToParameter { get; }
+		public BoundBlockStatement Body { get; }
 
 		public override BoundNodeKind Kind => BoundNodeKind.TransitionStatement;
 	}

@@ -5,7 +5,6 @@ using Minsk.CodeAnalysis.Syntax;
 using Slides;
 using Slides.Debug;
 using Slides.Elements;
-using Slides.Filters;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -656,7 +655,7 @@ namespace Minsk.CodeAnalysis
 			var boundBody = DeserializeBlockStatement();
 
 			ConsumeStatementTail();
-			return new BoundTransitionStatement(variable, boundParameters, boundBody);
+			return new BoundTransitionStatement(variable, boundParameters.Statements[0], boundParameters.Statements[1], boundBody);
 		}
 
 		private BoundVariableDeclaration DeserializeVariableDeclaration()

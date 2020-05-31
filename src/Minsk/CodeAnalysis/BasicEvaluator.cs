@@ -6,7 +6,6 @@ using Minsk.CodeAnalysis.Binding;
 using Minsk.CodeAnalysis.SlidesTypes;
 using Minsk.CodeAnalysis.Symbols;
 using Slides;
-using Slides.Filters;
 using Slides.MathExpressions;
 using Color = Slides.Color;
 

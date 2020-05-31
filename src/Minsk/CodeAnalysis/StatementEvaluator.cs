@@ -73,7 +73,7 @@ namespace Minsk.CodeAnalysis
 				case BoundNodeKind.SVGStatement:
 					EvaluateSVGStatement((BoundSVGStatement)node);
 					break;
-				case BoundNodeKind.JSInsertionKind:
+				case BoundNodeKind.JSInsertionStatement:
 					EvaluateUseStatement((BoundJSInsertionStatement)node);
 					break;
 				case BoundNodeKind.ParameterBlockStatement:

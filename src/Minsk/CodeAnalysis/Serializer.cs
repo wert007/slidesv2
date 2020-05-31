@@ -210,7 +210,7 @@ namespace Minsk.CodeAnalysis
 		}
 
 		private static string SerializeTransitionStatement(BoundTransitionStatement statement)
-			=> $"{statement.Variable.Name}<{Serialize(statement.BoundParameters)}:{Serialize(statement.BoundBody)}";
+			=> $"{statement.Variable.Name}<{Serialize(new BoundParameterBlockStatement(new []{statement.FromParameter, statement.ToParameter}))}:{Serialize(statement.Body)}";
 		private static string SerializeVariableDeclaration(BoundVariableDeclaration declaration)
 			=> $"{SerializeMin(declaration.Variable)}={Serialize(declaration.Initializer)}";
 

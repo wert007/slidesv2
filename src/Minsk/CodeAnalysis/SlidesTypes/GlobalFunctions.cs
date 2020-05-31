@@ -17,13 +17,13 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 		public static string toTime(int time)
 		{
 			var result = new StringBuilder();
-			if(time % 1000 != 0)
+			if (time % 1000 != 0)
 				result.Insert(0, $" {time % 1000}ms");
 			time /= 1000;
-			if(time % 60 != 0)
+			if (time % 60 != 0)
 				result.Insert(0, $" {time % 60}s");
 			time /= 60;
-			if(time % 60 != 0)
+			if (time % 60 != 0)
 				result.Insert(0, $" {time % 60}m");
 			time /= 60;
 			if (time % 24 != 0)
@@ -41,7 +41,7 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			{
 				result = $"{result.Remove(length - 3).Trim()}...";
 			}
-			else if(result.Length < length)
+			else if (result.Length < length)
 			{
 				if (source.GetType().IsPrimitive && source.GetType() != typeof(bool))
 					result = result.PadLeft(length, '0');
@@ -72,6 +72,17 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 		public static float min(float a, float b)
 		{
 			if (a < b) return a;
+			return b;
+		}
+		public static int max(int a, int b)
+		{
+			if (a > b) return a;
+			return b;
+		}
+
+		public static float max(float a, float b)
+		{
+			if (a > b) return a;
 			return b;
 		}
 		public static CSVFile csv(string fileName)
@@ -129,7 +140,7 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			return new Color((byte)r, (byte)g, (byte)b, (byte)255);
 		}
 
-		public static Color argb(int a, int r, int g, int b)
+		public static Color rgba(int r, int g, int b, int a)
 		{
 			return new Color((byte)r, (byte)g, (byte)b, (byte)a);
 		}
@@ -226,21 +237,6 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 				}
 			}
 			return tmp;
-		}
-
-		public static void useStyle()
-		{
-
-		}
-
-		public static void useGroup()
-		{
-
-		}
-
-		public static void useData()
-		{
-
 		}
 	}
 }

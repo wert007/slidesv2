@@ -18,7 +18,6 @@ namespace Minsk.CodeAnalysis
 		private BoundGlobalScope _globalScope;
 		public LibrarySymbol[] References { get;
 			set; }
-		private string _fileName;
 
 		public Compilation(SyntaxTree syntaxTree, bool offlineView)
 			 : this(null, syntaxTree, offlineView)
@@ -30,7 +29,6 @@ namespace Minsk.CodeAnalysis
 			Previous = previous;
 			SyntaxTree = syntaxTree;
 			OfflineView = offlineView;
-			_fileName = syntaxTree.Text.FileName;
 		}
 
 		public Compilation Previous { get; }

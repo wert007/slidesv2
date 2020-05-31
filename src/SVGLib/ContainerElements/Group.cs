@@ -3,6 +3,24 @@ using SVGLib.GraphicsElements;
 
 namespace SVGLib.ContainerElements
 {
+	public enum AspectRatioMeetOrSlice 
+	{
+		Meet, 
+		Slice,
+	}
+	public enum AspectRatioAlign 
+	{
+		None,
+		XMinYMin,
+		XMidYMin,
+		XMaxYMin,
+		XMinYMid,
+		XMidYMid,
+		XMaxYMid,
+		XMinYMax,
+		XMidYMax,
+		XMaxYMax,
+	}
 	public class SVGTag : SVGElement
 	{
 		public SVGTag(ViewBox viewBox, SVGElement[] children)
@@ -11,8 +29,11 @@ namespace SVGLib.ContainerElements
 			Children = children;
 		}
 
+		public AspectRatioAlign PreserveAspectRatioAlign { get; set; }
+		public AspectRatioMeetOrSlice PreserveAspectRatioMeetOrSlice { get; set; }
+
 		public override SVGElementKind Kind => SVGElementKind.SVGTag;
-		public ViewBox ViewBox { get; }
+		public ViewBox ViewBox { get; set; }
 		public SVGElement[] Children { get; }
 	}
 	public class Group : SVGElement

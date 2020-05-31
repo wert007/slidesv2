@@ -17,9 +17,10 @@ namespace HTMLWriter
 			switch (type)
 			{
 				case "std": return "*";
-				case "_Slide": return "slide";
+				case "Slide": return "slide";
 				case "Label": return "label";
 				case "Image": return "image";
+				case "Table": return "table, .tablecell";
 				default:
 					Logger.LogUnmatchedCSSField(type);
 					return type.ToLower();
@@ -102,18 +103,10 @@ namespace HTMLWriter
 		public static void Write(CSSWriter writer, Style style, out string stdTransition)
 		{
 			stdTransition = null;
-			//TODO: Where do we want to find empty style? Probably during binding!!!
-			//if (style.ModifiedFields.Count == 0)
-			//{
-			//	Logger.LogEmptyStyle(style.Name);
-			//	return;
-			//}
 			if (style.Name == "std")
 				WriteStdStyle(writer, (StdStyle)style, out stdTransition);
 			else
 				WriteCustomStyle(writer, (CustomStyle)style);
-
-
 		}
 
 		private static void WriteStdTransition(CSSWriter writer, string transitionName, TransitionCall from, TransitionCall to)
@@ -162,7 +155,7 @@ namespace HTMLWriter
 			WriteBrush(writer, slide.Attributes.background);
 			writer.WriteAttributeIfValue("color", slide.Attributes.color);
 			writer.WriteAttributeIfValue("font", slide.Attributes.font);
-			writer.WriteAttributeIfValue("filter", slide.Attributes.filter);
+			writer.WriteAttributeIfValue("filter", slide.Attributes.n_filter);
 			writer.EndId();
 		}
 

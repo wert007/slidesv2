@@ -7,29 +7,70 @@ import gfont('Quicksand') as quicksand;
 //		import css('myStyle.css');
 
 //Cleanup:
-// - Move filters into the SVG project.
+// - Maybe rename borderThickness to borderWidth?
+//
+// - big cleanup
+//   - slides shouldn't play/update things while not active/seen
+//     this concerns mostly youtube. And totalTime needs something like
+//     slideTime/elapsedTime or a slideStartTime. 
+// - improve rect() function. 
+//   SVG in HTML is shit. you have to put things into a svg container.
+//   which i guess would be fine. But then you have to choose, if the
+//   svg container or its child get your width and height (in Units of course)
+//        If you do the first the child will always be scaled up. And you would have to destroy it's
+//      aspect ratio. Would be totally fine for only rectangles. But for lines e.g. it's 
+//      problematic, because you would try do stretch a line like / into _______________
+//      which just doesn't work...
+//        Option #2: The child will now be perfectly fine and sitting as you said.
+//      But your svg container must now be as big as the browser view in order to
+//      display its child as expected. Which could be ugly if you have a line in 
+//      the bottom left quarter and a slider in the top right. the line could be
+//      on top of the slider, even though they are way apart. what would be the solution
+//      to that?
 // - JSInsertions:
 //    - Multiple Sliders on one page => unique function names for each slide
-//    - Overthink use statement. There is no need for dependencies.. so what do we do?
-//      because 
-//       
-//           use:
-//           enduse
-//
-//      Looks terrible and is not very descriptive. So we would need another name then
-//      use for this statement.
+//    - Think of a better name then jsinsertion. 
+//    - Think if maybe any parameters are needed. 
+//    - And think if special rules are needed where they can be placed. (Like probably 
+//      only as last statement in a block statement and not in groups/svggroups/filter/etc)
 //
 //           jsinsertion:
 //           endjsinsertion
+//    - Emit diagnostic when there is no need for the jsinsertion statement. otherwise we don't know where to put it
+//      and don't evaluate the statements within.
+//    - support writing custom filters in step-jsinsertion
+//    - support reverting step-jsinsertions.
 //
-// - Rename Data to struct
+//		TODO it does work, but because we either set top or margin depending on the orientation
+//		and this formula only sets the margin, it doesn't work..
+//			
+//			lbl.margin.top = pct(sld.value * 10);
+//
+//
 // - Add all functions in js
+//   - Implement Matrix datatype
+//   - Add diagnostic for not js-able functions
+//   - Add alpha() function
+//   - Add Thickness functions
 // - Add all Element fields in js/css
-// - Get rid of #math
 // - Support MathExpressions
 // - use the js youtube api
 
 //Possible Features:
+// - Support Slide Parameters (from and to) in transitions
+//   Which means you will have to generate a actual Transition for each Slide pair
+//   and look for differences.
+// - Full Range support in ArrayAccessors
+//   - Incomplete ranges. (like arr[..5] gives the first 5 elements) 
+// - Add Caption-Element
+//
+//		let ~img = new Image(imgSrc);
+//      let cptImg = new Captioned(~img, 'This is a picture');
+//      cptImg.captionPosition = Direction.South; //Maybe use something like bottom?
+//      cptImg.captionInside = false;
+//		cptImg.caption = new Label('You should not be able to do this, because this would destroy everything. so probably readonly.');
+//
+// - LaTeX support?
 // - make arrays safe. What do we do if we have an IndexOutOfBoundsException?
 //   Should we throw a runtime exception? **Should we try our best to don't do that
 //   and only sometimes throw a runtime exception?** Should we treat runtime exceptions
@@ -37,11 +78,6 @@ import gfont('Quicksand') as quicksand;
 //   PRO: Right now our program is deterministic. There is no random nor user input
 //   BUT: Once we have randomness we would need to make sure, that no matter what random value
 //        We would not have an Exception/Error.
-// - multitype indeces?
-//   data['title'] = 'lol';
-// - Binder needs to warn when a empty style is found. He does now. At least if it is 
-//   literally empty. Once you have anything in it, it doesn't warn you. Because you would
-//   need to compute the style which we only do during evaluation.
 // - Virtual Machine. Mostly to serialize Libraries. And because it is interesting
 // - Advanced SVGSupport?
 //		- SVGParser. Incomplete but working. Needs testing
@@ -54,6 +90,12 @@ import gfont('Quicksand') as quicksand;
 //
 //		  This doesn't work, because we don't know which lines are important and which not
 //		- Right now only LineTo and their kind are implemented.
+//
+// - multitype indeces?
+//   data['title'] = 'lol';
+// - Binder needs to warn when a empty style is found. He does now. At least if it is 
+//   literally empty. Once you have anything in it, it doesn't warn you. Because you would
+//   need to compute the style which we only do during evaluation.
 
 
 //
@@ -62,11 +104,7 @@ import gfont('Quicksand') as quicksand;
 // - Support textboxes maybe? idk why but maybe.
 //   Probably not. Because when would you need it? And how would you make it work in sld?
 //   Just use a iframe if you need to. then you can use clean javascript.
-
-
-//toTime(5) = "5ms";
-//toTime(10000) = "10s";
-//toTime(10050) = "10s 50ms"
+//   Actually idk. Maybe it would be a cool feature? 
 
 
 /// Displays the total time
@@ -76,7 +114,7 @@ template stressMe(child: Slide):
 	label.fontsize = 12pt;
 	label.margin = margin(10px);
 
-	jsinsertion totalTime:
+	jsinsertion:
 		label.text = toTime(totalTime);
 		if totalTime > 5000:
 			child.background = red;
@@ -85,10 +123,7 @@ template stressMe(child: Slide):
 endtemplate
 
 template pagenumber(child: Slide):
-	let name = child.name;
-	if child.getData('name'):
-		name = child.getData('name');
-	endif
+	let name = child.getData('name') ?? child.name;
 	let text = $'{name}: {fixedWidth(child.index + 1, 3)}/{fixedWidth(slideCount, 3)}';
 	let label = new Label(text);
 	label.orientation = Horizontal.Right | Vertical.Top;
@@ -102,17 +137,22 @@ template pagenumber(child: Slide):
 endtemplate
 
 style std:
-	Slide.background = white;
-	
+	Slide.background = white; // rgb(255 - 51, 255 - 51, 255 - 51);
+	//Table.borderColor = white;
 	color = rgb(51, 51, 51);
 	font = quicksand;
 	fontsize = 14pt;
-	//transition = stdTransition;
+	transition = stdTransition;
 endstyle
 
-transition stdTransition(from: Slide, to: Slide):
+
+transition stdTransition(from: TransitionSlide, to: TransitionSlide):
 	background = white;
-	duration = 200ms;
+	duration = 800ms;
+	let test = new Label($'FIGHT!');
+	test.fontsize = 100pt;
+	test.align = Alignment.Center;
+	test.orientation = Orientation.Center;
 	from.hide(duration);
 	to.fadeIn(0ms, duration);
 endtransition
@@ -128,19 +168,17 @@ endfilter
 
 animation quoteGoesUp(element: any, duration: Time):
 	case init:
-		//interpolation = Interpolation.Linear;
 		//It's a bug on the js side. I'm not to sure why...
 		//Maybe because of missing subscribe/broadcast functions
 		//in the js Color class
-		element.background = argb(127, 236, 236, 236);
+		element.background = rgba(236, 236, 236, 127);
 	case done:
 		element.background = red;
 endanimation
 
 animation unblur(element: any, duration: Time):
 	case init:
-		//interpolation = Interpolation.Linear;
-		//element.filter = blur(5);
+		element.filter = blur(5);
 	case done:
 		//Because of the cases progress always has a specific value and you cant use it
 		//for calculations. You would need a special case for this...
@@ -151,10 +189,10 @@ animation unblur(element: any, duration: Time):
 		//
 		//But do we need this? We can set the interpolation and say what value we want when.
 		//idk. 
-		//element.filter = blur(0);
+		element.filter = blur(0);
 endanimation
 
-//TODO: Introduce test slide
+//TODO: Introduce test file
 svg test(operation: int):
 	let a = arrow(Direction.North, 100, 100, 0.5f, 0.5f);
 	a.fill = alpha(blue, 0.5f);
@@ -182,21 +220,22 @@ style algoTable(tbl: Table):
 	tbl.align = Alignment.Center;
 endstyle
 
+slide filterStepsTests:
+	jsinsertion:
+		background = hsl(mod(totalTime, 360), 120, 120);
+	endjsinsertion
+	let imgSrc = image(@'city\los-angeles-picture.jpg');
+	let img = new Image(imgSrc);
+	img.orientation = Orientation.Stretch;
+	img.stretching = ImageStretching.Contain;
+	filter = discrete;
+	step:
+		filter = grayscale(0.75f);
+	step:
+		filter = none;
+endslide
+
 slide divisionByZeroAndArrayOutOfRange < stressMe:
-	print($'{5 / 0f}');
-	//print($'{5 / 0}');
-	//print($'{5 / (0 * 18)}');
-	//print($'{5 / int(min(5, 0))}');
-	//let six = 6;
-	//print($'{5 / min(six, 0)}');
-	let array = [:int;99];
-	//let lul = [:bool;5][99];
-	//print($'{array[100]}');
-	let slider = new Slider(-1..1);
-	//slider.isVisible = false;
-	//print($'{5 / slider.value}');	
-	slider = new Slider(-8900..9000);
-	//print($'{array[totalTime * 555]}');
 	
 endslide
 
@@ -204,13 +243,6 @@ slide algo < pagenumber:
 	setData('name', 'gti presentation 1');
 	let tbl = new Table(7, 7);
 	tbl.applyStyle(algoTable);
-	//Possible feature..
-	//let hr = tbl.getRow(0)[..].content;
-	//
-	//let hr = [:string; tbl.getRow(0).len()];
-	//for #anonymFor in 0..hr.len():
-	//	hr[#anonymFor] = tbl.getRow(0)[#anonymFor].content;
-	//endfor
 	let headerRow = ['abc', 'abC', 'aBc', 'AbC', 'ABc', 'ABC'];
 	tbl.setRow(headerRow, 0, 1);
 	let headerCol = ['ab' , 'ac' , 'bC' , 'Bc' , 'AC' , 'AB'];
@@ -326,15 +358,13 @@ slide ~destroySlideCount:
 endslide
 
 slide mathTwo:
-	let sld = new Slider(1..7);
+	let sld = new Slider(-7..7);
 	sld.orientation = Horizontal.Center | Vertical.Top;
 	
-	//TODO: What about the keyword? do we need it?
-	//Can we change it? idk
-	let f = #math 'b * x^2 + a * c';
+	let f = #'b * x^2 + a * c';
 	
 	f.a = 2;
-	jsinsertion sld.value:
+	jsinsertion:
 		f.b = sld.value;
 		f.c = -2 * sld.value;
 	endjsinsertion
@@ -358,11 +388,7 @@ slide a < pagenumber:
 	lbl.color = black;
 	let sld = new Slider(1..255);
 	lbl.fontsize = 90pt;
-	//TODO it does work, but because we set top and margin at
-	//different locations and this formula always just sets
-	//the margin, there is confusion.
-	//	lbl.margin.top = pct(sld.value * 10);
-	jsinsertion sld.value, totalTime:
+	jsinsertion:
 		lbl.color = hsl(mod(totalTime / 100, 360), 255, sld.value);
 	endjsinsertion
 	lbl.orientation = Vertical.Top | Horizontal.Stretch;
@@ -428,6 +454,10 @@ slide title:
 	title.orientation = Vertical.Center | Horizontal.Stretch;
 	title.background = alpha(antiquewhite, 0.45f);
 	background = image(@'city\night.jpg');
+
+	//TODO: Make this revertable!
+	step lol:
+		filter = grayscale(0.5f);
 endslide
 
 slide traits < pagenumber:
@@ -489,11 +519,11 @@ endslide
 slide overview:
 	let la = image(@'city\los-angeles-picture.jpg');
 	let imgBackground = new Image(la);
-	//imgBackground.filter = blur(5);
+	imgBackground.filter = blur(5);
 	imgBackground.orientation = Orientation.Stretch;
 	imgBackground.stretching = ImageStretching.Cover;
 	let whitePane = rect(100%, 100%);
-	whitePane.fill = argb(160, 255, 255, 255);
+	whitePane.fill = rgba(255, 255, 255, 160);
 
 	let map = image(@'city\map.png'); //TODO: Change image
 	let imgMap = new Image(map);
@@ -501,108 +531,11 @@ slide overview:
 	imgMap.width = 50%;
 	imgMap.height = auto;
 
-	//TODO: This feature would be like super cool.
-	step:
-		//filter = grayscale(1);
 
+	step jsFeature:
 		let svgSrc = loadSVG(@'city\overlay.svg');
 		let viewerComb = new SVGContainer(svgSrc);
-		//TODO: Bring back!
-		//viewerComb.filter = grayscale(0.5f);
+		viewerComb.filter = grayscale(0.5f);
 		viewerComb.orientation = Orientation.Stretch;
 		viewerComb.margin = margin(5%);
-endslide
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
-//slide github < pagenumber:
-//	let sldEnd = new Slider(5..50);
-//	let sldStart = new Slider(1..5);
-//	sldStart.margin = margin(50px, 0, 0, 0);
-//	sldStart.max = sldEnd.value;
-//	sldEnd.min = sldStart.value;
-//
-//	code.setStyle(CodeHighlighter.Funky);
-//	let repository = code.github('wert007/GTIProject');
-//	let codeBlockB = code.codeblock(repository, 'main.c', 3..14);
-//	codeBlockB.fontsize = 10pt;
-//	codeBlockB.orientation = Horizontal.Center | Vertical.Center;
-//	codeBlockB.margin = margin(0, 50%, 0, 0);
-//	codeBlockB.range = sldStart.value..sldEnd.value;
-//	let slider = new Slider(0..1000);
-//	slider.orientation = Horizontal.Stretch | Vertical.Top;
-//	let l = new Label('value not found');
-//	l.margin = margin(25px, 0, 0, 0);
-//	l.text = $'value: {slider.value}';
-////	step lol:
-////		let vid = youtube('VB4CCHHYOqY', true);
-////		vid.orientation = Orientation.Stretch;
-////		vid.filter = discrete;
-////		vid.margin = margin(0, 0, 0, 50%);
-//endslide
-
-
-
-
-
-
-
-
-
-
-slide ~singleLineStatementBlocks:
-	let sld = new Slider(0..360);
-	jsinsertion totalTime, sld.value:
-		background = hsl(sld.value, mod(totalTime, 255), mod(totalTime, 255));
-	endjsinsertion
-	
-	/*
-	use sld.value:
-		let sld_value = document.getElementById('singleLineStatementBlocks-sld').value;
-		let singleLineStatementBlocks = document.getElementById('singleLineStatementBlocks');
-		singleLineStatementBlocks.style.background = 'hsl(' + sld_value + ', ' + (totalTime % 255) + ', ' + (totalTime % 255) + ')';
-	enduse
-
-	UseBlock::
-		jsCode : string;
-		variables : Dictionary<string, string>;
-		type : JSInsertionType;
-		functionName : string;
-
-	function use_singleLineStatementBlocks_sld_value_changed(...)
-	{
-		let sld_value = document.getElementById('singleLineStatementBlocks-sld').value;
-		let singleLineStatementBlocks = document.getElementById('singleLineStatementBlocks');
-		singleLineStatementBlocks.style.background = 'hsl(' + sld_value + ', ' + (totalTime % 255) + ', ' + (totalTime % 255) + ')';
-	}
-
-	use totalTime:
-		let sld_value = document.getElementById('singleLineStatementBlocks-sld').value;
-		let singleLineStatementBlocks = document.getElementById('singleLineStatementBlocks');
-		singleLineStatementBlocks.style.background = 'hsl(' + sld_value + ', ' + (totalTime % 255) + ', ' + (totalTime % 255) + ')';
-	enduse
-	*/
 endslide

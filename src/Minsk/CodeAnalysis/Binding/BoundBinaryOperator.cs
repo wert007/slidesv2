@@ -3,7 +3,6 @@ using Minsk.CodeAnalysis.SlidesTypes;
 using Minsk.CodeAnalysis.Symbols;
 using Minsk.CodeAnalysis.Syntax;
 using Slides;
-using Slides.Filters;
 
 namespace Minsk.CodeAnalysis.Binding
 {

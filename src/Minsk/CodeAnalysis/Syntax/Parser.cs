@@ -462,14 +462,21 @@ namespace Minsk.CodeAnalysis.Syntax
 			return new StepStatementSyntax(stepKeyword, optionalIdentifier, colonToken, body);
 		}
 
-		private VariableExpressionSyntax ParseVariableExpression()
+		private VariableExpressionSyntax ParseVariableExpression(bool allowFieldKeywords = false)
 		{
 			SyntaxToken preTildeToken = null;
 			if (Current.Kind == SyntaxKind.TildeToken)
 				preTildeToken = NextToken();
 
-			//This was whyever a NextToken. And I don't know for sure why..
-			var identifier = MatchToken(SyntaxKind.IdentifierToken); //NextToken(); //  
+			SyntaxToken identifier;
+			if(allowFieldKeywords)
+			{
+				identifier = NextToken();
+				if (identifier.Kind != SyntaxKind.IdentifierToken && identifier.Kind != SyntaxKind.FilterKeyword && identifier.Kind != SyntaxKind.TransitionKeyword)
+					_diagnostics.ReportUnexpectedToken(identifier.Span, identifier.Kind, SyntaxKind.IdentifierToken);
+			}
+			else identifier = MatchToken(SyntaxKind.IdentifierToken);   
+			
 			return new VariableExpressionSyntax(preTildeToken, identifier);
 		}
 
@@ -654,20 +661,11 @@ namespace Minsk.CodeAnalysis.Syntax
 		private StatementSyntax ParseJSInsertionStatement()
 		{
 			var keyword = MatchToken(SyntaxKind.JSInsertionKeyword);
-
-			var commaToken = new List<SyntaxToken>();
-			var expressions = new List<ExpressionSyntax>();
-			expressions.Add(ParseFieldAccessExpression());
-			while(Current.Kind == SyntaxKind.CommaToken)
-			{
-				commaToken.Add(NextToken());
-				expressions.Add(ParseFieldAccessExpression());
-			}
 			var colonToken = MatchToken(SyntaxKind.ColonToken);
 			var body = ParseBlockStatement(SyntaxKind.JSInsertionKeyword);
 			var endKeyword = MatchToken(SyntaxKind.EndJSInsertionKeyword);
 
-			return new JSInsertionStatementSyntax(keyword, expressions.ToArray(), commaToken.ToArray(), colonToken, body, endKeyword);
+			return new JSInsertionStatementSyntax(keyword, colonToken, body, endKeyword);
 		}
 
 
@@ -695,9 +693,6 @@ namespace Minsk.CodeAnalysis.Syntax
 		private ExpressionSyntax ParseBinaryExpression(int parentPrecedence = 0)
 		{
 			ExpressionSyntax left;
-
-			if (Current.Kind == SyntaxKind.HashMathKeyword)
-				return ParseMathExpression();
 
 			var unaryOperatorPrecedence = Current.Kind.GetUnaryOperatorPrecedence();
 			if (unaryOperatorPrecedence != 0 && unaryOperatorPrecedence >= parentPrecedence)
@@ -734,13 +729,6 @@ namespace Minsk.CodeAnalysis.Syntax
 			return left;
 		}
 
-		private ExpressionSyntax ParseMathExpression()
-		{
-			var mathKeyword = MatchToken(SyntaxKind.HashMathKeyword);
-			var stringLiteral = ParseStringLiteral();
-			return new MathExpressionSyntax(mathKeyword, stringLiteral);
-		}
-
 		private ExpressionSyntax TryParseBinaryExpression(int parentPrecedence = 0)
 		{
 			ExpressionSyntax left = null;
@@ -762,6 +750,7 @@ namespace Minsk.CodeAnalysis.Syntax
 
 			while (true)
 			{
+				//What the heck is this???
 				if (Current.Kind != SyntaxKind.PeriodToken)
 					break;
 				var periodToken = NextToken();
@@ -817,6 +806,8 @@ namespace Minsk.CodeAnalysis.Syntax
 					return ParseStringExpression();
 				case SyntaxKind.StringToken:
 					return ParseStringLiteral();
+				case SyntaxKind.MathFormulaToken:
+					return ParseMathFormulaLiteral();
 
 				case SyntaxKind.NumberToken:
 					return ParseNumberLiteral();
@@ -832,7 +823,9 @@ namespace Minsk.CodeAnalysis.Syntax
 
 				case SyntaxKind.TildeToken:
 				case SyntaxKind.IdentifierToken:
-					return ParseVariableOrFunctionExpression();
+				case SyntaxKind.FilterKeyword:
+				case SyntaxKind.TransitionKeyword:
+					return ParseVariableOrFunctionExpression(true);
 				default:
 					_diagnostics.ReportUnexpectedToken(Current.Span, Current.Kind, SyntaxKind.IdentifierToken);
 					return new LiteralExpressionSyntax(NextToken(), null);
@@ -885,7 +878,9 @@ namespace Minsk.CodeAnalysis.Syntax
 
 				case SyntaxKind.TildeToken:
 				case SyntaxKind.IdentifierToken:
-					return ParseVariableOrFunctionExpression();
+				case SyntaxKind.FilterKeyword:
+				case SyntaxKind.TransitionKeyword:
+					return ParseVariableOrFunctionExpression(true);
 				default:
 					return null;
 			}
@@ -898,12 +893,15 @@ namespace Minsk.CodeAnalysis.Syntax
 		//	Array,
 			//FieldAccess,
 		}
-		private ExpressionSyntax ParseVariableOrFunctionExpression()
+		private ExpressionSyntax ParseVariableOrFunctionExpression(bool allowFieldKeywords = false)
 		{
 			if(Current.Kind != SyntaxKind.IdentifierToken && Current.Kind != SyntaxKind.TildeToken)
 			{
-				_diagnostics.ReportUnexpectedToken(Current.Span, Current.Kind, SyntaxKind.IdentifierToken);
-				return ParseNameExpression();
+				if (!allowFieldKeywords || Current.Kind != SyntaxKind.FilterKeyword && Current.Kind != SyntaxKind.TransitionKeyword)
+				{
+					_diagnostics.ReportUnexpectedToken(Current.Span, Current.Kind, SyntaxKind.IdentifierToken);
+					return ParseNameExpression();
+				}
 			}
 			var returnType = PVOFEReturnType.Variable;
 			int i = 0;
@@ -915,6 +913,10 @@ namespace Minsk.CodeAnalysis.Syntax
 				{
 					case SyntaxKind.IdentifierToken:
 					case SyntaxKind.TildeToken:
+						break;
+					case SyntaxKind.FilterKeyword:
+					case SyntaxKind.TransitionKeyword:
+						keepGoing = allowFieldKeywords;
 						break;
 					case SyntaxKind.OpenParenthesisToken:
 						returnType = PVOFEReturnType.Function;
@@ -929,7 +931,7 @@ namespace Minsk.CodeAnalysis.Syntax
 			}
 			switch (returnType)
 			{
-				case PVOFEReturnType.Variable:        return ParseVariableExpression();
+				case PVOFEReturnType.Variable:        return ParseVariableExpression(allowFieldKeywords);
 				case PVOFEReturnType.Function:        return ParseFunctionExpression();
 				//case PVOFEReturnType.Array:           return ParseArrayAccessExpression();
 				//case PVOFEReturnType.FieldAccess:     return ParseFieldAccessExpression();
@@ -937,9 +939,8 @@ namespace Minsk.CodeAnalysis.Syntax
 			}
 		}
 
-		private bool IsSettable(out int offset, out int periodToken)
+		private bool IsSettable()
 		{
-			periodToken = 0;
 			var i = 0;
 			var openParenthesis = 0;
 			var openBrackets = 0;
@@ -976,9 +977,6 @@ namespace Minsk.CodeAnalysis.Syntax
 					case SyntaxKind.CloseBracketToken:
 						openBrackets--;
 						break;
-					case SyntaxKind.PeriodToken:
-						periodToken++;
-						break;
 				}
 				if (openParenthesis < 0 || openBrackets < 0)
 					break;
@@ -987,7 +985,6 @@ namespace Minsk.CodeAnalysis.Syntax
 				i++;
 				peek = Peek(i);
 			}
-			offset = i;
 			return Peek(i).Kind == SyntaxKind.EqualsToken ||
 				Peek(i).Kind == SyntaxKind.PlusEqualsToken ||
 				Peek(i).Kind == SyntaxKind.MinusEqualsToken ||
@@ -997,7 +994,7 @@ namespace Minsk.CodeAnalysis.Syntax
 
 		private ExpressionSyntax ParseAssignmentExpression()
 		{
-			if (IsSettable(out int offset, out int periodTokenCount))
+			if (IsSettable())
 			{
 				ExpressionSyntax left = ParseFieldAccessExpression();
 				if (!left.IsLValue)
@@ -1031,7 +1028,7 @@ namespace Minsk.CodeAnalysis.Syntax
 				if (Current.Kind == SyntaxKind.PeriodToken)
 				{
 					var periodToken = NextToken();
-					var right = ParseVariableOrFunctionExpression();
+					var right = ParseVariableOrFunctionExpression(true);
 					left = new MemberAccessExpressionSyntax(left, periodToken, right);
 				}
 				else if (Current.Kind == SyntaxKind.OpenBracketToken)
@@ -1054,6 +1051,7 @@ namespace Minsk.CodeAnalysis.Syntax
 		{
 			var newKeyword = MatchToken(SyntaxKind.NewKeyword);
 			ExpressionSyntax functionCall = null;
+				//TODO: What is this? Why is this check here and not in MemberAccess/FieldAccess??
 			if (Peek(1).Kind == SyntaxKind.PeriodToken)
 			{
 				functionCall = ParseVariableExpression();
@@ -1152,6 +1150,12 @@ namespace Minsk.CodeAnalysis.Syntax
 		{
 			var stringToken = MatchToken(SyntaxKind.StringToken);
 			return new LiteralExpressionSyntax(stringToken);
+		}
+
+		private LiteralExpressionSyntax ParseMathFormulaLiteral()
+		{
+			var mathFormulaToken = MatchToken(SyntaxKind.MathFormulaToken);
+			return new LiteralExpressionSyntax(mathFormulaToken);
 		}
 
 		private ExpressionSyntax ParseNumberLiteral()

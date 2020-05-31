@@ -1,6 +1,7 @@
 ﻿using Slides;
 using Slides.Debug;
-using Slides.Filters;
+using SVGLib.Filters;
+using SVGLib.Filters.Lights;
 using System;
 using System.Globalization;
 using System.Text;

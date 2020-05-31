@@ -1,5 +1,4 @@
 ﻿using Slides;
-using Slides.Filters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -106,7 +105,7 @@ namespace HTMLWriter
 			{
 				return $"Color_t.lerp({value1}, {value2}, {t}).toString()";
 			}
-			else if (type == typeof(ProcentalFilter))
+			else if (type == typeof(PercentalFilter))
 			{
 				return $"ProcentalFilter.lerp({value1}, {value2}, {t}).toString()";
 			}
@@ -198,7 +197,7 @@ namespace HTMLWriter
 					return "undefined";
 				case bool b:
 					return b.ToString().ToLower();
-				case ProcentalFilter procentalFilter:
+				case PercentalFilter procentalFilter:
 					return $"new ProcentalFilter('{procentalFilter.Name}', {procentalFilter.Value})";
 				case BlurFilter blurFilter:
 					return $"new BlurFilter({blurFilter.Value})";

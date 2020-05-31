@@ -1,7 +1,6 @@
 ﻿using Slides;
 using Slides.Debug;
 using Slides.Elements;
-using Slides.Filters;
 using System;
 using System.CodeDom.Compiler;
 using System.Globalization;
@@ -185,7 +184,7 @@ namespace HTMLWriter
 				case BlurFilter blur:
 					parameters = $"{ToString(blur.Value)}px";
 					break;
-				case ProcentalFilter procental:
+				case PercentalFilter procental:
 					parameters = ToString(procental.Value);
 					break;
 				case HueRotateFilter hueRotate:

@@ -25,7 +25,7 @@ namespace Minsk.CodeAnalysis.Binding
 		SVGStatement,
 		TemplateStatement,
 		TransitionStatement,
-		JSInsertionKind,
+		JSInsertionStatement,
 
 		// Expressions
 		ErrorExpression,

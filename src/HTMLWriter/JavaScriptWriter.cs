@@ -226,6 +226,32 @@ namespace HTMLWriter
 			CurrentWriter.Indent++;
 		}
 
+
+		public void StartSwitch(string switchOn)
+		{
+			CurrentWriter.WriteLine($"switch({switchOn}) {{");
+			CurrentWriter.Indent++;
+		}
+
+		public void EndSwitch()
+		{
+			End();
+		}
+
+		public void StartCase(object value)
+		{
+			CurrentWriter.Write("case ");
+			WriteValue(value);
+			CurrentWriter.WriteLine(":");
+			CurrentWriter.Indent++;
+		}
+
+		public void EndCase()
+		{
+			CurrentWriter.WriteLine("break;");
+			CurrentWriter.Indent--;
+		}
+
 		public void WriteAssignment(string name, string value)
 		{
 			CurrentWriter.WriteLine($"{name} = {value};");

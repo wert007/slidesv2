@@ -1,5 +1,6 @@
 using Minsk.CodeAnalysis.Symbols;
 using Minsk.CodeAnalysis.Text;
+using Slides.MathExpressions;
 using System.Globalization;
 
 namespace Minsk.CodeAnalysis.Syntax
@@ -278,6 +279,16 @@ namespace Minsk.CodeAnalysis.Syntax
 				case '@':
 					ReadString(2);
 					break;
+				case '#':
+					_position++;
+					if (Current == '\'')
+						ReadMathString();
+					else
+						//TODO: This diagnostic is mostly for $'strings'
+						//      So we need either a special one or make 
+						//      some changes for this one.
+						_diagnostics.ReportInvalidStringFormat(_position - 1);
+					break;
 				case '\'':
 					ReadString();
 					break;
@@ -317,7 +328,7 @@ namespace Minsk.CodeAnalysis.Syntax
 					ReadWhiteSpace();
 					break;
 				default:
-					if (char.IsLetter(Current) || Current == '_' || Current == '#')
+					if (char.IsLetter(Current) || Current == '_')
 					{
 						ReadIdentifierOrKeyword();
 					}
@@ -429,10 +440,30 @@ namespace Minsk.CodeAnalysis.Syntax
 			_kind = SyntaxKind.StringToken;
 		}
 
+		private void ReadMathString()
+		{
+			_position++;
+			while(true)
+			{
+				if (Current == '\0' || Current == '\n' || Current == '\'')
+					break;
+				_position++;
+			}
+			if (Current == '\'')
+				_position++;
+			else
+				_diagnostics.ReportUnterminatedString(TextSpan.FromBounds(_start, _position), '\'');
+			var length = _position - _start;
+			var text = _text.ToString(_start + 2, length - 3);
+			_value = new MathFormula(text);
+			_kind = SyntaxKind.MathFormulaToken;
+
+		}
+
 		private void ReadIdentifierOrKeyword()
 		{
 			var isFirst = true;
-			while (char.IsLetter(Current) || Current == '_' || (!isFirst && char.IsDigit(Current)) || (isFirst && Current == '#'))
+			while (char.IsLetter(Current) || Current == '_' || (!isFirst && char.IsDigit(Current)))
 			{
 				isFirst = false;
 				_position++;

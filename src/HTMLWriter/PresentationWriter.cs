@@ -22,7 +22,6 @@ namespace HTMLWriter
 		static JavaScriptWriter _jsWriter;
 		static CSSWriter _cssWriter;
 		static string _stdTransition = null;
-		private static int _stepCounter;
 
 		private static void CopyFile(string name, string targetDirectory, bool alwaysCopy)
 		{
@@ -38,7 +37,6 @@ namespace HTMLWriter
 
 		public static void Write(Presentation presentation, string targetDirectory, bool alwaysCopyEverything = false)
 		{
-			_stepCounter = 0;
 			_stdTransition = null;
 			Directory.CreateDirectory(targetDirectory);
 			foreach (var referencedFile in presentation.ReferencedFiles)
@@ -178,6 +176,7 @@ namespace HTMLWriter
 		private static void WriteJSInsertions(JSInsertionBlock[] insertions)
 		{
 			var timeFunctions = new List<string>();
+			var stepFunctions = new List<Step>();
 			var sortedInsertions = new List<Stack<JSInsertionBlock>>();
 			foreach (var insertion in insertions)
 			{
@@ -195,6 +194,10 @@ namespace HTMLWriter
 				var functionName = insertionStack.Peek().FunctionName + "_" + kind;
 				if (kind == JSInsertionKind.Time)
 					timeFunctions.Add(functionName);
+				else if(kind == JSInsertionKind.Step)
+				{
+					stepFunctions.Add((Step)insertionStack.Peek().Value);
+				}
 				_jsWriter.StartFunction(functionName);
 				foreach (var insertion in insertionStack)
 				{
@@ -210,37 +213,32 @@ namespace HTMLWriter
 				}
 				_jsWriter.EndFunction();
 			}
+			//updateStep(step) {
+			//	switch(step.dataset.numericalId) {
+			//		case 1:
+			//      step_1();
+			//      break;
+			//    case 6:
+			//		  step_6();
+			//      break;
+			//	}
+			//}
 			_jsWriter.StartFunction($"update_totalTime");
 			foreach (var f in timeFunctions)
 			{
 				_jsWriter.WriteFunctionCall(f);
 			}
 			_jsWriter.EndFunction();
-		}
-
-		private static string DeclareJSVariableFromObject(object obj, HashSet<string> declaredVariables)
-		{
-			if (obj is Element e)
+			_jsWriter.StartFunction("update_step", "step");
+			_jsWriter.StartSwitch("step.dataset.stepNumericalId");
+			foreach (var s in stepFunctions)
 			{
-				var name = e.get_Id().Replace('-', '_');
-				if (!declaredVariables.Contains(name))
-				{
-					_jsWriter.WriteVariableDeclarationInline(name, $"document.getElementById('{e.get_Id()}')");
-					declaredVariables.Add(name);
-				}
-				return name;
+				_jsWriter.StartCase(s.ID.ToString());
+				_jsWriter.WriteFunctionCall($"step_{s.ID}_Step");
+				_jsWriter.EndCase();
 			}
-			if (obj is SlideAttributes s)
-			{
-				var name = s.name;
-				if (!declaredVariables.Contains(name))
-				{
-					_jsWriter.WriteVariableDeclarationInline(name, $"document.getElementById('{name}')");
-					declaredVariables.Add(name);
-				}
-				return name;
-			}
-			throw new NotSupportedException();
+			_jsWriter.EndSwitch();
+			_jsWriter.EndFunction();
 		}
 
 		private static void WriteStdOverlay()
@@ -259,6 +257,10 @@ namespace HTMLWriter
 			//data-duration="1000"
 			_htmlWriter.PushAttribute("data-duration", transition.duration.toMilliseconds().ToString());
 			_htmlWriter.StartTag("section", id: transition.name, classes: "transition");
+			foreach (var child in transition.get_Children())
+			{
+				WriteElement(transition.name, child);
+			}
 			_htmlWriter.EndTag();
 		}
 
@@ -291,7 +293,7 @@ namespace HTMLWriter
 		{
 			StyleWriter.WriteStep(_cssWriter, step, parent);
 			_htmlWriter.PushAttribute("data-slide-id", parent.Name);
-			_htmlWriter.PushAttribute("data-step-numerical-id", _stepCounter.ToString());
+			_htmlWriter.PushAttribute("data-step-numerical-id", step.ID.ToString());
 			_htmlWriter.StartTag("div", id: step.Name, classes: "step");
 			foreach (var element in step.VisualChildren)
 			{
@@ -304,10 +306,9 @@ namespace HTMLWriter
 			}
 			foreach (var animation in step.AnimationCalls)
 			{
-				AnimationWriter.Write(_jsWriter, animation, _stepCounter, $"{parent.Name}-{animation.Element.name}");
+				AnimationWriter.Write(_jsWriter, animation, step.ID, $"{parent.Name}-{animation.Element.name}");
 			}
 			_htmlWriter.EndTag();
-			_stepCounter++;
 		}
 
 		private static void WriteMathFormula(string parentName, string name, MathFormula formula)
@@ -373,6 +374,9 @@ namespace HTMLWriter
 				case ElementKind.SVGContainer:
 					WriteSVGContainer(parentName, (SVGContainer)element);
 					break;
+				case ElementKind.Rect:
+					WriteRect(parentName, (Slides.Elements.SVG.Rect)element);
+					break;
 				case ElementKind.Table:
 					WriteTable(parentName, (Table)element);
 					break;
@@ -383,6 +387,7 @@ namespace HTMLWriter
 					throw new Exception($"ElementType unknown: {element.kind}");
 			}
 		}
+
 
 		private static void WriteList(string parentName, List element)
 		{
@@ -492,15 +497,32 @@ namespace HTMLWriter
 			var child = element.Element;
 			var viewBox = SVGWriter.GetViewBox(child);
 			_htmlWriter.PushAttribute("viewBox", $"{viewBox}");
+			//var svg = child as SVGTag;
+			//if (svg != null)
+			//{
+			//	_htmlWriter.PushAttribute("preserveAspectRatio", $"{svg.PreserveAspectRatioAlign} {svg.PreserveAspectRatioMeetOrSlice}");
+			//}
 			_htmlWriter.StartTag("svg", id: id, classes: "svgcontainer " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
-			if (child is SVGTag svg) //TODO: FIXME: Put fill etc on this css. Right now it just gets discarded..
-			{
-				foreach (var svgChild in svg.Children)
-				{
-					SVGWriter.Write(_htmlWriter, svgChild);
-				}
-			}
-			else SVGWriter.Write(_htmlWriter, child);
+			//if (svg != null) //TODO: FIXME: Put fill etc on this css. Right now it just gets discarded..
+			//{
+			//	foreach (var svgChild in svg.Children)
+			//	{
+			//		SVGWriter.Write(_htmlWriter, svgChild);
+			//	}
+			//}
+			//else 
+				SVGWriter.Write(_htmlWriter, child);
+			_htmlWriter.EndTag();
+		}
+
+		private static void WriteRect(string parentName, Slides.Elements.SVG.Rect element)
+		{
+			var id = $"{parentName}-{element.name}";
+			if (string.IsNullOrEmpty(element.name))
+				id = null;
+			_htmlWriter.PushAttribute("width", element.width.ToString());
+			_htmlWriter.PushAttribute("height", element.height.ToString()) ;
+			_htmlWriter.StartTag("rect", id: id, classes: "rect " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
 			_htmlWriter.EndTag();
 		}
 

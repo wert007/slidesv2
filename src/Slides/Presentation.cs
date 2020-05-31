@@ -1,5 +1,4 @@
 ﻿using Slides.Code;
-using Slides.Filters;
 using System;
 using System.Collections.Generic;
 
@@ -9,22 +8,25 @@ namespace Slides
 	{
 		Time,
 		Slider,
-		None
+		None,
+		Step
 	}
 	public class JSInsertionBlock
 	{
-		public JSInsertionBlock(string functionName, string body, Dictionary<string, string> variables, JSInsertionKind kind)
+		public JSInsertionBlock(string functionName, string body, Dictionary<string, string> variables, JSInsertionKind kind, object value = null)
 		{
 			FunctionName = functionName;
 			Body = body;
 			Variables = variables;
 			Kind = kind;
+			Value = value;
 		}
 
 		public string FunctionName { get; }
 		public string Body { get; }
 		public Dictionary<string, string> Variables { get; }
 		public JSInsertionKind Kind { get; }
+		public object Value { get; }
 	}
 	public class Presentation
 	{

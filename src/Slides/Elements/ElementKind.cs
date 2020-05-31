@@ -17,6 +17,7 @@
 		SVGContainer,
 		Table,
 		TableChild,
-		SplittedContainer
+		SplittedContainer,
+		Rect
 	}
 }

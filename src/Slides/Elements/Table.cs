@@ -56,10 +56,10 @@ namespace Slides.Elements
 			font = null;
 			fontsize = new Unit(14, Unit.UnitKind.Point);
 			align = Alignment.Unset;
-			borderColor = new Color(0, 0, 0, 255);
+			//borderColor = new Color(0, 0, 0, 255);
 			var px = new Unit(1, Unit.UnitKind.Pixel);
-			borderThickness = new Thickness(px, px, px, px);
-			borderStyle = BorderStyle.Solid;
+			//borderThickness = new Thickness(px, px, px, px);
+			//borderStyle = BorderStyle.Solid;
 		}
 
 		public TableChild[] getRow(int r)
@@ -150,7 +150,7 @@ namespace Slides.Elements
 			AddToModifiedFields(modifiedFields, "align", align, Alignment.Unset);
 			AddToModifiedFields(modifiedFields, "borderStyle", borderStyle, BorderStyle.Unset);
 			AddToModifiedFields(modifiedFields, "borderColor", borderColor);
-			AddToModifiedFields(modifiedFields, "borderThickness", borderThickness);
+			AddToModifiedFields(modifiedFields, "borderThickness", borderThickness, new Thickness());
 			return new CustomStyle($"{parentName}_{name}_tablechild_style", modifiedFields);
 		}
 	}

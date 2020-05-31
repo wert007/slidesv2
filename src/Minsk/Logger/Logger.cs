@@ -84,12 +84,12 @@ namespace Slides.Debug
 		}
 
 
-		public static void LogUnusedVariableInGroup(string variable, Type type, string groupName)
+		public static void LogUnusedVariableInBlock(string variable, Type type, string blockName)
 		{
 			var typePostfix = "";
 			if (type != null)
 				typePostfix = $" : {type}";
-			var message = $"Unused variable {variable}{typePostfix} in group {groupName}.";
+			var message = $"Unused variable {variable}{typePostfix} in {blockName}.";
 			Log(message, LogLevel.UnusedGroupField);
 		}
 

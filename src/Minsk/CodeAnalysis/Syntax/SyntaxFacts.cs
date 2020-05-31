@@ -86,8 +86,6 @@ namespace Minsk.CodeAnalysis.Syntax
 					return SyntaxKind.ElseKeyword;
 				case "endif":
 					return SyntaxKind.EndIfKeyword;
-				case "#math":
-					return SyntaxKind.HashMathKeyword;
 				case "false":
 					return SyntaxKind.FalseKeyword;
 				case "let":
@@ -309,9 +307,7 @@ namespace Minsk.CodeAnalysis.Syntax
 					return "none";
 				case SyntaxKind.AnyKeyword:
 					return "any";
-				case SyntaxKind.HashMathKeyword:
-					return "#math";
-				
+
 				case SyntaxKind.AnimationKeyword:
 					return "animation";
 				case SyntaxKind.CaseKeyword:

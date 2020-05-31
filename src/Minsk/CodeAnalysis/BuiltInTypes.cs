@@ -6,7 +6,6 @@ using Minsk.CodeAnalysis.SlidesTypes;
 using Minsk.CodeAnalysis.Symbols;
 using Slides;
 using Slides.Code;
-using Slides.Filters;
 using Slides.MathExpressions;
 using Slides.SVG;
 using SVGLib;
@@ -15,8 +14,10 @@ using SVGGroup = SVGLib.ContainerElements.Group;
 using SVGPath = SVGLib.GraphicsElements.Path;
 using SVGText = SVGLib.GraphicsElements.Text;
 using Color = Slides.Color;
+using Matrix = Slides.Matrix;
 using Vector2 = Slides.Vector2;
 using SVGColor = SVGLib.Datatypes.Color;
+using SVGMatrix = SVGLib.Datatypes.Matrix;
 using SVGVector2 = SVGLib.Datatypes.Vector2;
 using SVGTransform = SVGLib.Datatypes.Transform;
 using System.Text;
@@ -24,6 +25,8 @@ using SVGLib.ContainerElements;
 using SVGLib.PathOperations;
 using SVGLib.Datatypes;
 using Slides.Elements;
+using SVGLib.Filters;
+using SVGLib.Filters.Lights;
 
 namespace Minsk.CodeAnalysis
 {
@@ -120,6 +123,9 @@ namespace Minsk.CodeAnalysis
 			Add(typeof(Vertical));
 			Add(typeof(Orientation));
 			Add(typeof(Interpolation));
+			
+			Add(typeof(SVGColor));
+			Add(typeof(SVGMatrix), isData: true);
 
 			Add(typeof(Filter), isData: true);
 			Add(typeof(IFilterInput), CreateEmptySymbol("FilterInput"));
@@ -176,12 +182,12 @@ namespace Minsk.CodeAnalysis
 			Add(typeof(CodeBlock));
 
 			Add(typeof(TransitionCall), CreateEmptySymbol("TransitionCall"));
+			Add(typeof(TransitionSlide), isData: true);
 			Add(typeof(Transition), isData: false);
 
 			Add(typeof(Chart));
 			Add(typeof(LineChart));
 
-			Add(typeof(SVGColor));
 			Add(typeof(ViewBox));
 			Add(typeof(SVGVector2));
 			Add(typeof(SVGTransform), CreateEmptySymbol("Transform"));
@@ -189,6 +195,8 @@ namespace Minsk.CodeAnalysis
 			Add(typeof(SVGElement));
 			Add(typeof(SVGGraphicsElement));
 			Add(typeof(SVGGroup));
+			Add(typeof(AspectRatioAlign));
+			Add(typeof(AspectRatioMeetOrSlice));
 			Add(typeof(SVGTag));
 			Add(typeof(BasicShape), CreateSVGShapePlaceholder());
 			Add(typeof(PathOperationKind));
@@ -196,6 +204,7 @@ namespace Minsk.CodeAnalysis
 			Add(typeof(SVGPath), name: "Path");
 			Add(typeof(BasicShape));
 			Add(typeof(Rect));
+			Add(typeof(Slides.Elements.SVG.Rect));
 			Add(typeof(Circle));
 			Add(typeof(Ellipse));
 			Add(typeof(Line));
@@ -211,7 +220,6 @@ namespace Minsk.CodeAnalysis
 			Add(typeof(Template));
 			Add(typeof(AnimationSymbol), CreateAnimationSymbol("Animation"));
 			Add(typeof(SlideAttributes), name: "Slide");
-			Add(typeof(StyleSlideAttributes),name: "_Slide", fieldsAreNoneable: true);
 
 			Add(typeof(CodeHighlighter));
 			Add(typeof(Github.File), CreateEmptySymbol("GithubFile"));
@@ -266,14 +274,14 @@ namespace Minsk.CodeAnalysis
 		}
 
 
-		private void Add(Type type, TypeSymbol[] canBeCastedTo = null, bool isData = false, string name = null, bool fieldsAreNoneable = false)
+		private void Add(Type type, TypeSymbol[] canBeCastedTo = null, bool isData = false, string name = null)
 		{
 			TypeSymbol symbol;
 			if (name == null)
 				name = type.Name;
 			if (!type.IsEnum)
 			{
-				symbol = CreateAdvancedType(type, name, canBeCastedTo, fieldsAreNoneable);
+				symbol = CreateAdvancedType(type, name, canBeCastedTo);
 				((AdvancedTypeSymbol)symbol).SetData(isData);
 			}
 			else
@@ -311,7 +319,7 @@ namespace Minsk.CodeAnalysis
 			return false;
 		}
 
-		private TypeSymbol CreateAdvancedType(Type type, string name, TypeSymbol[] canBeCastedTo, bool toLower = true)
+		private TypeSymbol CreateAdvancedType(Type type, string name, TypeSymbol[] canBeCastedTo)
 		{
 			TypeSymbol symbol;
 			List<string> todoList = new List<string>();
@@ -342,7 +350,10 @@ namespace Minsk.CodeAnalysis
 				{
 					propertyType = LookSymbolUp(prop.PropertyType);
 					if (propName.StartsWith("n_"))
+					{
 						propertyType = new NoneableTypeSymbol(propertyType);
+						propName = propName.Substring(2);
+					}
 				}
 				else
 				{

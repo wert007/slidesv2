@@ -6,7 +6,6 @@ using Minsk.CodeAnalysis.Syntax;
 using Minsk.CodeAnalysis.Text;
 using Slides;
 using Slides.Elements;
-using Slides.Filters;
 using SVGLib.ContainerElements;
 
 namespace Minsk.CodeAnalysis.Binding

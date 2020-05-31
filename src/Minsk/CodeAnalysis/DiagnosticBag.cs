@@ -77,12 +77,12 @@ namespace Minsk.CodeAnalysis
 			int[] sim = new int[values.Length];
 			for (int i = 0; i < sim.Length; i++)
 			{
-				sim[i] = strDist(values[i], found);
+				sim[i] = GetStringDistance(values[i], found);
 			}
 			return sim;
 		}
 
-		private int strDist(string a, string b)
+		private int GetStringDistance(string a, string b)
 		{
 			if (string.IsNullOrEmpty(a))
 				return int.MaxValue;
@@ -341,7 +341,7 @@ namespace Minsk.CodeAnalysis
 			Report(span, message, DiagnosticLevel.Error);
 		}
 
-		public void ReportCannotChangeVisibility(TextSpan span, VariableSymbol expectedVariable, VariableSymbol actualVariable)
+		public void ReportCannotChangeVisibility(TextSpan span, VariableSymbol expectedVariable)
 		{
 			var message = $"Variable '{expectedVariable.Name}' cannot change visibility.";
 			Report(span, message, DiagnosticLevel.Error);
@@ -350,6 +350,12 @@ namespace Minsk.CodeAnalysis
 		internal void ReportStatementNotStackable(TextSpan span, SyntaxKind kind)
 		{
 			var message = $"'{kind}'-statements can not be used again in itself.";
+			Report(span, message, DiagnosticLevel.Error);
+		}
+
+		public void ReportUnterminatedString(TextSpan span, char endCharacter)
+		{
+			var message = $"Expected {endCharacter} at the end of the string!";
 			Report(span, message, DiagnosticLevel.Error);
 		}
 

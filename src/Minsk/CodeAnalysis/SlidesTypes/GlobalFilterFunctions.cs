@@ -1,5 +1,6 @@
 ﻿using Slides;
-using Slides.Filters;
+using SVGLib.Filters;
+using SVGLib.Filters.Lights;
 
 namespace Minsk.CodeAnalysis.SlidesTypes
 {
@@ -31,13 +32,13 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 		public static SVGFilter colorMatrix(IFilterInput input, Matrix matrix) => new ColorMatrixFilter(input, matrix);
 		
 		public static Filter blur(float blurFactor) => new BlurFilter(blurFactor);
-		public static Filter brightness(float value) => new ProcentalFilter("brightness", value);
-		public static Filter contrast(float value) => new ProcentalFilter("contrast", value);
-		public static Filter grayscale(float value) => new ProcentalFilter("grayscale", value);
-		public static Filter invert(float value) => new ProcentalFilter("invert", value);
-		public static Filter opacity(float value) => new ProcentalFilter("opacity", value);
-		public static Filter saturate(float value) => new ProcentalFilter("saturate", value);
-		public static Filter sepia(float value) => new ProcentalFilter("sepia", value);
+		public static Filter brightness(float value) => new PercentalFilter("brightness", value);
+		public static Filter contrast(float value) => new PercentalFilter("contrast", value);
+		public static Filter grayscale(float value) => new PercentalFilter("grayscale", value);
+		public static Filter invert(float value) => new PercentalFilter("invert", value);
+		public static Filter opacity(float value) => new PercentalFilter("opacity", value);
+		public static Filter saturate(float value) => new PercentalFilter("saturate", value);
+		public static Filter sepia(float value) => new PercentalFilter("sepia", value);
 		public static Filter dropShadow(int horizontal, int vertical, int blur, int spread, Color color) => new DropShadowFilter(horizontal, vertical, blur, spread, color);
 		public static Filter hueRotate(float value) => new HueRotateFilter(value * 360f);
 

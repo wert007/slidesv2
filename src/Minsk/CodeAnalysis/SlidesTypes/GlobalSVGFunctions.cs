@@ -10,6 +10,7 @@ using SVGShape = SVGLib.GraphicsElements.BasicShape;
 using SVGPath = SVGLib.GraphicsElements.Path;
 using SVGText = SVGLib.GraphicsElements.Text;
 using SVGColor = SVGLib.Datatypes.Color;
+using ViewBox = SVGLib.Datatypes.ViewBox;
 using SVGGraphicsElement = SVGLib.GraphicsElements.SVGGraphicsElement;
 using Circle = SVGLib.GraphicsElements.Circle;
 using Line = SVGLib.GraphicsElements.Line;
@@ -17,19 +18,16 @@ using Rect = SVGLib.GraphicsElements.Rect;
 using SVGLib.Parsing;
 using SVGLib.PathOperations;
 using SVGLib.ContainerElements;
+using SVGLib;
 
 namespace Minsk.CodeAnalysis.SlidesTypes
 {
 
 	public static class GlobalSVGFunctions
 	{
-		public static SVGContainer rect(Unit width, Unit height)
+		public static Slides.Elements.SVG.Rect rect(Unit width, Unit height)
 		{
-			var r = new Rect(0, 0, 100, 100);
-			var result = new SVGContainer(r);
-			result.width = width;
-			result.height = height;
-			return result;
+			return new Slides.Elements.SVG.Rect(width, height);
 		}
 
 		public static SVGContainer line(Unit x1, Unit y1, Unit x2, Unit y2, Color fill)
@@ -145,13 +143,6 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			result.add(new CoordinatePairOperation(false, PathOperationKind.LineTo, gx, gy));
 			result.add(new ClosePathOperation());
 			return result;
-		}
-
-		public static SVGPath mergePaths(SVGPath a, SVGPath b, int width, int height)
-		{
-			//TODO: Find intersection points!
-			var intersections = PathOperationIntersectionHandler.FindIntersections(a, b);
-			return new SVGPath(a.Operations.Concat(b.Operations).ToArray(), width, height);
 		}
 		
 		public static SVGPath intersectPaths(SVGPath a, SVGPath b)

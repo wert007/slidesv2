@@ -87,7 +87,7 @@ namespace Minsk.CodeAnalysis.Binding
 					return RewriteGroupStatement((BoundGroupStatement)node);
 				case BoundNodeKind.IfStatement:
 					return RewriteIfStatement((BoundIfStatement)node);
-				case BoundNodeKind.JSInsertionKind:
+				case BoundNodeKind.JSInsertionStatement:
 					return RewriteUseStatement((BoundJSInsertionStatement)node);
 				case BoundNodeKind.ParameterBlockStatement:
 				case BoundNodeKind.ParameterStatement:
@@ -194,30 +194,9 @@ namespace Minsk.CodeAnalysis.Binding
 		protected virtual BoundStatement RewriteUseStatement(BoundJSInsertionStatement node)
 		{
 			var newBody = RewriteStatement(node.Body);
-			List<BoundExpression> newDependencies = null;
-
-			for (var i = 0; i < node.Dependencies.Length; i++)
-			{
-				var oldExpression = node.Dependencies[i];
-				var newExpression = RewriteExpression(oldExpression);
-				if (newExpression != oldExpression)
-				{
-					if (newDependencies == null)
-					{
-						newDependencies = new List<BoundExpression>();
-
-						for (var j = 0; j < i; j++)
-							newDependencies.Add(node.Dependencies[j]);
-					}
-				}
-
-				if (newDependencies != null)
-					newDependencies.Add(newExpression);
-			}
-			if (newDependencies == null && node.Body == newBody)
-				return node;
-
-			return new BoundJSInsertionStatement(newDependencies.ToArray(), newBody);
+			//TODO: Rewrite dependencies!!!!!
+			if (newBody == node.Body) return node;
+			return new BoundJSInsertionStatement(node.Dependencies, newBody);
 		}
 
 
@@ -288,11 +267,12 @@ namespace Minsk.CodeAnalysis.Binding
 
 		protected virtual BoundStatement RewriteTransitionStatement(BoundTransitionStatement node)
 		{
-			var newBody = RewriteStatement(node.BoundBody);
-			var newParameters = RewriteStatement(node.BoundParameters);
-			if (newBody == node.BoundBody && newParameters == node.BoundParameters)
+			var newBody = RewriteStatement(node.Body);
+			var newFromParameter = RewriteStatement(node.FromParameter);
+			var newToParameter = RewriteStatement(node.ToParameter);
+			if (newBody == node.Body && newFromParameter == node.FromParameter && newToParameter == node.ToParameter)
 				return node;
-			return new BoundTransitionStatement(node.Variable, (BoundParameterBlockStatement)newParameters, (BoundBlockStatement)newBody);
+			return new BoundTransitionStatement(node.Variable, (BoundParameterStatement)newFromParameter, (BoundParameterStatement)newToParameter, (BoundBlockStatement)newBody);
 		}
 
 		protected virtual BoundStatement RewriteBlockStatement(BoundBlockStatement node)

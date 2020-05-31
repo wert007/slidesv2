@@ -47,6 +47,8 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			return result;
 		}
 
+
+		//TODO: Change this!
 		public static void SetStyle(CodeHighlighter codeHighlighter)
 		{
 			Evaluator.Flags.CodeHighlighter = codeHighlighter;
@@ -100,6 +102,8 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			}
 			for (int i = start + minWhitespaces; i < end; i++)
 			{
+				if (source[i] == '\\')
+					builder.Append('\\');
 				builder.Append(source[i]);
 				if (source[i] == '\n')
 				{

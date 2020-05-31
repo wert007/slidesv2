@@ -24,21 +24,24 @@ namespace Minsk.CodeAnalysis.Binding
 	{
 		private readonly DiagnosticBag _diagnostics;
 
-		private LibrarySymbol[] _references;
+		private readonly LibrarySymbol[] _references;
 		private BoundScope _scope;
-		private Dictionary<string, VariableSymbol> _builtInConstants = new Dictionary<string, VariableSymbol>();
-		private BuiltInTypes _builtInTypes = BuiltInTypes.Instance;
-		private CompileTimeEvaluator _compileTimeEvaluator = new CompileTimeEvaluator();
+		private readonly Dictionary<string, VariableSymbol> _builtInConstants = new Dictionary<string, VariableSymbol>();
+		private readonly BuiltInTypes _builtInTypes = BuiltInTypes.Instance;
+		private readonly CompileTimeEvaluator _compileTimeEvaluator = new CompileTimeEvaluator();
 		private bool _isInSVG = false;
 
-		private Stack<BoundExpression> _noneableIfConditions = new Stack<BoundExpression>();
+		private readonly Stack<BoundExpression> _noneableIfConditions = new Stack<BoundExpression>();
 
 		private Dictionary<VariableSymbol, BoundStatement> Declarations { get; set; }
-		private Dictionary<VariableSymbol, bool> _noneableVariableSet = new Dictionary<VariableSymbol, bool>();
-		private HashSet<JSInsertionKind> _jsInsertionsAllowed = new HashSet<JSInsertionKind>();
-		private Dictionary<VariableSymbol, BoundMathExpression> _mathFormulas = new Dictionary<VariableSymbol, BoundMathExpression>();
-		private HashSet<VariableSymbol> _assignedVariables = new HashSet<VariableSymbol>();
+		private readonly Dictionary<VariableSymbol, bool> _noneableVariableSet = new Dictionary<VariableSymbol, bool>();
+		//TODO: Remove
+		private readonly JSInsertionDependencyCollection _foundJSInsertionDependencies = new JSInsertionDependencyCollection();
+		private readonly Dictionary<VariableSymbol, BoundMathExpression> _mathFormulas = new Dictionary<VariableSymbol, BoundMathExpression>();
+		private readonly HashSet<VariableSymbol> _assignedVariables = new HashSet<VariableSymbol>();
 		private PresentationFlags _flags = new PresentationFlags();
+		private bool _inJSCode;
+
 		public DiagnosticBag Diagnostics => _diagnostics;
 
 		public bool OfflineView { get; }
@@ -89,6 +92,11 @@ namespace Minsk.CodeAnalysis.Binding
 
 			if (previous != null)
 				diagnostics.InsertRange(0, previous.Diagnostics);
+
+			if (!binder._flags.IsLibrarySymbol)
+			{
+				binder._flags.SetPresentation();
+			}
 
 			return new BoundGlobalScope(previous, diagnostics.ToArray(), variables, statement, declarations, binder._flags);
 		}
@@ -176,7 +184,7 @@ namespace Minsk.CodeAnalysis.Binding
 			VariableSymbol variable = null;
 			if (isRange)
 			{
-				variable = CheckGlobalVariableExpression(syntax.Variable, PrimitiveTypeSymbol.Integer, true);
+				variable = CheckGlobalVariableExpression(syntax.Variable, PrimitiveTypeSymbol.Integer, true, false);
 			}
 			else if (boundCollection.Type != PrimitiveTypeSymbol.Error)
 			{
@@ -232,10 +240,6 @@ namespace Minsk.CodeAnalysis.Binding
 		private BoundStatement BindIfStatement(IfStatementSyntax syntax)
 		{
 			var boundCondition = BindExpression(syntax.Condition);
-			if (!IsUnuseableJSInsertion(boundCondition, out var kind))
-			{
-				_diagnostics.ReportJSInsertionNotInJSInsertionStatement(syntax.Condition.Span, kind, _jsInsertionsAllowed.Count);
-			}
 			if (boundCondition.Kind == BoundNodeKind.ConversionExpression)
 			{
 				var conv = (BoundConversion)boundCondition;
@@ -301,28 +305,15 @@ namespace Minsk.CodeAnalysis.Binding
 
 		private BoundStatement BindJSInsertionStatement(JSInsertionStatementSyntax syntax)
 		{
-			if (_jsInsertionsAllowed.Any())
-			{
+			//JSInsertion statements are not stackable
+			if (_inJSCode)
 				_diagnostics.ReportStatementNotStackable(syntax.HeaderSpan, syntax.Kind);
-			}
-			var dependencies = new List<BoundExpression>();
-			foreach (var dependency in syntax.Dependencies)
-			{
-				var boundDependency = BindExpression(dependency);
-				var kind = FormulaCreator.GetJSInsertionKind(boundDependency);
-				if (kind == JSInsertionKind.None)
-				{
-					_diagnostics.ReportInvalidUseDependency(dependency.Span);
-					continue;
-				}
-				_jsInsertionsAllowed.Add(kind);
-				dependencies.Add(boundDependency);
-			}
-			_jsInsertionsAllowed.Add(JSInsertionKind.None);
+			else
+				_foundJSInsertionDependencies.Clear();
+			_inJSCode = true;
 			var boundBody = BindStatement(syntax.Body);
-			//Use Statements are not stackable
-			_jsInsertionsAllowed.Clear();
-			return new BoundJSInsertionStatement(dependencies.ToArray(), boundBody);
+			_inJSCode = false;
+			return new BoundJSInsertionStatement(_foundJSInsertionDependencies.ToArray(), boundBody);
 		}
 
 		private BoundStatement BindDataStatement(DataStatementSyntax syntax)
@@ -367,9 +358,9 @@ namespace Minsk.CodeAnalysis.Binding
 						break;
 				}
 			}
-	//		var boundBody = BindBlockStatement(syntax.Body);
+			//		var boundBody = BindBlockStatement(syntax.Body);
 			return new BoundNopStatement();
-//			return new BoundLibraryStatement(variable, boundBody);
+			//			return new BoundLibraryStatement(variable, boundBody);
 		}
 
 		private BoundParameterBlockStatement BindAnimationParameterStatement(AnimationParameterStatementSyntax syntax)
@@ -428,14 +419,14 @@ namespace Minsk.CodeAnalysis.Binding
 		}
 
 
-		private BoundParameterBlockStatement BindTransitionParameters(TransitionParameterSyntax syntax)
+		private BoundParameterStatement[] BindTransitionParameters(TransitionParameterSyntax syntax)
 		{
-			var boundFromParameter = BindParameterStatement(syntax.FromParameter, _builtInTypes.LookSymbolUp(typeof(SlideAttributes)));
-			var boundToParameter = BindParameterStatement(syntax.ToParameter, _builtInTypes.LookSymbolUp(typeof(SlideAttributes)));
+			var transitionSlideType = _builtInTypes.LookSymbolUp(typeof(TransitionSlide));
+			var boundFromParameter = BindParameterStatement(syntax.FromParameter, transitionSlideType, false);
+			var boundToParameter = BindParameterStatement(syntax.ToParameter, transitionSlideType, false);
 
 			var parameters = new BoundParameterStatement[] { boundFromParameter, boundToParameter };
-			var result = new BoundParameterBlockStatement(parameters);
-			return result;
+			return parameters;
 		}
 
 		private BoundStatement BindTransitionStatement(TransitionStatementSyntax syntax)
@@ -450,9 +441,10 @@ namespace Minsk.CodeAnalysis.Binding
 				_scope.TryDeclare(field, null);
 			}
 			var boundBody = BindBlockStatement(syntax.Body);
+			CheckUnusedSymbols(_scope);
 			_scope = _scope.Parent;
 
-			var result = new BoundTransitionStatement(variable, boundParameters, boundBody);
+			var result = new BoundTransitionStatement(variable, boundParameters[0], boundParameters[1], boundBody);
 			Declarations[variable] = result;
 			return result;
 		}
@@ -487,9 +479,10 @@ namespace Minsk.CodeAnalysis.Binding
 				{
 					_scope.TryDeclare(field, null);
 				}
-				_scope.TryDeclare(new VariableSymbol("Slide", false, _builtInTypes.LookSymbolUp(typeof(StyleSlideAttributes)), false));
+				_scope.TryDeclare(new VariableSymbol("Slide", false, _builtInTypes.LookSymbolUp(typeof(SlideAttributes)), false));
 				_scope.TryDeclare(new VariableSymbol("Label", false, _builtInTypes.LookSymbolUp(typeof(Label)), false));
 				_scope.TryDeclare(new VariableSymbol("Image", false, _builtInTypes.LookSymbolUp(typeof(Image)), false));
+				_scope.TryDeclare(new VariableSymbol("Table", false, _builtInTypes.LookSymbolUp(typeof(Table)), false));
 			}
 			_assignedVariables.Clear();
 			var boundBody = BindBlockStatement(syntax.Body);
@@ -664,11 +657,7 @@ namespace Minsk.CodeAnalysis.Binding
 				_diagnostics.ReportUnusedVariable(unusedVariable, span.Value);
 			}
 
-			foreach (var singleUseVariable in scope.GetVariablesReferenced(1))
-			{
-				//There is a hell of a lot of them. so we dont do anything for now..
-				//Logger.LogSingleUseVariable(singleUseVariable);
-			}
+			//scope.GetVariablesReferenced(1)
 		}
 
 		private BoundTemplateStatement BindTemplateStatement(TemplateStatementSyntax syntax)
@@ -744,7 +733,7 @@ namespace Minsk.CodeAnalysis.Binding
 			foreach (var statementSyntax in syntax.Statements)
 			{
 				var statement = BindStatement(statementSyntax);
-				if(statement.Kind != BoundNodeKind.NopStatement)
+				if (statement.Kind != BoundNodeKind.NopStatement)
 					statements.Add(statement);
 			}
 
@@ -757,10 +746,6 @@ namespace Minsk.CodeAnalysis.Binding
 		{
 			var initializer = BindExpression(syntax.Initializer);
 
-			if (!IsUnuseableJSInsertion(initializer, out var kind))
-			{
-				_diagnostics.ReportJSInsertionNotInJSInsertionStatement(syntax.Initializer.Span, kind, _jsInsertionsAllowed.Count);
-			}
 			var type = initializer.Type;
 			if (type == _builtInTypes.LookSymbolUp(typeof(LibrarySymbol)))
 			{
@@ -794,18 +779,8 @@ namespace Minsk.CodeAnalysis.Binding
 		private BoundStatement BindExpressionStatement(ExpressionStatementSyntax syntax)
 		{
 			var expression = BindExpression(syntax.Expression);
-			if (!IsUnuseableJSInsertion(expression, out var kind))
-			{
-				_diagnostics.ReportJSInsertionNotInJSInsertionStatement(syntax.Expression.Span, kind, _jsInsertionsAllowed.Count);
-			}
-			return new BoundExpressionStatement(expression);
-		}
 
-		private bool IsUnuseableJSInsertion(BoundExpression expression, out JSInsertionKind kind)
-		{
-			kind = FormulaCreator.GetJSInsertionKind(expression, out _);
-			if (!_jsInsertionsAllowed.Any()) return kind == JSInsertionKind.None;
-			return _jsInsertionsAllowed.Contains(kind);
+			return new BoundExpressionStatement(expression);
 		}
 
 		private BoundExpression BindExpression(ExpressionSyntax syntax, TypeSymbol targetType)
@@ -824,7 +799,7 @@ namespace Minsk.CodeAnalysis.Binding
 			return result;
 		}
 
-		private BoundExpression BindExpression(ExpressionSyntax syntax)
+		private BoundExpression BindExpression(ExpressionSyntax syntax, bool doExpressionReplacement = true)
 		{
 			BoundExpression result = new BoundErrorExpression();
 			switch (syntax.Kind)
@@ -865,15 +840,6 @@ namespace Minsk.CodeAnalysis.Binding
 				case SyntaxKind.MemberAccessExpression:
 					result = BindMemberAccessExpression((MemberAccessExpressionSyntax)syntax);
 					break;
-				//case SyntaxKind.FieldAccessExpression:
-				//	result = BindFieldAccessExpression((FieldAccessExpressionSyntax)syntax);
-				//	break;
-				//case SyntaxKind.LambdaExpression:
-				//	result = BindLambdaExpression((LambdaExpressionSyntax)syntax);
-				//	break;
-				case SyntaxKind.MathExpression:
-					result = BindMathExpression((MathExpressionSyntax)syntax);
-					break;
 				case SyntaxKind.AnonymForExpression:
 					result = BindAnonymForExpression((AnonymForExpressionSyntax)syntax);
 					break;
@@ -886,16 +852,18 @@ namespace Minsk.CodeAnalysis.Binding
 				default:
 					throw new Exception($"Unexpected syntax {syntax.Kind}");
 			}
-			if (_noneableIfConditions.Contains(result))
+			if (_inJSCode)
+				_foundJSInsertionDependencies.Add(JSInsertionDependency.Create(result));
+			if (_noneableIfConditions.Contains(result) && doExpressionReplacement)
 				return new BoundConversion(result, ((NoneableTypeSymbol)result.Type).BaseType);
-			if (_scope.SafeExpressions.Contains(result))
+			if (_scope.SafeExpressions.Contains(result) && doExpressionReplacement)
 				return new BoundConversion(result, ((NoneableTypeSymbol)result.Type).BaseType);
 			return result;
 		}
 
 		private BoundExpression BindConstructorExpression(ConstructorExpressionSyntax syntax)
 		{
-			if (_jsInsertionsAllowed.Any())
+			if (_inJSCode)
 			{
 				_diagnostics.ReportExpressionNotAllowedInJSInsertionStatement(syntax.Span, syntax.Kind);
 			}
@@ -1063,7 +1031,7 @@ namespace Minsk.CodeAnalysis.Binding
 		{
 			if (TryBindEnumExpression(syntax, out var result))
 				return result;
-			
+
 			var boundExpression = BindExpression(syntax.Expression);
 
 			if (boundExpression.Type == _builtInTypes.LookSymbolUp(typeof(LibrarySymbol)))
@@ -1076,6 +1044,7 @@ namespace Minsk.CodeAnalysis.Binding
 				boundMember = BindMemberFunctionExpression((FunctionExpressionSyntax)syntax.Member, boundExpression.Type);
 				if (boundMember is BoundFunctionExpression functionExpression)
 					return new BoundFunctionAccessExpression(boundExpression, functionExpression);
+				else if (boundMember is BoundErrorExpression error) return error;
 				throw new Exception();
 			}
 			else if (syntax.Member.Kind == SyntaxKind.VariableExpression)
@@ -1205,7 +1174,7 @@ namespace Minsk.CodeAnalysis.Binding
 				else
 				{
 					if (targetVariable.IsVisible != variable.IsVisible && varType != PrimitiveTypeSymbol.Error)
-						_diagnostics.ReportCannotChangeVisibility(syntax.Span, targetVariable, variable);
+						_diagnostics.ReportCannotChangeVisibility(syntax.Span, targetVariable);
 
 					variable = targetVariable;
 					varType = variable.Type;
@@ -1264,6 +1233,10 @@ namespace Minsk.CodeAnalysis.Binding
 			var functions = new List<FunctionSymbol>();
 			FunctionSymbol minParameterCount = null;
 			FunctionSymbol maxParameterCount = null;
+			if (_foundJSInsertionDependencies.Any())
+			{
+				//TODO: Check if we can convert function to javaScript!
+			}
 			foreach (var function in allFunctions)
 			{
 				if (function.Parameter.Count == argumentCount)
@@ -1311,13 +1284,13 @@ namespace Minsk.CodeAnalysis.Binding
 					if (!boundArgument.Type.CanBeConvertedTo(parameterType))
 					{
 						scores[j] += 100; //If we can't convert an argument this is bad. 
-						                  //Not as bad as 10 Arguments you cannot convert, 
-						                  //but you get the gist.
+												//Not as bad as 10 Arguments you cannot convert, 
+												//but you get the gist.
 						parameterDiagnostics[j].ReportCannotConvert(syntax.Arguments[i].Span, boundArgument.Type, parameterType);
 					}
 					else if (parameterType != boundArgument.Type)
 						scores[j] += 5; //If we have to convert a parameter that's okay.
-					                   //It would be better if we wouldn't have to, but it is okay.
+											 //It would be better if we wouldn't have to, but it is okay.
 				}
 				arguments.Add(boundArgument);
 			}
@@ -1365,6 +1338,7 @@ namespace Minsk.CodeAnalysis.Binding
 		private void BindFontFunction(TextSpan span, FunctionSymbol function, BoundExpression[] immutableArguments)
 		{
 			//System.Drawing.Font f = new System.Drawing.Font(name, 0f, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+			span.Equals(function.Equals(immutableArguments));
 		}
 
 		private void BindImageFunction(TextSpan span, FunctionSymbol function, BoundExpression[] expression)
@@ -1431,6 +1405,10 @@ namespace Minsk.CodeAnalysis.Binding
 		private BoundExpression BindLiteralExpression(LiteralExpressionSyntax syntax, TypeSymbol targetType = null)
 		{
 			var value = syntax.Value;
+			if (value is MathFormula mathFormula)
+			{
+				return BindMathExpression(syntax, mathFormula);
+			}
 			if (value != null) return new BoundLiteralExpression(value);
 			if (targetType != null && targetType.Type != TypeType.Noneable)
 			{
@@ -1448,7 +1426,7 @@ namespace Minsk.CodeAnalysis.Binding
 
 		private BoundExpression BindAssignmentExpression(AssignmentExpressionSyntax syntax)
 		{
-			var boundLValue = BindExpression(syntax.LValue);
+			var boundLValue = BindExpression(syntax.LValue, false);
 			VariableSymbol variable = null;
 			switch (boundLValue.Kind)
 			{
@@ -1460,10 +1438,14 @@ namespace Minsk.CodeAnalysis.Binding
 					variable = ((BoundFieldAccessExpression)boundLValue).Field.Variable;
 					break;
 				case BoundNodeKind.ArrayAccessExpression:
-					variable = new VariableSymbol("#arrayAccess", true, PrimitiveTypeSymbol.Error, false);
+					variable = new VariableSymbol("#arrayAccess", false, PrimitiveTypeSymbol.Error, false);
 					break;
 				default:
 					throw new NotImplementedException();
+			}
+			if (variable.IsReadOnly)
+			{
+				_diagnostics.ReportCannotAssign(syntax.LValue.Span, variable.Name);
 			}
 			BoundExpression boundExpression = null;
 
@@ -1528,20 +1510,14 @@ namespace Minsk.CodeAnalysis.Binding
 			return new BoundAssignmentExpression(boundLValue, boundExpression);
 		}
 
-		private BoundExpression BindMathExpression(MathExpressionSyntax syntax)
+		private BoundExpression BindMathExpression(LiteralExpressionSyntax syntax, MathFormula formula)
 		{
-			if (_jsInsertionsAllowed.Any())
+			if (_inJSCode)
 			{
 				_diagnostics.ReportExpressionNotAllowedInJSInsertionStatement(syntax.Span, syntax.Kind);
 			}
-			var boundStringLiteral = BindLiteralExpression(syntax.StringLiteral);
-			if (boundStringLiteral.Type != PrimitiveTypeSymbol.String)
-			{
-				_diagnostics.ReportCannotConvert(syntax.StringLiteral.Span, boundStringLiteral.Type, PrimitiveTypeSymbol.String);
-				return new BoundErrorExpression();
-			}
-			var expression = ((BoundLiteralExpression)boundStringLiteral).Value.ToString();
-			var variableNames = ExtractVariables(expression);
+
+			var variableNames = ExtractVariables(formula.Expression);
 			var fields = new VariableSymbolCollection();
 			foreach (var v in variableNames)
 			{
@@ -1552,11 +1528,11 @@ namespace Minsk.CodeAnalysis.Binding
 			// But i guess it is fine?
 			//All Mathformulas share the same name. And why shouldn't they. they are the same.
 			//Only thing, which actually changes their type, is how many unknowns you have
-			//Like a MathPlot expects 1 unknown. Which makes these MathFormulas or MathExpressions
-			//really interesting..
+			//Like a MathPlot expects 1 unknown. 
+			//
 			var type = new AdvancedTypeSymbol("MathFormula", fields, FunctionSymbolCollection.Empty, FunctionSymbolCollection.Empty, _builtInTypes.LookSymbolUp(typeof(MathFormula)));
 			type.SetData(true);
-			return new BoundMathExpression(expression, type);
+			return new BoundMathExpression(formula.Expression, type);
 		}
 
 		private static HashSet<string> ExtractVariables(string expression)
@@ -1624,7 +1600,6 @@ namespace Minsk.CodeAnalysis.Binding
 				&& _compileTimeEvaluator.TryGetValue(boundRight, out var value) && (int)value == 0)
 			{
 				_diagnostics.ReportIntegerDivisonByZero(syntax.Span);
-				return new BoundErrorExpression();
 			}
 			return new BoundBinaryExpression(boundLeft, boundOperator, boundRight);
 		}

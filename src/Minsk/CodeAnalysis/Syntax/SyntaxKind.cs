@@ -24,6 +24,7 @@ namespace Minsk.CodeAnalysis.Syntax
 		StringToken,
 		
 		//Constructed Tokens
+		MathFormulaToken,
 		UnitToken,
 		TimeToken,
 		CommentToken,
@@ -73,7 +74,6 @@ namespace Minsk.CodeAnalysis.Syntax
 		NewKeyword,
 		NoneKeyword,
 		AnyKeyword,
-		HashMathKeyword,
 		
 		//Block Keywords
 		AnimationKeyword,
@@ -170,6 +170,5 @@ namespace Minsk.CodeAnalysis.Syntax
 		MemberAccessExpression,
 		StringExpression,
 		StringInsertionExpression,
-		MathExpression,
 	}
 }

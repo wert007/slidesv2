@@ -11,7 +11,7 @@ namespace SVGLib.GraphicsElements
 
 		public SVGGraphicsElement()
 		{
-			Fill = Color.Transparent;
+			Fill = Color.Black;
 			Stroke = Color.Transparent;
 			StrokeWidth = 0;
 			x = 0;

@@ -1,4 +1,5 @@
 ﻿using Slides.Code;
+using System;
 
 namespace Minsk.CodeAnalysis
 {
@@ -17,6 +18,15 @@ namespace Minsk.CodeAnalysis
 		{
 			IsLibrarySymbol = true;
 			LibraryName = name;
+		}
+
+		internal void SetPresentation()
+		{
+			StyleAllowed = true;
+			AnimationsAllowed = true;
+			GroupsAllowed = true;
+			StructsAllowed = true;
+			TemplatesAllowed = true;
 		}
 	}
 }

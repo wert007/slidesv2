@@ -8,7 +8,7 @@ library custom:
 endlibrary
 
 style transparentWhiteBackground(element: Element):
-	element.background = argb(127, 236, 236, 236);
+	element.background = rgba(236, 236, 236, 127);
 endstyle
 
 style imgLabel(element: Label):
@@ -26,8 +26,9 @@ group introductingQuote(quote: string, author: string):
 	lblAuthor.font = quoteFont;
 	lblAuthor.orientation = Horizontal.Right | Vertical.Bottom;
 
+	//TODO
 	//applyStyle(transparentWhiteBackground);
-	background = argb(127, 236, 236, 236);
+	background = rgba(236, 236, 236, 127);
 	orientation = Horizontal.Center | Vertical.Center;
 
 	initWidth = 50%;
@@ -39,13 +40,14 @@ group map():
 	let map = image(@'city\map.png');
 	let imgMap = new Image(map);
 	imgMap.width = 100%;
-	imgMap.height = auto;
+	imgMap.height = 100%;
 	imgMap.orientation = Horizontal.Right | Vertical.Top;
-	imgMap.position = 'relative';
+	//imgMap.position = 'relative';
 	//imgMap.#position = 'relative';
 	//imgMap.position! = 'relative';
 	//imgMap._position = 'relative';
 	let lblMap = new Label('(c) wikimedia');
+	lblMap.applyStyle(transparentWhiteBackground);
 	lblMap.orientation = Horizontal.Right | Vertical.Bottom;
 
 	/*
@@ -57,7 +59,7 @@ group map():
 	*/
 
 	initWidth = 100%;
-	initHeight = 40%;
+	initHeight = 80%;
 endgroup
 
 group imageBanner():

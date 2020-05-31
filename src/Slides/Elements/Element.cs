@@ -1,5 +1,5 @@
-﻿using Slides.Filters;
-using Slides.Transforms;
+﻿using Slides.Transforms;
+using SVGLib.Filters;
 using System.Collections.Generic;
 using System.Text;
 

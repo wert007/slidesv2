@@ -103,9 +103,8 @@ namespace HTMLWriter
 
 		private static void WriteEllipse(HTMLWriter writer, Ellipse element)
 		{
-			throw new Exception();
-			writer.StartTag("rect");
-			writer.EndTag();
+			writer.Equals(element);
+			throw new NotImplementedException();
 		}
 
 		private static void WriteLine(HTMLWriter writer, Line element)
@@ -135,14 +134,14 @@ namespace HTMLWriter
 
 		private static void WritePolygon(HTMLWriter writer, Polygon element)
 		{
-			writer.StartTag("rect");
-			writer.EndTag();
+			writer.Equals(element);
+			throw new NotImplementedException();
 		}
 
 		private static void WritePolyline(HTMLWriter writer, Polyline element)
 		{
-			writer.StartTag("rect");
-			writer.EndTag();
+			writer.Equals(element);
+			throw new NotImplementedException();
 		}
 
 		private static void WriteSVGText(HTMLWriter writer, SVGText element)
@@ -157,6 +156,7 @@ namespace HTMLWriter
 		private static void WriteSVGTag(HTMLWriter writer, SVGTag element)
 		{
 			writer.PushAttribute("viewBox", element.ViewBox.ToString());
+			writer.PushAttribute("preserveAspectRatio", $"{element.PreserveAspectRatioAlign} {element.PreserveAspectRatioMeetOrSlice}");
 			writer.StartTag("svg");
 			foreach (var child in element.Children)
 			{

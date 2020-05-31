@@ -20,6 +20,7 @@ namespace Minsk.CodeAnalysis
 		private string _idBase;
 		private VariableValueCollection _variables;
 		private StatementEvaluator _evaluator;
+		private readonly HashSet<string> _registeredVariables = new HashSet<string>();
 		private StringBuilder JSCodeStringBuilder => ((StringWriter)_jsCode.InnerWriter).GetStringBuilder();
 
 		public JSEmitter()
@@ -28,6 +29,8 @@ namespace Minsk.CodeAnalysis
 
 		public JavaScriptCode Emit(BoundStatement node, VariableValueCollection inputVariables, string idBase)
 		{
+			_registeredVariables.Clear();
+			_registeredVariables.Add("totalTime");
 			_idBase = idBase;
 			_variables = inputVariables;
 			JSCodeStringBuilder.Clear();
@@ -93,17 +96,14 @@ namespace Minsk.CodeAnalysis
 		private void EmitForStatement(BoundForStatement node)
 		{
 			_jsCode.Write("for(");
-			var isForOfLoop = node.Collection.Type != BuiltInTypes.Instance.LookSymbolUp(typeof(Range));
-			if (!isForOfLoop) throw new NotImplementedException();
-			if (isForOfLoop) _jsCode.Write("const ");
-			else _jsCode.Write("let ");
-			EmitVariableSymbol(node.Variable, _jsCode);
-			if (isForOfLoop) _jsCode.Write(" of ");
-			else
-			{
-				_jsCode.Write(" = ");
-				//TODO: Range needs to be computed here!!!
-			}
+			//var isForOfLoop = node.Collection.Type != BuiltInTypes.Instance.LookSymbolUp(typeof(Range));
+			//if (!isForOfLoop) throw new NotImplementedException();
+			//if (isForOfLoop) 
+			_jsCode.Write("const ");
+			//else _jsCode.Write("let ");
+			_registeredVariables.Add(node.Variable.Name);
+			_jsCode.Write(node.Variable.Name);
+			_jsCode.Write(" of ");
 			EmitExpression(node.Collection);
 			_jsCode.Write(") ");
 			EmitStatement(node.Body);
@@ -223,7 +223,7 @@ namespace Minsk.CodeAnalysis
 					_variableDefinitions.Add("$slideAttributes", $"document.getElementById('{_idBase}')");
 				writer.Write("$slideAttributes.");
 			}
-			else if (variable.Name != "totalTime")
+			else if (!_registeredVariables.Contains(variable.Name))
 			{
 				var value = _evaluator.LookVariableUp(variable);
 				//Emit variable initializer to _jsCode. Down there -------
@@ -263,6 +263,11 @@ namespace Minsk.CodeAnalysis
 
 		private void EmitBinaryExpression(BoundBinaryExpression node, IndentedTextWriter writer)
 		{
+			if (node.Op.Kind == BoundBinaryOperatorKind.Range)
+			{
+				EmitBinaryRangeOperator(node.Left, node.Right, writer);
+				return;
+			}
 			EmitExpression(node.Left, writer);
 			switch (node.Op.Kind)
 			{
@@ -310,9 +315,6 @@ namespace Minsk.CodeAnalysis
 				case BoundBinaryOperatorKind.FilterAddition:
 					throw new NotImplementedException();
 					break;
-				case BoundBinaryOperatorKind.Range:
-					throw new NotImplementedException();
-					break;
 				case BoundBinaryOperatorKind.Exponentiation:
 					throw new NotImplementedException();
 					break;
@@ -320,6 +322,17 @@ namespace Minsk.CodeAnalysis
 					throw new NotImplementedException();
 			}
 			EmitExpression(node.Right, writer);
+		}
+
+		private void EmitBinaryRangeOperator(BoundExpression from, BoundExpression to, IndentedTextWriter writer)
+		{
+			writer.Write("new NumberRange(");
+			EmitExpression(from, writer);
+			writer.Write(", ");
+			EmitExpression(to, writer);
+			writer.Write(", ");
+			writer.Write("1"); //TODO: If from is bigger than to, we need -1 here!
+			writer.Write(")");
 		}
 
 		private void EmitFunctionExpression(BoundFunctionExpression node, IndentedTextWriter writer)
@@ -330,9 +343,32 @@ namespace Minsk.CodeAnalysis
 				case "mod":
 					EmitMod(node, writer);
 					break;
+				case "rgb":
+				case "rgba":
+					EmitRGBA(node, writer);
+					break;
 				case "hsl":
+				case "hsla":
 					EmitHSLA(node, writer);
 					break;
+				case "fixedWidth":
+					EmitFixedWidth(node, writer);
+					break;
+				case "max":
+				case "min":
+					EmitMathFunction(node, writer);
+					break;
+				case "print":
+				case "println":
+					EmitPrintFunction(node, writer);
+					break;
+				case "youtube": //this is kind of a constructor. And we don't support these in js!
+				case "image": //In slides image() returns path, width and hight
+								  //In js ImageSource is just a string. so they wouldn't
+								  //behave the same..
+				case "csv": //No CSVFile Datatype in js!
+					throw new NotImplementedException();
+				case "stepBy":
 				default:
 					writer.Write(node.Function.Name);
 					writer.Write("(");
@@ -345,6 +381,39 @@ namespace Minsk.CodeAnalysis
 					writer.Write(")");
 					break;
 			}
+		}
+
+		private void EmitMod(BoundFunctionExpression node, IndentedTextWriter writer)
+		{
+			writer.Write("(");
+			if (node.Arguments[0].Kind == BoundNodeKind.BinaryExpression) writer.Write("(");
+			EmitExpression(node.Arguments[0], writer);
+			if (node.Arguments[0].Kind == BoundNodeKind.BinaryExpression) writer.Write(")");
+			writer.Write(" % ");
+			if (node.Arguments[1].Kind == BoundNodeKind.BinaryExpression) writer.Write("(");
+			EmitExpression(node.Arguments[1], writer);
+			if (node.Arguments[1].Kind == BoundNodeKind.BinaryExpression) writer.Write(")");
+			writer.Write(")");
+		}
+
+		private void EmitRGBA(BoundFunctionExpression node, IndentedTextWriter writer)
+		{
+			writer.Write("'");
+			writer.Write(node.Function.Name);
+			writer.Write("(' + ");
+			EmitExpression(node.Arguments[0], writer);
+			writer.Write(" + ', ' + ");
+			EmitExpression(node.Arguments[1], writer);
+			writer.Write(" + ', ' + ");
+			EmitExpression(node.Arguments[2], writer);
+			if (node.Arguments.Length > 3)
+			{
+				writer.Write(" + ', ' + (");
+				EmitExpression(node.Arguments[3], writer);
+				writer.Write(" / 255)");
+			}
+			writer.Write(" + ')'");
+
 		}
 
 		private void EmitHSLA(BoundFunctionExpression node, IndentedTextWriter writer)
@@ -367,16 +436,39 @@ namespace Minsk.CodeAnalysis
 			writer.Write(" + ')'");
 		}
 
-		private void EmitMod(BoundFunctionExpression node, IndentedTextWriter writer)
+		private void EmitFixedWidth(BoundFunctionExpression node, IndentedTextWriter writer)
 		{
-			writer.Write("(");
-			if (node.Arguments[0].Kind == BoundNodeKind.BinaryExpression) writer.Write("(");
+			if (node.Arguments[0].Type == PrimitiveTypeSymbol.Integer) writer.Write("fixedWidthInt(");
+			else writer.Write("fixedWidthAny(");
 			EmitExpression(node.Arguments[0], writer);
-			if (node.Arguments[0].Kind == BoundNodeKind.BinaryExpression) writer.Write(")");
-			writer.Write(" % ");
-			if (node.Arguments[1].Kind == BoundNodeKind.BinaryExpression) writer.Write("(");
+			writer.Write(", ");
 			EmitExpression(node.Arguments[1], writer);
-			if (node.Arguments[1].Kind == BoundNodeKind.BinaryExpression) writer.Write(")");
+			writer.Write(")");
+		}
+
+		private void EmitMathFunction(BoundFunctionExpression node, IndentedTextWriter writer)
+		{
+			writer.Write("Math.");
+			writer.Write(node.Function.Name);
+			writer.Write("(");
+			var isFirst = true;
+			foreach (var arg in node.Arguments)
+			{
+				if (!isFirst) writer.Write(", ");
+				EmitExpression(arg, writer);
+			}
+			writer.Write(")");
+		}
+
+		private void EmitPrintFunction(BoundFunctionExpression node, IndentedTextWriter writer)
+		{
+			writer.Write("console.log(");
+			var isFirst = true;
+			foreach (var arg in node.Arguments)
+			{
+				if (!isFirst) writer.Write(", ");
+				EmitExpression(arg, writer);
+			}
 			writer.Write(")");
 		}
 

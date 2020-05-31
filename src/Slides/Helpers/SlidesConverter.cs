@@ -36,7 +36,7 @@ namespace Slides.Helpers
 			}
 		}
 
-		private static Color ConvertToColor(object value)
+		public static Color ConvertToColor(object value)
 		{
 			switch (value)
 			{

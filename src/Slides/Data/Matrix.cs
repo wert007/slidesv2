@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using SVGMatrix = SVGLib.Datatypes.Matrix;
 
 
 namespace Slides
@@ -56,6 +57,21 @@ namespace Slides
 				}
 			}
 			return builder.ToString();
+		}
+
+
+		public static implicit operator Matrix(SVGMatrix m)
+		{
+			var result = new Matrix(m.Columns, m.Rows);
+			result.values = m.Values;
+			return result;
+		}
+
+		public static implicit operator SVGMatrix(Matrix m)
+		{
+			var result = new SVGMatrix(m.columns, m.rows);
+			result.Values = m.values;
+			return result;
 		}
 	}
 }
