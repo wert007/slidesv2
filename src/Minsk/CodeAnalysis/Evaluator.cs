@@ -716,22 +716,22 @@ namespace Minsk.CodeAnalysis
 						element.background = SlidesConverter.ConvertToBrush(variable.Value);
 						break;
 					case "width":
-						element.width = Unit.Convert(variable.Value);
+						element.width = SlidesConverter.ConvertToUnit(variable.Value);
 						break;
 					case "height":
-						element.height = Unit.Convert(variable.Value);
+						element.height = SlidesConverter.ConvertToUnit(variable.Value);
 						break;
 					case "fontsize":
-						element.fontsize = Unit.Convert(variable.Value);
+						element.fontsize = SlidesConverter.ConvertToUnit(variable.Value);
 						break;
 					case "padding":
 						element.padding = (Thickness)variable.Value;
 						break;
 					case "initHeight":
-						element.initHeight = Unit.Convert(variable.Value);
+						element.initHeight = SlidesConverter.ConvertToUnit(variable.Value);
 						break;
 					case "initWidth":
-						element.initWidth = Unit.Convert(variable.Value);
+						element.initWidth = SlidesConverter.ConvertToUnit(variable.Value);
 						break;
 					case "borderColor":
 						element.borderColor = SlidesConverter.ConvertToColor(variable.Value);

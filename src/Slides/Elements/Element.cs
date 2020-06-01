@@ -1,5 +1,6 @@
 ﻿using Slides.Transforms;
 using SVGLib.Filters;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -10,6 +11,7 @@ namespace Slides.Elements
 		//Maybe temporary. Could be that we need to support all css attributes. 
 		//If that happens we should think about something a little smarter..
 		public string position { get; set; } = null;
+
 		public Color borderColor { get; set; }
 		public Thickness borderThickness { get; set; }
 		public BorderStyle borderStyle { get; set; }
@@ -21,19 +23,72 @@ namespace Slides.Elements
 		public Thickness padding { get; set; }
 		public Thickness marginAndPadding => margin + padding;
 		public Element parent { get; set; }
-		public Unit top
+		public virtual Unit top
 		{
-			get { return margin.top; }
+			get
+			{
+				switch (orientation)
+				{
+					case Orientation.LeftTop:
+					case Orientation.StretchTop:
+					case Orientation.CenterTop:
+					case Orientation.RightTop:
+						return margin.top;
+					case Orientation.LeftCenter:
+					case Orientation.StretchCenter:
+					case Orientation.Center:
+					case Orientation.RightCenter:
+						return new Unit(50, Unit.UnitKind.Percent) - get_ActualHeight() * 0.5f;
+					case Orientation.LeftStretch:
+					case Orientation.Stretch:
+					case Orientation.CenterStretch:
+					case Orientation.RightStretch:
+						return margin.top;
+					case Orientation.LeftBottom:
+					case Orientation.StretchBottom:
+					case Orientation.CenterBottom:
+					case Orientation.RightBottom:
+						return new Unit(100, Unit.UnitKind.Percent) - get_ActualHeight();
+					default:
+						throw new NotImplementedException();
+				}
+			}
 		}
-		public Unit left
+		public virtual Unit left
 		{
-			get { return margin.left; }
+			get {
+				switch (orientation)
+				{
+					case Orientation.LeftTop:
+					case Orientation.LeftCenter:
+					case Orientation.LeftStretch:
+					case Orientation.LeftBottom:
+						return margin.left;
+					case Orientation.CenterTop:
+					case Orientation.Center:
+					case Orientation.CenterStretch:
+					case Orientation.CenterBottom:
+						return new Unit(50, Unit.UnitKind.Percent) - get_ActualWidth() * 0.5f;
+					case Orientation.StretchTop:
+					case Orientation.StretchCenter:
+					case Orientation.Stretch:
+					case Orientation.StretchBottom:
+						return margin.left;
+					case Orientation.RightTop:
+					case Orientation.RightCenter:
+					case Orientation.RightStretch:
+					case Orientation.RightBottom:
+						return new Unit(100, Unit.UnitKind.Percent) - get_ActualWidth();
+					default:
+						throw new NotImplementedException();
+				}
+			}
 		}
-		public Unit bottom
+		public virtual Unit bottom
 		{
 			get { return margin.bottom; }
 		}
-		public Unit right
+		public virtual Unit right
 		{
 			get { return margin.right; }
 		}
@@ -46,8 +101,7 @@ namespace Slides.Elements
 			get { return top + get_ActualHeight(); }
 		}
 
-		public Unit centerX => left + get_ActualWidth() * 0.5f;
-		public Unit centerY => top + get_ActualHeight() * 0.5f;
+		public UnitPair center() => new UnitPair(left + get_ActualWidth() * 0.5f, top + get_ActualHeight() * 0.5f);
 
 		public Unit width
 		{
@@ -189,21 +243,25 @@ namespace Slides.Elements
 		protected abstract Unit get_InitialWidth();
 		protected abstract Unit get_InitialHeight();
 
-		private Unit get_ActualWidth()
+		protected Unit get_ActualWidth()
 		{
 			if (_width != null)
 				return _width;
 			if (initWidth != null)
 				return initWidth;
+			if(orientation == Orientation.Stretch)
+				return new Unit(100, Unit.UnitKind.Percent) - margin.Horizontal;
 			return get_InitialWidth();
 		}
 
-		private Unit get_ActualHeight()
+		protected Unit get_ActualHeight()
 		{
 			if (_height != null)
 				return _height;
 			if (initHeight != null)
 				return initHeight;
+			if (orientation == Orientation.Stretch)
+				return new Unit(100, Unit.UnitKind.Percent) - margin.Vertical;
 			return get_InitialHeight();
 		}
 

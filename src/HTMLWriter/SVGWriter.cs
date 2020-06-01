@@ -14,11 +14,17 @@ using SVGColor = SVGLib.Datatypes.Color;
 using SVGTransform = SVGLib.Datatypes.Transform;
 using SVGLib.PathOperations;
 using SVGLib.Datatypes;
+using Slides.Elements.SVG;
 
 namespace HTMLWriter
 {
 	internal static class SVGWriter
 	{
+		internal static void Write(HTMLWriter writer, UnitLine element)
+		{
+			WriteUnitLine(writer, element);
+		}
+	
 		internal static void Write(HTMLWriter writer, SVGElement element)
 		{
 			var viewBox = GetViewBox(element);
@@ -113,6 +119,20 @@ namespace HTMLWriter
 			writer.PushAttribute("y1", element.y.ToString());
 			writer.PushAttribute("x2", (element.x + element.width).ToString());
 			writer.PushAttribute("y2", (element.y + element.height).ToString());
+
+			writer.StartTag("line");
+			writer.EndTag();
+		}
+
+
+		private static void WriteUnitLine(HTMLWriter writer, UnitLine element)
+		{
+			writer.PushAttribute("x1", CSSWriter.GetValue(element.X1));
+			writer.PushAttribute("y1", CSSWriter.GetValue(element.Y1));
+			writer.PushAttribute("x2", CSSWriter.GetValue(element.X2));
+			writer.PushAttribute("y2", CSSWriter.GetValue(element.Y2));
+			writer.PushAttribute("stroke", CSSWriter.GetValue(element.stroke));
+			writer.PushAttribute("stroke-width", CSSWriter.GetValue(element.strokeWidth));
 
 			writer.StartTag("line");
 			writer.EndTag();

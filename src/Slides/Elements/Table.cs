@@ -29,8 +29,12 @@ namespace Slides.Elements
 			{
 				cells[r] = new TableChild[columns];
 				for (int c = 0; c < columns; c++)
+				{
 					cells[r][c] = new TableChild("");
+					cells[r][c].ContentUpdated += UpdateLayout;
+				}
 			}
+			UpdateLayout();
 		}
 		public Table(string[][] contents) : this()
 		{
@@ -38,6 +42,7 @@ namespace Slides.Elements
 			for (int i = 0; i < rows; i++)
 				columns = Math.Max(contents[i].Length, columns);
 			cells = new TableChild[rows][];
+
 			for (int r = 0; r < rows; r++)
 			{
 				cells[r] = new TableChild[columns];
@@ -47,8 +52,10 @@ namespace Slides.Elements
 					if (c < contents[r].Length)
 						content = contents[r][c];
 					cells[r][c] = new TableChild(content);
+					cells[r][c].ContentUpdated += UpdateLayout;
 				}
 			}
+			UpdateLayout();
 		}
 
 		private Table()
@@ -60,6 +67,66 @@ namespace Slides.Elements
 			var px = new Unit(1, Unit.UnitKind.Pixel);
 			//borderThickness = new Thickness(px, px, px, px);
 			//borderStyle = BorderStyle.Solid;
+		}
+
+		//TODO: 
+		//			l += Unit.Max(getColumnWidth(c), w / columns);
+		//gives the wrong result, when getColumnWidth is bigger than w.
+		//in that case you would need to subtract the columnWidth and 
+		//divide w by columns - 1 in the future. 
+		private void UpdateLayout()
+		{
+			var t = top;
+			var l = left;
+			var w = get_ActualWidth();
+			var h = get_ActualHeight();
+			for (int r = 0; r < rows; r++)
+			{
+				var rowHeight = Unit.Max(getRowHeight(r), h / rows);
+				for (int c = 0; c < columns; c++)
+				{
+					cells[r][c].set_Top(t);
+					cells[r][c].set_Left(l);
+					cells[r][c].initWidth = Unit.Max(getColumnWidth(c), w / columns);
+					cells[r][c].initHeight = rowHeight;
+					l = cells[r][c].rightSide;
+				}
+				t = cells[r][0].bottomSide;
+				l = left;
+			}
+		}
+
+		private Unit getRowHeight(int r)
+		{
+			var row = getRow(r);
+			var maxValue = float.MinValue;
+			var maxUnit = new Unit();
+			foreach (var child in row)
+			{
+				var u = child.get_ActualTableChildHeight();
+				if(u.Value > maxValue) //TODO: Unit Comparison!
+				{
+					maxValue = u.Value;
+					maxUnit = u;
+				}
+			}
+			return maxUnit;
+		}
+		private Unit getColumnWidth(int c)
+		{
+			var column = getColumn(c);
+			var maxValue = float.MinValue;
+			var maxUnit = new Unit();
+			foreach (var child in column)
+			{
+				var u = child.get_ActualTableChildWidth();
+				if (u.Value > maxValue) //TODO: Unit Comparison!
+				{
+					maxValue = u.Value;
+					maxUnit = u;
+				}
+			}
+			return maxUnit;
 		}
 
 		public TableChild[] getRow(int r)

@@ -19,27 +19,25 @@ using SVGLib.Parsing;
 using SVGLib.PathOperations;
 using SVGLib.ContainerElements;
 using SVGLib;
+using Slides.Elements.SVG;
+using Slides.Elements;
 
 namespace Minsk.CodeAnalysis.SlidesTypes
 {
 
 	public static class GlobalSVGFunctions
 	{
-		public static Slides.Elements.SVG.Rect rect(Unit width, Unit height)
+		public static UnitRect rect(Unit width, Unit height)
 		{
-			return new Slides.Elements.SVG.Rect(width, height);
+			return new UnitRect(width, height);
 		}
 
-		public static SVGContainer line(Unit x1, Unit y1, Unit x2, Unit y2, Color fill)
+		public static UnitLine line(UnitPair p1, UnitPair p2, Color stroke, Unit strokeWidth) => line(p1.X, p1.Y, p2.X, p2.Y, stroke, strokeWidth);
+		public static UnitLine line(Unit x1, Unit y1, Unit x2, Unit y2, Color stroke, Unit strokeWidth)
 		{
-			var l = new Line(0, 0, 100, 100);
-			l.Stroke = fill;
-			l.StrokeWidth = 1;
-			var result = new SVGContainer(l);
-			result.margin = new Thickness(x1, x2, new Unit(), new Unit());
-			result.orientation = Orientation.LeftTop;
-			result.width = x2 - x1 + new Unit(5, Unit.UnitKind.Pixel);
-			result.height = y2 - y1 + new Unit(5, Unit.UnitKind.Pixel);
+			var result = new UnitLine(x1, y1, x2, y2);
+			result.stroke = stroke;
+			result.strokeWidth = strokeWidth;
 			return result;
 		}
 

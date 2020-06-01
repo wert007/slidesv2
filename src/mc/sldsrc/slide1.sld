@@ -8,23 +8,8 @@ import gfont('Quicksand') as quicksand;
 
 //Cleanup:
 // - Maybe rename borderThickness to borderWidth?
-//
-// - big cleanup
-// - improve rect() function. 
-//   SVG in HTML is shit. you have to put things into a svg container.
-//   which i guess would be fine. But then you have to choose, if the
-//   svg container or its child get your width and height (in Units of course)
-//        If you do the first the child will always be scaled up. And you would have to destroy it's
-//      aspect ratio. Would be totally fine for only rectangles. But for lines e.g. it's 
-//      problematic, because you would try do stretch a line like / into _______________
-//      which just doesn't work...
-//        Option #2: The child will now be perfectly fine and sitting as you said.
-//      But your svg container must now be as big as the browser view in order to
-//      display its child as expected. Which could be ugly if you have a line in 
-//      the bottom left quarter and a slider in the top right. the line could be
-//      on top of the slider, even though they are way apart. what would be the solution
-//      to that? 
-//      pointer-events are well supported for svg elements. so you could use these.
+// - orientation is no css attribute. if you set it in a style
+//   the orientation-Value of the element should change!
 // - JSInsertions:
 //    - Multiple Sliders on one page => unique function names for each slide
 //    - Think of a better name then jsinsertion. 
@@ -54,6 +39,9 @@ import gfont('Quicksand') as quicksand;
 // - Support MathExpressions
 
 //Possible Features:
+// - array.first() and array.last(): should it be of Type 'T?' ? or is it the same as array access?
+// - support table row_height and column_height!
+// - refactor element.center() -> UnitPair into element.pos(dir : Orientation) -> UnitPair
 // - Support Slide Parameters (from and to) in transitions
 //   Which means you will have to generate a actual Transition for each Slide pair
 //   and look for differences.
@@ -131,7 +119,7 @@ template pagenumber(child: Slide):
 
 	let progress = child.index / float(slideCount - 1);
 	let rect = rect(pct(progress * 100), 10px);
-	rect.fill = rgb(int(255 * progress), 0, int(255 * (1 - progress)));
+	rect.background = rgb(int(255 * progress), 0, int(255 * (1 - progress)));
 	rect.orientation = Vertical.Bottom | Horizontal.Left;
 endtemplate
 
@@ -219,30 +207,20 @@ style algoTable(tbl: Table):
 	tbl.align = Alignment.Center;
 endstyle
 
-slide lol: endslide
-
-slide filterStepsTests:
-	step:
-	step:
-		let vid = youtube('VB4CCHHYOqY', YouTubeQuality.HD1080);
-		vid.orientation = Orientation.Stretch;
-		vid.margin = margin(15%);
-		vid.parameters.color = 'white';
-		vid.parameters.autoplay = true;
-		vid.parameters.fs = false;
-		filter = grayscale(0.75f);
-	step:
-		filter = none;
-endslide
 
 slide divisionByZeroAndArrayOutOfRange < stressMe:
-	
+	let yt = youtube('UCKJ2A5dC28', YouTubeQuality.HD1080);
+	yt.orientation = Orientation.Stretch;
+	yt.margin = margin(2%, 50%, 2%, 2%);
+	let l = line(yt.left, yt.top, yt.rightSide, yt.bottomSide, cyan, 20px);
 endslide
 
 slide algo < pagenumber:
 	setData('name', 'gti presentation 1');
 	let tbl = new Table(7, 7);
-	tbl.applyStyle(algoTable);
+	tbl.orientation = Orientation.Stretch;
+	tbl.margin = margin(10%);
+	tbl.align = Alignment.Center;
 	let headerRow = ['abc', 'abC', 'aBc', 'AbC', 'ABc', 'ABC'];
 	tbl.setRow(headerRow, 0, 1);
 	let headerCol = ['ab' , 'ac' , 'bC' , 'Bc' , 'AC' , 'AB'];
@@ -253,10 +231,13 @@ slide algo < pagenumber:
 		tbl.cells[j + 2][j + 1].content = 'x';
 		tbl.cells[j + 1][j + 2].content = 'x';
 	endfor
-	
-	tbl.cells[5][..].background = orange;
-	tbl.cells[..][4].background = red;
-	tbl.cells[..][6].background = red;
+
+	let c = tbl.getRow(4);
+	let line1 = line(c[0].center(), c[c.len() - 1].center(), orange, 3px);
+	c = tbl.getColumn(4);
+	let line2 = line(c[0].center(), c[c.len() - 1].center(), red, 3px);
+	c = tbl.getColumn(6);
+	let line3 = line(c[0].center(), c[c.len() - 1].center(), red, 3px);
 endslide
 
 slide algo2 < pagenumber:
@@ -523,7 +504,7 @@ slide ~overview:
 	imgBackground.orientation = Orientation.Stretch;
 	imgBackground.stretching = ImageStretching.Cover;
 	let whitePane = rect(100%, 100%);
-	whitePane.fill = rgba(255, 255, 255, 160);
+	whitePane.background = rgba(255, 255, 255, 160);
 
 	let map = image(@'city\map.png'); //TODO: Change image
 	let imgMap = new Image(map);

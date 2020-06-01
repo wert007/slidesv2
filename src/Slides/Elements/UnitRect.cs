@@ -4,15 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Slides.Elements.SVG
+namespace Slides.Elements
 {
-	public class Rect : Element
+	public class UnitRect : Element
 	{
-		public Color Fill { get; set; } = new Color(0, 0, 0, 255);
-		public Color Stroke { get; set; } = Color.Transparent;
-		public double StrokeWidth { get; set; }
 
-		public Rect(Unit width, Unit height)
+		public UnitRect(Unit width, Unit height)
 		{
 			this.width = width;
 			this.height = height;

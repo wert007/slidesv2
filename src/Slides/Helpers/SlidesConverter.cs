@@ -18,8 +18,11 @@ namespace Slides.Helpers
 				return ConvertToColor(obj);
 			if (target == typeof(SVGColor))
 				return ConvertToSVGColor(obj);
+			if (target == typeof(Unit))
+				return ConvertToUnit(obj);
 			return obj;
 		}
+
 
 		public static Brush ConvertToBrush(object value)
 		{
@@ -61,6 +64,21 @@ namespace Slides.Helpers
 				default:
 					throw new ArgumentException();
 			}
+		}
+		public static Unit ConvertToUnit(object value)
+		{
+			switch (value)
+			{
+				case Unit u:
+					return u;
+				case float f:
+					return new Unit(f * 100, Unit.UnitKind.Percent);
+				case int i:
+					return new Unit(i, Unit.UnitKind.Pixel);
+				default:
+					throw new ArgumentException();
+			}
+
 		}
 	}
 }

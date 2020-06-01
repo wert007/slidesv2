@@ -19,6 +19,7 @@
 		TableChild,
 		SplittedContainer,
 		Rect,
-		YouTubePlayer
+		YouTubePlayer,
+		UnitSVGShape
 	}
 }

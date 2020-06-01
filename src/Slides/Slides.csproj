@@ -72,7 +72,8 @@
     <Compile Include="Elements\FlowAxis.cs" />
     <Compile Include="Elements\ImageStretching.cs" />
     <Compile Include="Elements\SplittedContainer.cs" />
-    <Compile Include="Elements\SVG\Rect.cs" />
+    <Compile Include="Elements\UnitRect.cs" />
+    <Compile Include="Elements\SVG\UnitLine.cs" />
     <Compile Include="Elements\TableChild.cs" />
     <Compile Include="Data\Font.cs" />
     <Compile Include="Data\Horizontal.cs" />

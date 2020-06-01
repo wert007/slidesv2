@@ -4,6 +4,17 @@ using System.Globalization;
 
 namespace Slides
 {
+	public class UnitPair
+	{
+		public UnitPair(Unit x, Unit y)
+		{
+			X = x;
+			Y = y;
+		}
+
+		public Unit X { get; }
+		public Unit Y { get; }
+	}
 	[Serializable]
 	public class Unit
 	{
@@ -73,6 +84,29 @@ namespace Slides
 			}
 		}
 
+		public bool IsRelative()
+		{
+			switch (Kind)
+			{
+				case UnitKind.Point:
+				case UnitKind.Pixel:
+
+				case UnitKind.Addition:
+				case UnitKind.Subtraction:
+					return false;
+				case UnitKind.Percent:
+				case UnitKind.Auto:
+				case UnitKind.CharacterWidth:
+				case UnitKind.HorizontalPercent:
+				case UnitKind.VerticalPercent:
+					return true;
+				default:
+					throw new NotImplementedException();
+			}
+		}
+
+		protected virtual Unit GetMaxComponent() => this;
+
 		public static Unit operator +(Unit a, Unit b)
 		{
 			if (a.Kind == b.Kind)
@@ -81,7 +115,7 @@ namespace Slides
 				return b;
 			if (b.Value == 0 && b.Kind != UnitKind.Auto)
 				return a;
-
+			if (a is UnitAddition add) return add.Add(b);
 			return new UnitAddition(a, b);
 		}
 
@@ -95,6 +129,16 @@ namespace Slides
 				return a;
 			return new UnitSubtraction(a, b);
 		}
+
+		public static Unit Max(Unit a, Unit b)
+		{
+			if (a.Kind == b.Kind && a.Kind != UnitKind.Addition && a.Kind != UnitKind.Subtraction) return a.Value > b.Value ? a : b;
+			a = a.GetMaxComponent();
+			b = b.GetMaxComponent();
+			if (a.IsRelative()) return a;
+			return b;
+		}
+
 		public static Unit operator *(float a, Unit b) => new Unit(b.Value * a, b.Kind);
 		public static Unit operator *(Unit a, float b) => b * a;
 
@@ -141,12 +185,6 @@ namespace Slides
 			return TryParse(text, CultureInfo.CurrentCulture, out unitResult);
 		}
 
-
-		public static Unit Abs(Unit unit)
-		{
-			return new Unit(Math.Abs(unit.Value), unit.Kind);
-		}
-
 		private static UnitKind? ToUnitKind(string v)
 		{
 			switch (v)
@@ -168,17 +206,6 @@ namespace Slides
 				default:
 					return null;
 			}
-		}
-
-		public static Unit Convert(object value)
-		{
-			if (value is Unit u)
-				return u;
-			if (value is float f)
-				return new Unit(f * 100, UnitKind.Percent);
-			if (value is int i)
-				return new Unit(i, UnitKind.Pixel);
-			return new Unit(-1, UnitKind.Auto);
 		}
 
 		public override bool Equals(object obj)

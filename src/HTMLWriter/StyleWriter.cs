@@ -299,6 +299,7 @@ namespace HTMLWriter
 											 orientation == Orientation.RightStretch;
 
 
+			if(element.kind != ElementKind.UnitSVGShape) 
 			{
 				if (hasVerticalStretch)
 				{

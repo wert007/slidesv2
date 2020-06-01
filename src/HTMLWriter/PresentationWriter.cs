@@ -2,6 +2,7 @@
 using Slides;
 using Slides.Code;
 using Slides.Elements;
+using Slides.Elements.SVG;
 using Slides.Helpers;
 using Slides.MathExpressions;
 using Slides.SVG;
@@ -381,7 +382,10 @@ namespace HTMLWriter
 					WriteSVGContainer(parentName, (SVGContainer)element);
 					break;
 				case ElementKind.Rect:
-					WriteRect(parentName, (Slides.Elements.SVG.Rect)element);
+					WriteRect(parentName, (UnitRect)element);
+					break;
+				case ElementKind.UnitSVGShape:
+					WriteUnitSVGShape(parentName, (UnitLine)element);
 					break;
 				case ElementKind.Table:
 					WriteTable(parentName, (Table)element);
@@ -524,14 +528,22 @@ namespace HTMLWriter
 			_htmlWriter.EndTag();
 		}
 
-		private static void WriteRect(string parentName, Slides.Elements.SVG.Rect element)
+		private static void WriteRect(string parentName, UnitRect element)
 		{
 			var id = $"{parentName}-{element.name}";
 			if (string.IsNullOrEmpty(element.name))
 				id = null;
-			_htmlWriter.PushAttribute("width", element.width.ToString());
-			_htmlWriter.PushAttribute("height", element.height.ToString()) ;
-			_htmlWriter.StartTag("rect", id: id, classes: "rect " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
+			_htmlWriter.StartTag("div", id: id, classes: "rect " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
+			_htmlWriter.EndTag();
+		}
+		
+		private static void WriteUnitSVGShape(string parentName, UnitLine element)
+		{
+			var id = $"{parentName}-{element.name}";
+			if (string.IsNullOrEmpty(element.name))
+				id = null;
+			_htmlWriter.StartTag("svg", id: $"{id}-container", classes: "unitSVGShapeContainer " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
+			SVGWriter.Write(_htmlWriter, element);
 			_htmlWriter.EndTag();
 		}
 

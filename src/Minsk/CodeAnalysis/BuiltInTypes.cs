@@ -27,6 +27,7 @@ using SVGLib.Datatypes;
 using Slides.Elements;
 using SVGLib.Filters;
 using SVGLib.Filters.Lights;
+using Slides.Elements.SVG;
 
 namespace Minsk.CodeAnalysis
 {
@@ -99,6 +100,7 @@ namespace Minsk.CodeAnalysis
 			Add(typeof(Vector2), CreateEmptySymbol(nameof(Vector2)));
 			Add(typeof(Unit), PrimitiveTypeSymbol.Unit);
 			Add(typeof(Unit.UnitKind));
+			Add(typeof(UnitPair));
 			Add(typeof(UnitAddition));
 			Add(typeof(Range), isData:true);
 			Add(typeof(MathFormula), isData: true);
@@ -209,7 +211,6 @@ namespace Minsk.CodeAnalysis
 			Add(typeof(SVGPath), name: "Path");
 			Add(typeof(BasicShape));
 			Add(typeof(Rect));
-			Add(typeof(Slides.Elements.SVG.Rect));
 			Add(typeof(Circle));
 			Add(typeof(Ellipse));
 			Add(typeof(Line));
@@ -220,6 +221,9 @@ namespace Minsk.CodeAnalysis
 			Add(typeof(SVGContainer));
 
 			Add(typeof(MathPlot));
+			//Less often used then SVGRect
+			Add(typeof(UnitRect));
+			Add(typeof(UnitLine));
 
 			Add(typeof(Step), CreateEmptySymbol(nameof(Step)));
 			Add(typeof(Template));

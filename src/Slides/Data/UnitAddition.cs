@@ -14,6 +14,8 @@ namespace Slides
 		public Unit A { get; }
 		public Unit B { get; }
 
+		protected override Unit GetMaxComponent() => Max(A, B);
+
 		public Unit Add(Unit u)
 		{
 			if (A.Kind == u.Kind)
@@ -44,6 +46,7 @@ namespace Slides
 
 		public Unit A { get; }
 		public Unit B { get; }
+		protected override Unit GetMaxComponent() => Max(A, B);
 
 		public Unit Add(Unit u)
 		{
