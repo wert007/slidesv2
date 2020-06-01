@@ -75,6 +75,8 @@ namespace Slides.Elements
 		public override ElementKind kind => ElementKind.YouTubePlayer;
 
 		public bool isMuted { get; set; }
+		public bool soundOnly { get; set; }
+		public bool keepPlaying { get; set; }
 		public string videoId { get; }
 		public YouTubeQuality quality { get; }
 		public YouTubePlayerParameters parameters { get; }

@@ -12,6 +12,7 @@ let steps;
 let playingTransition;
 
 let plots;
+let ytPlayers = undefined;
 
 function load() {
     plots = [];
@@ -21,8 +22,7 @@ function load() {
     slides = document.getElementsByClassName('slide');
     steps = document.getElementsByClassName('step');
     let transitions = document.getElementsByClassName('transition');
-    for(let i = 0; i < transitions.length; i++)
-    {
+    for (let i = 0; i < transitions.length; i++) {
         addClass(transitions[i], 'invisible');
     }
     for (let i = 0; i < slides.length; i++) {
@@ -38,19 +38,23 @@ function load() {
     let timerId = setInterval(() => {
         totalTime += 20;
         update_totalTime();
+
+        if (YT.loaded && ytPlayers == undefined) {
+            youtubeAPIReady();
+        }
     }, 20);
 
     initAnimations();
 }
 
 function prev() {
-   // console.log(slideIndex + ' ' + stepIndex);
+    // console.log(slideIndex + ' ' + stepIndex);
     stepNumericalId = Math.max(stepNumericalId - 1, 0);
- 
+
     if (stepIndex == 0) {
         sildeIndex = Math.max(sildeIndex - 1, 0);
         loadSlides();
-        
+
         let transition = document.getElementById(currentSlide.dataset.transitionId)
         if (transition != undefined)
             playTransition(transition);
@@ -71,7 +75,7 @@ function prev() {
 }
 
 function next() {
-   // console.log(slideIndex + ' ' + stepIndex);
+    // console.log(slideIndex + ' ' + stepIndex);
     stepNumericalId = Math.min(stepNumericalId + 1, steps.length);
 
     let max;
@@ -95,32 +99,28 @@ function next() {
     showSlides();
 }
 
-function playAnimations(offset)
-{
-    var animations = getAnimations();
+function playAnimations(offset) {
+    let animations = getAnimations();
+    let actualNumericalId = steps[stepNumericalId].dataset.stepNumericalId;
     for (let i = 0; i < animations.length; i++) {
         const animation = animations[i];
-        if(animation.step_numerical_id == stepNumericalId)
-        {
+        if (animation.step_numerical_id == actualNumericalId) {
             let element = document.getElementById(animation.element_id);
             animate(element, animation.animation, animation.duration);
         }
-        else if(animation.step_numerical_id == stepNumericalId + offset)
-        {
+        else if (animation.step_numerical_id == actualNumericalId + offset) {
             let element = document.getElementById(animation.element_id);
             revertAnimation(element);
         }
     }
 }
 
-function animate(element, animation, duration)
-{
+function animate(element, animation, duration) {
     let progress = 0;
     let timerId = setInterval(() => {
         animation(progress / duration, element)
         progress += 20;
-        if(progress > duration)
-        {
+        if (progress > duration) {
             clearInterval(timerId);
         }
     }, 20);
@@ -128,26 +128,22 @@ function animate(element, animation, duration)
 
 let init_elements = [];
 
-function initAnimations()
-{
+function initAnimations() {
     for (let i = 0; i < animations.length; i++) {
         const element = animations[i].element_id;
         init_elements[element] = document.getElementById(element);
     }
 }
 
-function getPlot(id)
-{
-    for(let i = 0; i < plots.length; i++)
-    {
-        if(plots[i].id == id)
+function getPlot(id) {
+    for (let i = 0; i < plots.length; i++) {
+        if (plots[i].id == id)
             return plots[i].value;
-	}
+    }
     return undefined;
 }
 
-function revertAnimation(element)
-{
+function revertAnimation(element) {
     element.style = init_elements[element.id];
 }
 
@@ -170,13 +166,37 @@ function loadSlides() {
     }
 }
 
+function handleYouTubePlayers() {
+    if (ytPlayers === undefined)
+        return;
+
+        
+    var actualNumericalId = parseInt(currentSteps[currentSteps.length - 1].dataset.stepNumericalId);
+    
+    for (let p of ytPlayers) {
+        if ((currentSlide.id !== p.slideId || p.stepNumericalId > actualNumericalId)
+             && !p.keepPlaying) {
+            p.autoPaused = p.getPlayerState() != YT.PlayerState.PAUSED
+            p.pauseVideo();
+        }
+        else if (p.getPlayerState() == YT.PlayerState.PAUSED && p.autoPaused)
+            p.playVideo();
+    }
+}
+
 function showSlides() {
     removeClass(currentSlide, 'invisible');
+    currentSlide.startTime = totalTime;
+    handleYouTubePlayers();
     let localVisibleSteps = stepIndex + 1;
     for (let i = 0; i < steps.length; i++) {
         if (currentSteps.includes(steps[i]) && localVisibleSteps > 0) {
             removeClass(steps[i], 'invisible');
             localVisibleSteps--;
+            if (localVisibleSteps == 0) {
+                update_step(steps[i]);
+                break;
+            }
         }
     }
 }

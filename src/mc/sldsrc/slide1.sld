@@ -10,12 +10,6 @@ import gfont('Quicksand') as quicksand;
 // - Maybe rename borderThickness to borderWidth?
 //
 // - big cleanup
-//   - right now every youtube video will be stopped once you leave its
-//     slide and every youtube video, which didn't come to an end will start playing
-//     once you enter its slide. but i think if the video wasn't auto paused because
-//     you went to the next slide it shouldn't autoplay as well once you enter again.
-//     And consider steps. if i create a video on the second step. it will still play
-//     and everything before hand. Which it shouldnt. But i like the progress.
 // - improve rect() function. 
 //   SVG in HTML is shit. you have to put things into a svg container.
 //   which i guess would be fine. But then you have to choose, if the
@@ -30,7 +24,7 @@ import gfont('Quicksand') as quicksand;
 //      the bottom left quarter and a slider in the top right. the line could be
 //      on top of the slider, even though they are way apart. what would be the solution
 //      to that? 
-//      pointer-events are quite supported for svg elements. so you could use these.
+//      pointer-events are well supported for svg elements. so you could use these.
 // - JSInsertions:
 //    - Multiple Sliders on one page => unique function names for each slide
 //    - Think of a better name then jsinsertion. 
@@ -225,19 +219,17 @@ style algoTable(tbl: Table):
 	tbl.align = Alignment.Center;
 endstyle
 
+slide lol: endslide
+
 slide filterStepsTests:
-	jsinsertion:
-		background = hsl(mod(totalTime, 360), 120, 120);
-	endjsinsertion
-	let vid = youtube('VB4CCHHYOqY', YouTubeQuality.HD1080);
-	vid.orientation = Orientation.Stretch;
-	vid.margin = margin(15%);
-	vid.parameters.color = 'white';
-	vid.parameters.autoplay = true;
-	vid.parameters.fs = false;
-	vid.isMuted = false;
-	filter = discrete;
 	step:
+	step:
+		let vid = youtube('VB4CCHHYOqY', YouTubeQuality.HD1080);
+		vid.orientation = Orientation.Stretch;
+		vid.margin = margin(15%);
+		vid.parameters.color = 'white';
+		vid.parameters.autoplay = true;
+		vid.parameters.fs = false;
 		filter = grayscale(0.75f);
 	step:
 		filter = none;

@@ -99,7 +99,10 @@ namespace HTMLWriter
 						_htmlWriter.UseCSS("core.css");
 						_htmlWriter.UseJS("core.js");
 						_htmlWriter.UseJS("datatypes.js");
+
+						_htmlWriter.PushAttribute("async");
 						_htmlWriter.UseJS("https://cdnjs.cloudflare.com/ajax/libs/mathjs/6.2.5/math.min.js");
+						_htmlWriter.PushAttribute("async");
 						_htmlWriter.UseJS("https://cdn.jsdelivr.net/npm/apexcharts");
 						if (presentation.Flags.CodeHighlighter != CodeHighlighter.None)
 						{
@@ -592,6 +595,10 @@ namespace HTMLWriter
 			_jsWriter.WriteAssignment("curPlayer", playerInit);
 			_jsWriter.WriteAssignment("curPlayer.stepNumericalId", element.get_Step().ID.ToString());
 			_jsWriter.WriteAssignment("curPlayer.slideId", $"'{element.get_Step().ParentName}'");
+			_jsWriter.WriteAssignment("curPlayer.keepPlaying", element.keepPlaying.ToString().ToLower());
+			if (element.soundOnly)
+				_jsWriter.WriteAssignment("curPlayer.getIframe().style.display", "'none'");
+			_jsWriter.WriteAssignment("curPlayer.autoPaused", "false");
 
 			_jsWriter.WriteFunctionCall("ytPlayers.push", new JavaScriptObject("curPlayer"));
 			_jsWriter.ResetWriter();

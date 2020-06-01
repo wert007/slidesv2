@@ -8,6 +8,11 @@ body {
 	overflow: hidden;
 }
 
+table, table * {
+	border-style: solid;
+	border-width: 1px;
+}
+
 * {
 	box-sizing:border-box;
 }
@@ -101,6 +106,11 @@ svg#custom-filters {
 	height: -webkit-fill-available;
 	position: absolute;
 	width: -webkit-fill-available;
+	pointer-events: none;
+}
+
+.youtubeplayer, .slider {
+	pointer-events: auto;
 }
 
 .transition {

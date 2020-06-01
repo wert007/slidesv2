@@ -116,7 +116,7 @@ class StyleUnit
     }
 }
 
-class ProcentalFilter {
+class PercentalFilter {
 	constructor(name, value)
 	{
 		this.name = name;
@@ -125,7 +125,7 @@ class ProcentalFilter {
 
 	static lerp(a, b, t)
 	{
-		return new ProcentalFilter(a.name, lerp(a.value, b.value, t));
+		return new PercentalFilter(a.name, lerp(a.value, b.value, t));
 	}
 
 	toString()
@@ -179,6 +179,7 @@ class DropShadowFilter {
 	}
 }
 
+//TODO: Move to color.js
 var Color_t = (function(window){
 
 	var Events = {
@@ -963,6 +964,27 @@ var Color_t = (function(window){
 })(window);
 
 
+class NumberRange
+{
+	constructor(from, to, step)
+	{
+		this.a = [];
+		let index = 0;
+		for(let i = from; i < to; i += step)
+		{
+			this.a[index] = i;
+			index++;
+		}
+	}
+
+	[Symbol.iterator]() { return this.a.values() }
+}
+
+//TODO: Move to functions.js or smth
+//
+//  functions
+//
+
 function lerp(v0, v1, t) {
     return v0*(1-t)+v1*t
 }
@@ -992,4 +1014,21 @@ function toTime(timeInMilliseconds)
 	if (timeInMilliseconds != 0)
 		result = timeInMilliseconds + "d " + result;
 	return result.trim();
+}
+
+function fixedWidthAny(source, length)
+{
+	let str = new Array(length + 1).join(" ");
+	return String(str + source).slice(length);
+}
+
+function fixedWidthInt(source, length)
+{
+	let str = new Array(length + 1).join("0");
+	return String(str + source).slice(length);
+}
+
+function stepBy(range, step)
+{
+	return new NumberRange(range.from, range.to, step);
 }
