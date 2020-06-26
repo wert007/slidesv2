@@ -1,6 +1,8 @@
-﻿namespace Slides
-{
+﻿using System.Collections.Generic;
+using System.Linq;
 
+namespace Slides
+{
 	public enum BorderStyle
 	{
 		None,

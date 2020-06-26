@@ -48,8 +48,8 @@ namespace Slides.Elements
 		public string yName { get; set; }
 
 		public override ChartType chartType => ChartType.LineChart;
-		protected override Unit get_InitialHeight() => new Unit(100, Unit.UnitKind.Pixel);
+		internal override Unit get_InitialHeight() => new Unit(100, Unit.UnitKind.Pixel);
 
-		protected override Unit get_InitialWidth() => new Unit(100, Unit.UnitKind.Pixel);
+		internal override Unit get_InitialWidth() => new Unit(100, Unit.UnitKind.Pixel);
 	}
 }

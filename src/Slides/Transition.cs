@@ -1,4 +1,5 @@
 ﻿using Slides.Elements;
+using Slides.Styling;
 using System;
 using System.Collections.Generic;
 
@@ -39,7 +40,9 @@ namespace Slides
 		public TransitionCall from { get; }
 		public TransitionCall to { get; }
 		private Element[] _children;
-		private HashSet<StdStyle> appliedStyles = new HashSet<StdStyle>();
+
+		//TODO: Why is this here? it is not used and the StdStyle is strange. shouldn't it be Customstyle?
+//		private HashSet<StdStyle> appliedStyles = new HashSet<StdStyle>();
 
 		public Transition(string name, TransitionCall from, TransitionCall to, Element[] children)
 		{

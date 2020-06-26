@@ -43,6 +43,8 @@ namespace Minsk.CodeAnalysis.Binding
 
 		public static BoundUnaryOperator Bind(SyntaxKind syntaxKind, TypeSymbol operandType)
 		{
+			if(operandType.Type == TypeType.Noneable && syntaxKind == SyntaxKind.BangToken)
+				return new BoundUnaryOperator(syntaxKind, BoundUnaryOperatorKind.NoneableNegation, operandType);
 			foreach (var op in _operators)
 			{
 				if (op.SyntaxKind == syntaxKind && op.OperandType == operandType)

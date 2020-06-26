@@ -1,4 +1,7 @@
-﻿using Slides.Transforms;
+﻿using Slides.Data;
+using Slides.Helpers;
+using Slides.Styling;
+using Slides.Transforms;
 using SVGLib.Filters;
 using System;
 using System.Collections.Generic;
@@ -10,6 +13,8 @@ namespace Slides.Elements
 	{
 		//Maybe temporary. Could be that we need to support all css attributes. 
 		//If that happens we should think about something a little smarter..
+		//
+		//Actually. That should NEVER happen!
 		public string position { get; set; } = null;
 
 		public Color borderColor { get; set; }
@@ -22,18 +27,19 @@ namespace Slides.Elements
 		public Thickness margin { get; set; }
 		public Thickness padding { get; set; }
 		public Thickness marginAndPadding => margin + padding;
-		public Element parent { get; set; }
+		public ParentElement h_parent { get; set; }
 		public virtual Unit top
 		{
 			get
 			{
+				var m = get_ActualMargin();
 				switch (orientation)
 				{
 					case Orientation.LeftTop:
 					case Orientation.StretchTop:
 					case Orientation.CenterTop:
 					case Orientation.RightTop:
-						return margin.top;
+						return m.top;
 					case Orientation.LeftCenter:
 					case Orientation.StretchCenter:
 					case Orientation.Center:
@@ -43,7 +49,7 @@ namespace Slides.Elements
 					case Orientation.Stretch:
 					case Orientation.CenterStretch:
 					case Orientation.RightStretch:
-						return margin.top;
+						return m.top;
 					case Orientation.LeftBottom:
 					case Orientation.StretchBottom:
 					case Orientation.CenterBottom:
@@ -56,14 +62,16 @@ namespace Slides.Elements
 		}
 		public virtual Unit left
 		{
-			get {
+			get
+			{
+				var m = get_ActualMargin();
 				switch (orientation)
 				{
 					case Orientation.LeftTop:
 					case Orientation.LeftCenter:
 					case Orientation.LeftStretch:
 					case Orientation.LeftBottom:
-						return margin.left;
+						return m.left;
 					case Orientation.CenterTop:
 					case Orientation.Center:
 					case Orientation.CenterStretch:
@@ -73,7 +81,7 @@ namespace Slides.Elements
 					case Orientation.StretchCenter:
 					case Orientation.Stretch:
 					case Orientation.StretchBottom:
-						return margin.left;
+						return m.left;
 					case Orientation.RightTop:
 					case Orientation.RightCenter:
 					case Orientation.RightStretch:
@@ -101,7 +109,7 @@ namespace Slides.Elements
 			get { return top + get_ActualHeight(); }
 		}
 
-		public UnitPair center() => new UnitPair(left + get_ActualWidth() * 0.5f, top + get_ActualHeight() * 0.5f);
+
 
 		public Unit width
 		{
@@ -131,26 +139,26 @@ namespace Slides.Elements
 		}
 		Unit _width = null;
 		Unit _height = null;
-		public Unit initWidth { get; set; }
-		public Unit initHeight { get; set; }
 		public string name { get; set; }
 		public bool isVisible { get; set; }
 		public CustomStyle hover { get; set; }
 		public abstract ElementKind kind { get; }
-		private Stack<CustomStyle> appliedStyles;
+		public virtual bool h_AllowsVerticalStretching { get; } = true;
+		public virtual bool h_AllowsHorizontalStretching { get; } = true;
+		protected virtual bool NeedsInitialSizeCalculated { get; } = false;
 
+		private Stack<Style> appliedStyles;
+
+		private readonly Dictionary<string, Action<object>> applyStyleHandlers = new Dictionary<string, Action<object>>();
 
 		private Stack<Transform> _transforms = new Stack<Transform>();
 
 		private static int index = 0;
 		private Step step { get; set; }
-		public void set_Step(Step step) => this.step = step;
-		public Step get_Step() => step;
-		public string get_Id()
-		{
-			if (parent != null) return $"{parent.get_Id()}-{name}";
-			return $"{step.get_Id()}-{name}";
-		}
+		private SlideAttributes slideStyle { get; set; }
+		public static StdStyle StdStyle { get; private set; }
+
+		public string get_Id() => $"{h_parent?.get_Id() ?? step.get_Id()}-{name}";
 		public Element()
 		{
 			borderColor = null;
@@ -162,19 +170,81 @@ namespace Slides.Elements
 			margin = new Thickness();
 			padding = new Thickness();
 			isVisible = true;
-			appliedStyles = new Stack<CustomStyle>();
+			appliedStyles = new Stack<Style>();
 
 			width = null;
 			height = null;
 			name = index.ToString();
 			index++;
+
+			addApplyStyleHandler("orientation", v => orientation = (Orientation)v);
+			addApplyStyleHandler("margin", v => margin = (Thickness)v);
+			addApplyStyleHandler("left", v => margin.left = SlidesConverter.ConvertToUnit(v));
+			addApplyStyleHandler("top", v => margin.top = SlidesConverter.ConvertToUnit(v));
+			addApplyStyleHandler("right", v => margin.right = SlidesConverter.ConvertToUnit(v));
+			addApplyStyleHandler("bottom", v => margin.bottom = SlidesConverter.ConvertToUnit(v));
 		}
 
-		public void applyStyle(CustomStyle style)
+		public void applyStyle(Style style)
 		{
-			appliedStyles.Push(style);
+			handleApplyStyle(style);
+			foreach (var field in style.GetMainStyle().Properties)
+			{
+				if (applyStyleHandlers.ContainsKey(field.Key))
+					applyStyleHandlers[field.Key].Invoke(field.Value);
+			}
+			//foreach (var field in applyStyleHandlers.Keys)
+			//	style.ModifiedFields.Remove(field);
+			if (!(style is Substyle))
+				appliedStyles.Push(style);
 		}
 
+		protected virtual void handleApplyStyle(Style style) { }
+
+		protected void addApplyStyleHandler(string name, Action<object> handler)
+		{
+			applyStyleHandlers[name] = handler;
+		}
+		public UnitPair center() => relativePos(Orientation.Center);
+		public UnitPair relativePos(Orientation o)
+		{
+			Unit x;
+			Unit y;
+
+			switch (SlidesHelper.GetHorizontal(o))
+			{
+				case Horizontal.Left:
+					x = left;
+					break;
+				case Horizontal.Stretch:
+				case Horizontal.Center:
+					x = left + get_ActualWidth() * 0.5f;
+					break;
+				case Horizontal.Right:
+					x = rightSide;
+					break;
+				default:
+					throw new NotImplementedException(); ;
+			}
+
+			switch (SlidesHelper.GetVertical(o))
+			{
+				case Vertical.Top:
+					y = top;
+					break;
+				case Vertical.Stretch:
+				case Vertical.Center:
+					y = top + get_ActualHeight() * 0.5f;
+					break;
+				case Vertical.Bottom:
+					y = bottomSide;
+					break;
+				default:
+					throw new NotImplementedException(); ;
+			}
+
+			return new UnitPair(x, y);
+		}
 		public void translate(Unit x, Unit y)
 		{
 			_transforms.Push(new SingleValueTransform(TransformKind.TranslateX, x));
@@ -186,9 +256,14 @@ namespace Slides.Elements
 			_transforms.Push(new RotationTransform(TransformKind.RotateZ, degree));
 		}
 
-		public CustomStyle[] get_AppliedStyles()
+		public Style[] get_AppliedStyles()
 		{
 			return appliedStyles.ToArray();
+		}
+
+		public static void SetStdStyle(StdStyle style)
+		{
+			StdStyle = style;
 		}
 
 		public Transform[] get_Transforms()
@@ -205,52 +280,57 @@ namespace Slides.Elements
 		public object get_Property(string name)
 		{
 			object styleValue = null;
+			if(StdStyle != null)
+				foreach (var field in StdStyle.GetMainStyle().Properties)
+					if (field.Key == name)
+						styleValue = field.Value;
 			foreach (var style in appliedStyles)
-				foreach (var field in style.ModifiedFields)
+				foreach (var field in style.GetMainStyle().Properties)
 					if (field.Key == name)
 						styleValue = field.Value;
 			switch (name)
 			{
 				case "borderColor":
-					return borderColor;
+					return borderColor ?? styleValue;
 				case "borderThickness":
-					if (borderThickness == new Thickness()) return null;
+					if (borderThickness == new Thickness()) return styleValue;
 					return borderThickness;
 				case "borderStyle":
-					if (borderStyle == BorderStyle.Unset) return null;
+					if (borderStyle == BorderStyle.Unset) return styleValue;
 					return borderStyle;
 				case "background":
-					return background;
+					return background ?? styleValue;
 				case "color":
 					if (color.Equals(Color.Transparent))
-						return null;
+						return styleValue;
 					return color;
 				case "orientation":
+					//TODO: Shouldn't we return the style value? And not null? And why do we check the Stylevalue?
 					if (orientation == Orientation.LeftTop && styleValue != null) return null;
 					return orientation;
 				case "margin":
-					if (margin == new Thickness()) return null;
+					if (margin == new Thickness()) return styleValue;
 					return margin;
 				case "padding":
-					if (padding == new Thickness()) return null;
+					if (padding == new Thickness()) return styleValue;
 					return padding;
-				case "filter": return filter;
+				case "filter": return filter ?? styleValue;
 				default:
-					return null;
+					return styleValue;
 			}
 		}
 
-		protected abstract Unit get_InitialWidth();
-		protected abstract Unit get_InitialHeight();
+		internal abstract Unit get_InitialWidth();
+		internal abstract Unit get_InitialHeight();
 
+		//TODO: should orientation be more important than width? idk
 		protected Unit get_ActualWidth()
 		{
 			if (_width != null)
 				return _width;
-			if (initWidth != null)
-				return initWidth;
-			if(orientation == Orientation.Stretch)
-				return new Unit(100, Unit.UnitKind.Percent) - margin.Horizontal;
+			var m = get_ActualMargin();
+			if (SlidesHelper.GetHorizontal(orientation) == Horizontal.Stretch && h_AllowsHorizontalStretching)
+				return new Unit(100, Unit.UnitKind.Percent) - m.Horizontal;
 			return get_InitialWidth();
 		}
 
@@ -258,19 +338,23 @@ namespace Slides.Elements
 		{
 			if (_height != null)
 				return _height;
-			if (initHeight != null)
-				return initHeight;
-			if (orientation == Orientation.Stretch)
-				return new Unit(100, Unit.UnitKind.Percent) - margin.Vertical;
+			var m = get_ActualMargin();
+			if (SlidesHelper.GetVertical(orientation) == Vertical.Stretch && h_AllowsVerticalStretching)
+				return new Unit(100, Unit.UnitKind.Percent) - m.Vertical;
 			return get_InitialHeight();
+		}
+
+		private Thickness get_ActualMargin()
+		{
+			return get_FieldAsThickness("margin") ?? h_parent?.get_ActualMargin() ?? new Thickness();
 		}
 
 		public Unit get_StyleWidth()
 		{
 			if (_width != null)
 				return _width;
-			if (initWidth != null)
-				return initWidth;
+			if (NeedsInitialSizeCalculated)
+				return get_InitialWidth();
 			return null;
 		}
 
@@ -278,9 +362,25 @@ namespace Slides.Elements
 		{
 			if (_height != null)
 				return _height;
-			if (initHeight != null)
-				return initHeight;
+			if (NeedsInitialSizeCalculated)
+				return get_InitialHeight();
 			return null;
 		}
+
+		private Thickness get_FieldAsThickness(string name)
+		{
+			object result = get_Property(name);
+			foreach (var style in appliedStyles)
+			{
+				if (result != null) break;
+				if (style.Substyles.GetRootCustomStyle().HasProperty(name))
+					result = style.Substyles.GetRootCustomStyle().Properties[name];
+			}
+			return result as Thickness;
+		}
+		public void set_Step(Step step) => this.step = step;
+		public Step get_Step() => step;
+		public void set_SlideStyle(SlideAttributes slide) => slideStyle = slide;
+		public SlideAttributes get_SlideStyle() => slideStyle;
 	}
 }

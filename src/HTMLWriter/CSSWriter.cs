@@ -1,6 +1,7 @@
 ﻿using Slides;
 using Slides.Debug;
 using Slides.Elements;
+using Slides.Helpers;
 using System;
 using System.CodeDom.Compiler;
 using System.Globalization;
@@ -85,6 +86,13 @@ namespace HTMLWriter
 			if (value != null)
 				WriteAttribute(name, value);
 		}
+		public void WriteAttributeIfValueOrInherit(string name, object value, bool inherits)
+		{
+			if (value != null)
+				WriteAttribute(name, value);
+			else if(inherits)
+				WriteAttribute(name, "inherit");
+		}
 
 		public static string ToCssAttribute(string field)
 		{
@@ -110,6 +118,10 @@ namespace HTMLWriter
 				case "background":
 				case "filter":
 				case "margin":
+				case "margin-left":
+				case "margin-right":
+				case "margin-top":
+				case "margin-bottom":
 					return field;
 				default:
 					Logger.LogUnmatchedCSSField(field);
@@ -214,7 +226,7 @@ namespace HTMLWriter
 			var unitValue = unit.Value;
 			if (unit.Kind == Unit.UnitKind.Point)
 			{
-				unitValue *= 1.5f;
+				unitValue *= SlidesConverter.PointUnitConversionFactor;
 			}
 			if (unit.Kind == Unit.UnitKind.Auto)
 			{
@@ -287,7 +299,7 @@ namespace HTMLWriter
 		private string GetAlternativeUnit(Unit value, bool isVertical)
 		{
 			if (value.Kind != Unit.UnitKind.Percent)
-				return value.ToString();
+				return GetValue(value);
 			var postfix = "vw";
 			if (isVertical)
 				postfix = "vh";

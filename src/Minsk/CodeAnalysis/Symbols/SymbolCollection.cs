@@ -17,14 +17,11 @@ namespace Minsk.CodeAnalysis.Symbols
 			base.Add(key, value);
 		}
 
-		public new bool TryGetValue(string key, out T value)
+		public bool TryGetValue(string key, bool isReading, out T value)
 		{
-			var result = base.TryGetValue(key, out value);
-			if (result)
-			{
-				if(_referenceCounter.ContainsKey(key))
-					_referenceCounter[key]++;
-			}
+			var result = TryGetValue(key, out value);
+			if (result && isReading && _referenceCounter.ContainsKey(key))
+				_referenceCounter[key]++;
 			return result;
 		}
 
@@ -41,7 +38,14 @@ namespace Minsk.CodeAnalysis.Symbols
 			{
 				if(symbol.Value == references)
 				{
-					yield return base[symbol.Key];
+					var current = base[symbol.Key];
+					if(current is VariableSymbol variable)
+					{
+						if (variable.Type != PrimitiveTypeSymbol.Error)
+							yield return current;
+					}
+					else
+						yield return current;
 				}
 			}
 		}

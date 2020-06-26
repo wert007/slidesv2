@@ -24,7 +24,7 @@ namespace Minsk.CodeAnalysis
 			return base.LookVariableUp(variable);
 		}
 
-		protected void EvaluateStatement(BoundStatement node)
+		public void EvaluateStatement(BoundStatement node)
 		{
 			switch (node.Kind)
 			{
@@ -126,7 +126,7 @@ namespace Minsk.CodeAnalysis
 
 		protected virtual void EvaluateForStatement(BoundForStatement node)
 		{
-			_variables = _variables.Push();
+		//	_variables = _variables.Push();
 			var collection = EvaluateExpression(node.Collection);
 			if (collection is Range r)
 			{
@@ -154,7 +154,7 @@ namespace Minsk.CodeAnalysis
 					EvaluateStatement(node.Body);
 				}
 			}
-			_variables = _variables.Pop(out var _);
+			//_variables = _variables.Pop(out var _);
 
 		}
 

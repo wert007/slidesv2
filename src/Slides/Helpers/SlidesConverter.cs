@@ -10,6 +10,7 @@ namespace Slides.Helpers
 {
 	public static class SlidesConverter
 	{
+		public const float PointUnitConversionFactor = 1.4f;
 		public static object Convert(object obj, Type target)
 		{
 			if (target == typeof(Brush))

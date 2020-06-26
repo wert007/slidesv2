@@ -49,7 +49,12 @@ namespace Github
 				}
 				result.Contents = GetFiles(owner, name);
 			}
-			catch { }
+			catch (Exception e) 
+			{
+				Console.WriteLine(e.Message);
+				Console.WriteLine();
+				Console.WriteLine(e.StackTrace);
+			}
 			if(result == null)
 			{
 				result = new Repository();

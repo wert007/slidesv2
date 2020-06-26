@@ -652,10 +652,11 @@ namespace Minsk.CodeAnalysis.Syntax
 			var keyword = MatchToken(SyntaxKind.LetKeyword);
 
 			var variable = ParseVariableExpression();
+			var optionalTypeDeclaration = TryParseTypeDeclaration();
 			var equals = MatchToken(SyntaxKind.EqualsToken);
 			var initializer = ParseExpression();
 			var semicolonToken = MatchToken(SyntaxKind.SemicolonToken);
-			return new VariableDeclarationSyntax(keyword, variable, equals, initializer, semicolonToken);
+			return new VariableDeclarationSyntax(keyword, variable, optionalTypeDeclaration, equals, initializer, semicolonToken);
 		}
 
 		private StatementSyntax ParseJSInsertionStatement()
@@ -1084,7 +1085,8 @@ namespace Minsk.CodeAnalysis.Syntax
 				if (!first)
 					MatchToken(SyntaxKind.CommaToken);
 				first = false;
-
+				if (Current.Kind == SyntaxKind.CloseBracketToken)
+					break;
 				var expression = ParseExpression();
 				expressions.Add(expression);
 			}

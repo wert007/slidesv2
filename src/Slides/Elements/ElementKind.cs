@@ -18,8 +18,9 @@
 		Table,
 		TableChild,
 		SplittedContainer,
-		Rect,
+		UnitRect,
 		YouTubePlayer,
-		UnitSVGShape
+		UnitSVGShape,
+		Captioned
 	}
 }

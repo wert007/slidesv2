@@ -38,7 +38,7 @@ function load() {
     let timerId = setInterval(() => {
         totalTime += 20;
         update_totalTime();
-
+        if(YT === undefined) return;
         if (YT.loaded && ytPlayers == undefined) {
             youtubeAPIReady();
         }

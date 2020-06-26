@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Minsk.CodeAnalysis.Syntax
 {
-	internal class TypeDeclarationSyntax
+	public class TypeDeclarationSyntax
 	{
 		public TypeDeclarationSyntax(SyntaxToken colonToken, SyntaxToken type, SyntaxToken questionMarkToken, SyntaxToken[] bracketPairs)
 		{

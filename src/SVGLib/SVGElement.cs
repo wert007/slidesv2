@@ -10,6 +10,7 @@ namespace SVGLib
 		public Color Fill { get; set; } = Color.Black;
 		public Color Stroke { get; set; } = Color.Transparent;
 		public double StrokeWidth { get; set; }
+		public LineCap StrokeLineCap { get; set; }
 		//TODO: Do we keep this?
 		public bool IsVisible { get; set; }
 

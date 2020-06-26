@@ -39,6 +39,7 @@
   <ItemGroup>
     <Compile Include="Datatypes\Color.cs" />
     <Compile Include="ContainerElements\Group.cs" />
+    <Compile Include="Datatypes\LineCap.cs" />
     <Compile Include="Datatypes\Matrix.cs" />
     <Compile Include="Datatypes\SingleValueTransform.cs" />
     <Compile Include="Filters\BlendFilter.cs" />

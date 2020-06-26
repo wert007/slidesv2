@@ -8,8 +8,8 @@
 			this.cy = cy;
 			this.rx = rx;
 			this.ry = ry;
-			width = rx * 2;
-			height = ry * 2;
+			Width = rx * 2;
+			Height = ry * 2;
 		}
 
 		public override SVGElementKind Kind => SVGElementKind.Ellipse;
@@ -20,7 +20,7 @@
 
 		public override Path toPath()
 		{
-			return new Path(width, height);
+			return new Path(Width, Height);
 		}
 	}
 }

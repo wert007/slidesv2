@@ -92,16 +92,16 @@ namespace HTMLWriter
 
 		private static void WriteRect(HTMLWriter writer, Rect element)
 		{
-			writer.PushAttribute("x", element.x.ToString());
-			writer.PushAttribute("y", element.y.ToString());
+			writer.PushAttribute("x", element.X.ToString());
+			writer.PushAttribute("y", element.Y.ToString());
 			writer.StartTag("rect");
 			writer.EndTag();
 		}
 
 		private static void WriteCircle(HTMLWriter writer, Circle element)
 		{
-			writer.PushAttribute("cx", (element.cx + element.x).ToString());
-			writer.PushAttribute("cy", (element.cy + element.y).ToString());
+			writer.PushAttribute("cx", (element.cx + element.X).ToString());
+			writer.PushAttribute("cy", (element.cy + element.Y).ToString());
 			writer.PushAttribute("r", element.r.ToString());
 			writer.StartTag("circle");
 			writer.EndTag();
@@ -115,10 +115,10 @@ namespace HTMLWriter
 
 		private static void WriteLine(HTMLWriter writer, Line element)
 		{
-			writer.PushAttribute("x1", element.x.ToString());
-			writer.PushAttribute("y1", element.y.ToString());
-			writer.PushAttribute("x2", (element.x + element.width).ToString());
-			writer.PushAttribute("y2", (element.y + element.height).ToString());
+			writer.PushAttribute("x1", element.X.ToString());
+			writer.PushAttribute("y1", element.Y.ToString());
+			writer.PushAttribute("x2", (element.X + element.Width).ToString());
+			writer.PushAttribute("y2", (element.Y + element.Height).ToString());
 
 			writer.StartTag("line");
 			writer.EndTag();
@@ -133,6 +133,7 @@ namespace HTMLWriter
 			writer.PushAttribute("y2", CSSWriter.GetValue(element.Y2));
 			writer.PushAttribute("stroke", CSSWriter.GetValue(element.stroke));
 			writer.PushAttribute("stroke-width", CSSWriter.GetValue(element.strokeWidth));
+			writer.PushAttribute("stroke-linecap", element.strokeLineCap.ToString().ToLower());
 
 			writer.StartTag("line");
 			writer.EndTag();
@@ -141,7 +142,7 @@ namespace HTMLWriter
 		private static void WritePath(HTMLWriter writer, SVGPath element)
 		{
 			var builder = new StringBuilder();
-			var operations = PathOperationHelper.Translate(element.Operations, element.x, element.y);
+			var operations = PathOperationHelper.Translate(element.Operations, element.X, element.Y);
 
 			foreach (var op in operations)
 			{
@@ -166,8 +167,8 @@ namespace HTMLWriter
 
 		private static void WriteSVGText(HTMLWriter writer, SVGText element)
 		{
-			writer.PushAttribute("x", element.x.ToString());
-			writer.PushAttribute("y", element.y.ToString());
+			writer.PushAttribute("x", element.X.ToString());
+			writer.PushAttribute("y", element.Y.ToString());
 			writer.StartTag("text");
 			writer.Write(element.Content);
 			writer.EndTag();
@@ -200,7 +201,7 @@ namespace HTMLWriter
 				case SVGElementKind.Polyline:
 				case SVGElementKind.Text:
 					var graphicsElement = (SVGGraphicsElement)element;
-					return new ViewBox(graphicsElement.x, graphicsElement.y, graphicsElement.width, graphicsElement.height);
+					return new ViewBox(graphicsElement.X, graphicsElement.Y, graphicsElement.Width, graphicsElement.Height);
 				case SVGElementKind.SVGTag:
 					return ((SVGTag)element).ViewBox;
 				default:

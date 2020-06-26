@@ -1,4 +1,4 @@
-﻿namespace Minsk.CodeAnalysis.SlidesTypes
+﻿namespace Slides.Data
 {
 	public enum Vertical
 	{

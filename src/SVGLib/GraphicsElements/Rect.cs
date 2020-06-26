@@ -14,29 +14,29 @@ namespace SVGLib.GraphicsElements
 
 		public Rect(int x, int y, int width, int height)
 		{
-			this.x = x;
-			this.y = y;
-			this.width = width;
-			this.height = height;
+			this.X = x;
+			this.Y = y;
+			this.Width = width;
+			this.Height = height;
 			rx = 0;
 			ry = 0;
 		}
 
 		public override Path toPath()
 		{
-			var result = new Path(width, height);
+			var result = new Path(Width, Height);
 			result.Fill = Fill;
 			result.Stroke = Stroke;
 			result.StrokeWidth = StrokeWidth;
-			result.x = x;
-			result.y = y;
+			result.X = X;
+			result.Y = Y;
 			result.add(new CoordinatePairOperation(false, PathOperationKind.MoveTo, rx, 0));
-			result.add(new SingleCoordinateOperation(false, PathOperationKind.LineToHorizontal, width - rx));
+			result.add(new SingleCoordinateOperation(false, PathOperationKind.LineToHorizontal, Width - rx));
 			if (rx > 0 && ry > 0)
 			{
 
 			}
-			result.add(new SingleCoordinateOperation(false, PathOperationKind.LineToVertical, height - ry));
+			result.add(new SingleCoordinateOperation(false, PathOperationKind.LineToVertical, Height - ry));
 			if (rx > 0 && ry > 0)
 			{
 

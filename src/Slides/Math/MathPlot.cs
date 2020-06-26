@@ -40,14 +40,8 @@ namespace Slides.MathExpressions
 
 		public override ChartType chartType => ChartType.LineChart;
 
-		protected override Unit get_InitialHeight()
-		{
-			return new Unit(480, Unit.UnitKind.Pixel);
-		}
+		internal override Unit get_InitialHeight() => new Unit(480, Unit.UnitKind.Pixel);
 
-		protected override Unit get_InitialWidth()
-		{
-			return new Unit(640, Unit.UnitKind.Pixel);
-		}
+		internal override Unit get_InitialWidth() => new Unit(640, Unit.UnitKind.Pixel);
 	}
 }

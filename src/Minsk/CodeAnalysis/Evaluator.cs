@@ -19,6 +19,7 @@ using Slides.Elements;
 using Slides.Helpers;
 using System.IO;
 using SVGLib.Filters;
+using Slides.Styling;
 
 namespace Minsk.CodeAnalysis
 {
@@ -182,131 +183,6 @@ namespace Minsk.CodeAnalysis
 		}
 
 
-		private List<TypedModifications> CollectStyleFields(BoundBlockStatement statement, string styleName)
-		{
-			var result = new List<TypedModifications>();
-			foreach (var s in statement.Statements)
-			{
-				foreach (var typedStyle in CollectStyleFields(s, styleName))
-				{
-					var foundStyle = false;
-					foreach (var foundStyles in result)
-					{
-						if (foundStyles.Type == typedStyle.Type)
-						{
-							foreach (var field in typedStyle.ModifiedFields)
-							{
-								foundStyles.ModifiedFields.Add(field.Key, field.Value);
-							}
-							foundStyle = true;
-							break;
-						}
-					}
-					if (!foundStyle)
-						result.Add(typedStyle);
-
-				}
-			}
-			return result;
-		}
-
-		private List<TypedModifications> CollectStyleFields(BoundStatement statement, string styleName)
-		{
-			switch (statement.Kind)
-			{
-				case BoundNodeKind.ExpressionStatement:
-					return CollectStyleFields((BoundExpressionStatement)statement, styleName);
-				case BoundNodeKind.IfStatement:
-					return CollectStyleFields((BoundIfStatement)statement, styleName);
-				case BoundNodeKind.BlockStatement:
-					return CollectStyleFields((BoundBlockStatement)statement, styleName);
-				case BoundNodeKind.VariableDeclaration:
-					EvaluateStatement(statement);
-					return new List<TypedModifications>();
-				default:
-					Logger.LogUnexpectedSyntaxKind(statement.Kind, "CollectStyleFields");
-					return new List<TypedModifications>();
-			}
-		}
-
-		private List<TypedModifications> CollectStyleFields(BoundExpressionStatement statement, string styleName)
-		{
-			return CollectStyleFields(statement.Expression, styleName);
-		}
-
-		private List<TypedModifications> CollectStyleFields(BoundIfStatement statement, string styleName)
-		{
-			var condition = (bool)EvaluateExpression(statement.Condition);
-			if (condition)
-			{
-				return CollectStyleFields(statement.Body, styleName);
-			}
-			if (statement.Else != null)
-			{
-				return CollectStyleFields(statement.Else, styleName);
-			}
-			return new List<TypedModifications>();
-		}
-
-		private List<TypedModifications> CollectStyleFields(BoundExpression expression, string styleName)
-		{
-			switch (expression.Kind)
-			{
-				case BoundNodeKind.AssignmentExpression:
-					return CollectStyleFields((BoundAssignmentExpression)expression);
-				case BoundNodeKind.FunctionAccessExpression:
-					return CollectStyleFields((BoundFunctionAccessExpression)expression, styleName);
-				default:
-					Logger.LogUnexpectedSyntaxKind(expression.Kind, "CollectStyleFields");
-					return new List<TypedModifications>();
-			}
-		}
-
-		private List<TypedModifications> CollectStyleFields(BoundAssignmentExpression expression)
-		{
-			//TODO: Clean Up
-			var field = "";
-			var type = "*";
-			switch (expression.LValue.Kind)
-			{
-				case BoundNodeKind.VariableExpression:
-					field = ((BoundVariableExpression)expression.LValue).Variable.Name;
-					break;
-				case BoundNodeKind.FieldAccessExpression:
-					var fieldAccessExpression = (BoundFieldAccessExpression)expression.LValue;
-					field = fieldAccessExpression.Field.Variable.Name;
-					if (fieldAccessExpression.Parent.Kind == BoundNodeKind.VariableExpression)
-						type = ((BoundVariableExpression)fieldAccessExpression.Parent).Variable.Name;
-					break;
-				default:
-					throw new Exception();
-			}
-			var value = EvaluateExpression(expression.Expression);
-			var fields = new Dictionary<string, object>
-			{
-				{ field, value }
-			};
-			return new List<TypedModifications>
-			{
-				new TypedModifications(type, fields)
-			};
-		}
-
-		private List<TypedModifications> CollectStyleFields(BoundFunctionAccessExpression expression, string styleName)
-		{
-			switch (expression.FunctionCall.Function.Name)
-			{
-				case "applyStyle":
-					var style = (CustomStyle)EvaluateExpression(expression.FunctionCall.Arguments[0]);
-					return new List<TypedModifications>()
-					{ new TypedModifications("*", style.ModifiedFields) };
-				default:
-					Logger.LogUnmatchedStyleFunction(expression.FunctionCall.Function.Name, styleName);
-
-					return new List<TypedModifications>();
-			}
-		}
-
 
 		protected override void EvaluateStyleStatement(BoundStyleStatement node)
 		{
@@ -317,24 +193,12 @@ namespace Minsk.CodeAnalysis
 			if (!Flags.StyleAllowed)
 				throw new Exception();
 			_variables = _variables.Push();
-			if (node.Variable != null)
-			{
-				var modifiedFields = CollectStyleFields(node.BoundBody, node.Variable.Name);
-				//TODO!
-				var combinedModifiedFields = new Dictionary<string, object>();
-				foreach (var subtype in modifiedFields)
-					foreach (var field in subtype.ModifiedFields)
-						combinedModifiedFields.Add(field.Key, field.Value);
-				var style = new CustomStyle(node.Variable.Name, combinedModifiedFields);
-				_presentationBuilder.AddStyle(node.Variable, style);
-			}
-			else
-			{
-				var modifiedFields = CollectStyleFields(node.BoundBody, "std");
 
-				var style = new StdStyle(modifiedFields.ToArray());
-				_presentationBuilder.AddStyle(new VariableSymbol("std", true, _builtInTypes.LookSymbolUp(typeof(StdStyle)), false), style);
-			}
+			var styleCollector = new StyleCollector(node.BoundBody, node.Variable?.Name ?? "std", _variables);
+			var style = styleCollector.CollectFields();
+			if(node.Variable == null)
+				Element.SetStdStyle((StdStyle)style);
+			_presentationBuilder.AddStyle(node.Variable ?? new VariableSymbol("std", true, _builtInTypes.LookSymbolUp(typeof(StdStyle)), false), style);
 			_variables = _variables.Pop(out var _);
 		}
 
@@ -453,6 +317,7 @@ namespace Minsk.CodeAnalysis
 
 		protected override void DeclareElement(Element e)
 		{
+			e.set_SlideStyle(_currentSlide);
 			if (_steps.Any())
 				e.set_Step(_steps.Last());
 			else if (!_groupBuilders.Any()) throw new Exception();
@@ -727,12 +592,6 @@ namespace Minsk.CodeAnalysis
 					case "padding":
 						element.padding = (Thickness)variable.Value;
 						break;
-					case "initHeight":
-						element.initHeight = SlidesConverter.ConvertToUnit(variable.Value);
-						break;
-					case "initWidth":
-						element.initWidth = SlidesConverter.ConvertToUnit(variable.Value);
-						break;
 					case "borderColor":
 						element.borderColor = SlidesConverter.ConvertToColor(variable.Value);
 						break;
@@ -741,13 +600,6 @@ namespace Minsk.CodeAnalysis
 						break;
 					case "borderThickness":
 						element.borderThickness = (Thickness)variable.Value;
-						break;
-					default:
-						var type = variable.Value.GetType();
-						var typeSymbol = variable.Key.Type;
-						if (!typeSymbol.CanBeConvertedTo(_builtInTypes.LookSymbolUp(typeof(Element))) &&
-							type != typeof(ImageSource) && type != typeof(CSVFile))
-							Logger.LogUnusedVariableInBlock(variable.Key.Name, _builtInTypes.TryLookTypeUp(variable.Key.Type), $"group {element.TypeName}");
 						break;
 				}
 			}
@@ -807,11 +659,14 @@ namespace Minsk.CodeAnalysis
 		public override object LookVariableUp(VariableSymbol variable)
 		{
 			var value = _constants[variable];
+			if (_constants.ContainsKey(variable)) return value;
 			if (value == null)
 				value = _variables[variable];
+			if (_variables.ContainsKey(variable)) return value;
 			if (value == null && _currentReferenced != null)
 			{
 				value = _currentReferenced.GlobalVariables[variable];
+				if (_currentReferenced.GlobalVariables.ContainsKey(variable)) return value;
 			}
 			if (value == null)
 			{
@@ -882,45 +737,16 @@ namespace Minsk.CodeAnalysis
 			var variables = new Dictionary<string, string>();
 			variables.Add("slide", JavaScriptEmitter.ObjectToString(_currentSlide));
 			_presentationBuilder.AddJSInsertion(new JSInsertionBlock($"step_{_steps.Last().ID}", body, variables, JSInsertionKind.Step, _steps.Last()));
-			return;
-			//TODO: This will come in handy in the future!
-			object originValue = null;
-			switch (variable.Name)
-			{
-				case "background":
-					originValue = _currentSlide.background;
-					break;
-				case "padding":
-					originValue = _currentSlide.padding;
-					break;
-				case "filter":
-					originValue = _currentSlide.n_filter;
-					break;
-				case "transition":
-					originValue = _currentSlide.transition;
-					break;
-				case "font":
-					originValue = _currentSlide.font;
-					break;
-				case "fontsize":
-					originValue = _currentSlide.fontsize;
-					break;
-				case "color":
-					originValue = _currentSlide.color;
-					break;
-				default:
-					throw new NotImplementedException();
-			}
-			jsValue = "''";
-			if (originValue != null) jsValue = JavaScriptEmitter.ObjectToString(originValue);
-			var revertBody = $"slide.style.{variable.Name} = {jsValue};";
-			if(revertBody != body)
-				_presentationBuilder.AddJSInsertion(new JSInsertionBlock($"undo_step_{_steps.Last().ID}", revertBody, variables, JSInsertionKind.Step, _steps.Last()));
 		}
 
-		protected override void AssignArray(object[] array, int index, object value)
+		protected override void AssignArray(object[] array, int index, object value, VariableSymbol optionalVariableSymbol)
 		{
 			array[index] = value;
+			if (optionalVariableSymbol != null)
+			{
+				var type = ((ArrayTypeSymbol)optionalVariableSymbol.Type).Child;
+				TryAddChildren(new VariableSymbol($"{optionalVariableSymbol.Name}#{index}", optionalVariableSymbol.IsReadOnly, type, optionalVariableSymbol.NeedsDataFlag), value);
+			}
 		}
 
 

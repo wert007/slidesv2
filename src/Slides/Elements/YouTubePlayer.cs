@@ -105,14 +105,8 @@ namespace Slides.Elements
 			}
 		}
 
-		protected override Unit get_InitialHeight()
-		{
-			return new Unit(GetDefaultPlayerSize(quality).Y, Unit.UnitKind.Pixel);
-		}
+		internal override Unit get_InitialHeight() => new Unit(GetDefaultPlayerSize(quality).Y, Unit.UnitKind.Pixel);
 
-		protected override Unit get_InitialWidth()
-		{
-			return new Unit(GetDefaultPlayerSize(quality).X, Unit.UnitKind.Pixel);
-		}
+		internal override Unit get_InitialWidth() => new Unit(GetDefaultPlayerSize(quality).X, Unit.UnitKind.Pixel);
 	}
 }

@@ -30,6 +30,12 @@ namespace Slides
 			return new UnitAddition(A, B - u);
 		}
 
+
+
+		public static UnitAddition operator *(float a, UnitAddition b) => new UnitAddition(b.A * a, b.B * a);
+		public static UnitAddition operator *(UnitAddition a, float b) => b * a;
+		public static UnitAddition operator /(UnitAddition a, float b) => new UnitAddition(a.A / b, a.B / b);
+
 		public override string ToString()
 		{
 			return $"{A} + {B}";
@@ -48,10 +54,17 @@ namespace Slides
 		public Unit B { get; }
 		protected override Unit GetMaxComponent() => Max(A, B);
 
+
+		public static UnitSubtraction operator *(float a, UnitSubtraction b) => new UnitSubtraction(b.A * a, b.B * a);
+		public static UnitSubtraction operator *(UnitSubtraction a, float b) => b * a;
+		public static UnitSubtraction operator /(UnitSubtraction a, float b) => new UnitSubtraction(a.A / b, a.B / b);
+
 		public Unit Add(Unit u)
 		{
 			if (A.Kind == u.Kind)
 				return new UnitSubtraction(A + u, B);
+			if (Kind == u.Kind) //TODO: Try to simplify!
+				return new UnitAddition(this, u);
 			return new UnitSubtraction(A, B + u);
 		}
 		//TODO: Precedence

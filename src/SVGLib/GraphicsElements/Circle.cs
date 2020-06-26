@@ -7,8 +7,8 @@
 			this.r = r;
 			this.cx = cx;
 			this.cy = cy;
-			width = 2 * r;
-			height = 2 * r;
+			Width = 2 * r;
+			Height = 2 * r;
 		}
 
 		public override SVGElementKind Kind => SVGElementKind.Circle;
@@ -18,7 +18,7 @@
 
 		public override Path toPath()
 		{
-			return new Path(width, height);
+			return new Path(Width, Height);
 		}
 	}
 }

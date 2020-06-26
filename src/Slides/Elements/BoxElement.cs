@@ -1,32 +1,28 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Slides.Elements
 {
-	public class BoxElement : Element
+	public class BoxElement : ParentElement
 	{
 		public BoxElement(string typeName, Element[] children)
 		{
 			TypeName = typeName;
-			Children = children;
+			BoxChildren = children;
 		}
 
-		public Element[] Children { get; }
+		public Element[] BoxChildren { get; }
 		public string TypeName { get; }
 
-		public Unit fontsize { get; set; }
 
 		public override ElementKind kind => ElementKind.BoxElement;
 
-		protected override Unit get_InitialHeight()
-		{
-			return initHeight;
-		}
+		internal override Unit get_InitialHeight() => throw new Exception();
 
-		protected override Unit get_InitialWidth()
-		{
-			return initWidth;
-		}
+		internal override Unit get_InitialWidth() => throw new Exception();
 
-		public override string ToString() => $"{TypeName} ({Children.Length})";
+		public override string ToString() => $"{TypeName} ({BoxChildren.Length})";
+
+		protected override IEnumerable<Element> get_Children() => BoxChildren;
 	}
 }

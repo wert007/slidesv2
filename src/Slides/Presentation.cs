@@ -1,4 +1,5 @@
 ﻿using Slides.Code;
+using Slides.Styling;
 using System;
 using System.Collections.Generic;
 

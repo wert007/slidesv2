@@ -15,8 +15,8 @@
 
 		public override ElementKind kind => ElementKind.Image;
 
-		protected override Unit get_InitialHeight() => new Unit(source.height, Unit.UnitKind.Pixel);
+		internal override Unit get_InitialHeight() => new Unit(source.height, Unit.UnitKind.Pixel);
 
-		protected override Unit get_InitialWidth() => new Unit(source.width, Unit.UnitKind.Pixel);
+		internal override Unit get_InitialWidth() => new Unit(source.width, Unit.UnitKind.Pixel);
 	}
 }

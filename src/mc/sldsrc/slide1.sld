@@ -7,16 +7,14 @@ import gfont('Quicksand') as quicksand;
 //		import css('myStyle.css');
 
 //Cleanup:
+// - clean up htmlWriter.PushAttribute
+// - clean up SVGWriter to use StyleWriter in a way.
 // - Maybe rename borderThickness to borderWidth?
-// - orientation is no css attribute. if you set it in a style
-//   the orientation-Value of the element should change!
 // - JSInsertions:
 //    - Multiple Sliders on one page => unique function names for each slide
 //    - Think of a better name then jsinsertion. 
-//    - Think if maybe any parameters are needed. 
-//    - And think if special rules are needed where they can be placed. (Like probably 
+//    - reconsider if special rules are needed where they can be placed. (Like probably 
 //      only as last statement in a block statement and not in groups/svggroups/filter/etc)
-//
 //           jsinsertion:
 //           endjsinsertion
 //    - Emit diagnostic when there is no need for the jsinsertion statement. otherwise we don't know where to put it
@@ -32,6 +30,7 @@ import gfont('Quicksand') as quicksand;
 //
 // - Add all functions in js
 //   - Implement Matrix datatype
+//     But: Currently only need for SVG-stuff. which our js doesn't support.
 //   - Add diagnostic for not js-able functions
 //   - Add alpha() function
 //   - Add Thickness functions
@@ -40,6 +39,7 @@ import gfont('Quicksand') as quicksand;
 
 //Possible Features:
 // - array.first() and array.last(): should it be of Type 'T?' ? or is it the same as array access?
+//   I guess the latter. If you expect it to fail you can use firstOr(substitute: T) : T;
 // - support table row_height and column_height!
 // - refactor element.center() -> UnitPair into element.pos(dir : Orientation) -> UnitPair
 // - Support Slide Parameters (from and to) in transitions
@@ -218,9 +218,7 @@ endslide
 slide algo < pagenumber:
 	setData('name', 'gti presentation 1');
 	let tbl = new Table(7, 7);
-	tbl.orientation = Orientation.Stretch;
-	tbl.margin = margin(10%);
-	tbl.align = Alignment.Center;
+	tbl.applyStyle(algoTable);
 	let headerRow = ['abc', 'abC', 'aBc', 'AbC', 'ABc', 'ABC'];
 	tbl.setRow(headerRow, 0, 1);
 	let headerCol = ['ab' , 'ac' , 'bC' , 'Bc' , 'AC' , 'AB'];

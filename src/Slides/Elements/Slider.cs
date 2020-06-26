@@ -25,8 +25,8 @@ namespace Slides.Elements
 
 		public override ElementKind kind => ElementKind.Slider;
 
-		protected override Unit get_InitialHeight() => new Unit(15, Unit.UnitKind.Pixel);
+		internal override Unit get_InitialHeight() => new Unit(15, Unit.UnitKind.Pixel);
 
-		protected override Unit get_InitialWidth() => new Unit(100, Unit.UnitKind.Pixel);
+		internal override Unit get_InitialWidth() => new Unit(100, Unit.UnitKind.Pixel);
 	}
 }

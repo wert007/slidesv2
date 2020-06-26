@@ -5,6 +5,7 @@ using Minsk.CodeAnalysis.Syntax;
 using Slides;
 using Slides.Debug;
 using Slides.Elements;
+using Slides.Styling;
 using System;
 using System.Collections.Generic;
 using System.Globalization;

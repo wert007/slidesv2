@@ -1,10 +1,11 @@
-﻿using System;
+﻿using Slides.Styling;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Slides.Elements
 {
-	public class Table : Element
+	public class Table : ParentElement
 	{
 		public override ElementKind kind => ElementKind.Table;
 		public TableChild this[int row, int column]
@@ -16,8 +17,6 @@ namespace Slides.Elements
 		}
 		public int columns { get; }
 		public int rows { get; }
-		public Font font { get; set; }
-		public Unit fontsize { get; set; }
 		public Alignment align { get; set; }
 		public TableChild[][] cells { get; set; }
 		public Table(int rows, int columns) : this()
@@ -32,6 +31,7 @@ namespace Slides.Elements
 				{
 					cells[r][c] = new TableChild("");
 					cells[r][c].ContentUpdated += UpdateLayout;
+					cells[r][c].h_parent = this;
 				}
 			}
 			UpdateLayout();
@@ -53,6 +53,7 @@ namespace Slides.Elements
 						content = contents[r][c];
 					cells[r][c] = new TableChild(content);
 					cells[r][c].ContentUpdated += UpdateLayout;
+					cells[r][c].h_parent = this;
 				}
 			}
 			UpdateLayout();
@@ -64,7 +65,7 @@ namespace Slides.Elements
 			fontsize = new Unit(14, Unit.UnitKind.Point);
 			align = Alignment.Unset;
 			//borderColor = new Color(0, 0, 0, 255);
-			var px = new Unit(1, Unit.UnitKind.Pixel);
+			//var px = new Unit(1, Unit.UnitKind.Pixel);
 			//borderThickness = new Thickness(px, px, px, px);
 			//borderStyle = BorderStyle.Solid;
 		}
@@ -74,6 +75,11 @@ namespace Slides.Elements
 		//gives the wrong result, when getColumnWidth is bigger than w.
 		//in that case you would need to subtract the columnWidth and 
 		//divide w by columns - 1 in the future. 
+		// And let's not forget how shitty Unit.Max is... 
+		//    if you have w = 80% and 10 columns you have a
+		//    columnWidth of 8%. Which is, if your screen is 2000px wide, 360px
+		//    so if your text is longer than that we would never know. because we say
+		//    relative is always bigger than absolute. even if your text is 500px long..
 		private void UpdateLayout()
 		{
 			var t = top;
@@ -87,8 +93,8 @@ namespace Slides.Elements
 				{
 					cells[r][c].set_Top(t);
 					cells[r][c].set_Left(l);
-					cells[r][c].initWidth = Unit.Max(getColumnWidth(c), w / columns);
-					cells[r][c].initHeight = rowHeight;
+					cells[r][c].width = Unit.Max(getColumnWidth(c), w / columns);
+					cells[r][c].height = rowHeight;
 					l = cells[r][c].rightSide;
 				}
 				t = cells[r][0].bottomSide;
@@ -147,6 +153,7 @@ namespace Slides.Elements
 			return result;
 		}
 
+		//TODO: We exposed the cells[][] so do we need an extra getAt()?
 		public TableChild getAt(int r, int c)
 		{
 			return this[r, c];
@@ -166,7 +173,9 @@ namespace Slides.Elements
 				cells[r][column].content = contents[r - offset];
 		}
 
-		protected override Unit get_InitialHeight()
+		//TODO: What if we set the fontsize in a style?
+		//      Is this still valid? I thought we fixed that?
+		internal override Unit get_InitialHeight()
 		{
 			var maxHeight = new Unit(0, Unit.UnitKind.Pixel);
 			for (int i = 0; i < columns; i++)
@@ -174,16 +183,17 @@ namespace Slides.Elements
 				Unit sum = null;
 				for (int r = 0; r < rows; r++)
 					if (sum == null)
-						sum = this[r, i].get_Height(font, fontsize);
+						sum = this[r, i].get_InitialHeight();
 					else
-						sum += this[r, i].get_Height(font, fontsize);
+						sum += this[r, i].get_InitialHeight();
 				if (sum.Value > maxHeight.Value)
 					maxHeight = sum;
 			}
 			return maxHeight;
 		}
 
-		protected override Unit get_InitialWidth()
+		//TODO: What if we set the fontsize in a style?
+		internal override Unit get_InitialWidth()
 		{
 			var maxWidth = new Unit(0, Unit.UnitKind.Pixel);
 			for (int i = 0; i < rows; i++)
@@ -191,34 +201,42 @@ namespace Slides.Elements
 				Unit sum = null;
 				for (int c = 0; c < columns; c++)
 					if (sum == null)
-						sum = this[i, c].get_Width(font, fontsize);
+						sum = this[i, c].get_InitialWidth();
 					else
-						sum += this[i, c].get_Width(font, fontsize);
+						sum += this[i, c].get_InitialWidth();
+
 				if (sum.Value > maxWidth.Value)
 					maxWidth = sum;
 			}
 			return maxWidth;
 		}
 
-		private void AddToModifiedFields(Dictionary<string, object> modifiedFields, string fieldName, object field, object def = null)
+		protected override IEnumerable<Element> get_Children()
 		{
-			var val = field;
-			if (val == null || val.Equals(def))
-				val = get_AppliedStyles().FirstOrDefault(s => s.ModifiedFields.ContainsKey(fieldName))?.ModifiedFields[fieldName] ?? def;
-			if (val != null && !val.Equals(def))
-				modifiedFields.Add(fieldName, val);
+			foreach (var row in cells)
+				foreach (var c in row)
+					yield return c;
 		}
 
-		public CustomStyle get_TableChildStyle(string parentName)
-		{
-			Dictionary<string, object> modifiedFields = new Dictionary<string, object>();
-			AddToModifiedFields(modifiedFields, "font", font);
-			AddToModifiedFields(modifiedFields, "fontsize", fontsize);
-			AddToModifiedFields(modifiedFields, "align", align, Alignment.Unset);
-			AddToModifiedFields(modifiedFields, "borderStyle", borderStyle, BorderStyle.Unset);
-			AddToModifiedFields(modifiedFields, "borderColor", borderColor);
-			AddToModifiedFields(modifiedFields, "borderThickness", borderThickness, new Thickness());
-			return new CustomStyle($"{parentName}_{name}_tablechild_style", modifiedFields);
-		}
+		//private void AddToModifiedFields(Dictionary<string, object> modifiedFields, string fieldName, object field, object defaultValue = null)
+		//{
+		//	var val = field;
+		//	if (val == null || val.Equals(defaultValue))
+		//		val = get_AppliedStyles().FirstOrDefault(s => s.ModifiedFields.ContainsKey(fieldName))?.ModifiedFields[fieldName] ?? defaultValue;
+		//	if (val != null && !val.Equals(defaultValue))
+		//		modifiedFields.Add(fieldName, val);
+		//}
+
+		//public CustomStyle get_TableChildStyle(string parentName)
+		//{
+		//	Dictionary<string, object> modifiedFields = new Dictionary<string, object>();
+		//	AddToModifiedFields(modifiedFields, "font", font);
+		//	AddToModifiedFields(modifiedFields, "fontsize", fontsize);
+		//	AddToModifiedFields(modifiedFields, "align", align, Alignment.Unset);
+		//	AddToModifiedFields(modifiedFields, "borderStyle", borderStyle, BorderStyle.Unset);
+		//	AddToModifiedFields(modifiedFields, "borderColor", borderColor);
+		//	AddToModifiedFields(modifiedFields, "borderThickness", borderThickness, new Thickness());
+		//	return new CustomStyle($"{parentName}_{name}_tablechild_style", modifiedFields);
+		//}
 	}
 }

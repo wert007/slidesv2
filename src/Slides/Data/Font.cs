@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Slides.Helpers;
+using System;
 using System.Drawing;
 using System.Drawing.Text;
 using System.IO;
@@ -52,11 +53,13 @@ namespace Slides
 
 		public Vector2 Measure(string text, Unit fontsize)
 		{
+
 			if (!exists)
 				return new Vector2();
+
 			var size = fontsize.Value;
 			if (fontsize.Kind == Unit.UnitKind.Point)
-				size *= 1.5f;
+				size *= SlidesConverter.PointUnitConversionFactor;
 			var unit = GraphicsUnit.World;
 			switch (fontsize.Kind)
 			{
@@ -76,16 +79,14 @@ namespace Slides
 				default:
 					throw new Exception();
 			}
-			
+
 			var font = new System.Drawing.Font(_fontFamily, size, FontStyle.Regular, unit);
 
 			SizeF result;
 			using (var image = new Bitmap(1, 1))
+			using (var g = Graphics.FromImage(image))
 			{
-				using (var g = Graphics.FromImage(image))
-				{
-						result = g.MeasureString(text, font);
-				}
+				result = g.MeasureString(text, font);
 			}
 
 			return new Vector2(result);

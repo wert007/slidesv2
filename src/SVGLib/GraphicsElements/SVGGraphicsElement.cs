@@ -4,20 +4,20 @@ namespace SVGLib.GraphicsElements
 {
 	public abstract class SVGGraphicsElement : SVGElement
 	{
-		public int width { get; set; }
-		public int height { get; set; }
-		public int x { get; set; }
-		public int y { get; set; }
+		public int Width { get; set; }
+		public int Height { get; set; }
+		public int X { get; set; }
+		public int Y { get; set; }
 
 		public SVGGraphicsElement()
 		{
 			Fill = Color.Black;
 			Stroke = Color.Transparent;
 			StrokeWidth = 0;
-			x = 0;
-			y = 0;
-			width = 0;
-			height = 0;
+			X = 0;
+			Y = 0;
+			Width = 0;
+			Height = 0;
 			IsVisible = true;
 		}
 

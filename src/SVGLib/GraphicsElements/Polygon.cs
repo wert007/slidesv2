@@ -11,9 +11,9 @@ namespace SVGLib.GraphicsElements
 				throw new Exception();
 			for (int i = 0; i < points.Length; i++)
 				if (i % 2 == 0)
-					width = Math.Max(width, points[i]);
+					Width = Math.Max(Width, points[i]);
 				else
-					height = Math.Max(height, points[i]);
+					Height = Math.Max(Height, points[i]);
 			_points = new List<int>(points);
 		}
 
@@ -37,7 +37,7 @@ namespace SVGLib.GraphicsElements
 
 		public override Path toPath()
 		{
-			return new Path(width, height);
+			return new Path(Width, Height);
 		}
 	}
 }

@@ -61,15 +61,15 @@ namespace Minsk.CodeAnalysis.Binding
 			return true;
 		}
 
-		public bool TryLookup(string name, out VariableSymbol variable)
+		public bool TryLookup(string name, bool isReading, out VariableSymbol variable)
 		{
-			if (_variables.TryGetValue(name, out variable))
+			if (_variables.TryGetValue(name, isReading, out variable))
 				return true;
 
 			if (Parent == null)
 				return false;
 
-			return Parent.TryLookup(name, out variable);
+			return Parent.TryLookup(name, isReading, out variable);
 		}
 
 		public bool TryDeclare(TypeSymbol type)

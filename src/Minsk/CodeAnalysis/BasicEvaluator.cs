@@ -6,6 +6,8 @@ using Minsk.CodeAnalysis.Binding;
 using Minsk.CodeAnalysis.SlidesTypes;
 using Minsk.CodeAnalysis.Symbols;
 using Slides;
+using Slides.Data;
+using Slides.Helpers;
 using Slides.MathExpressions;
 using Color = Slides.Color;
 
@@ -37,41 +39,98 @@ namespace Minsk.CodeAnalysis
 
 		public object EvaluateExpression(BoundExpression node)
 		{
+			object result = null;
 			switch (node.Kind)
 			{
 				case BoundNodeKind.StringExpression:
-					return EvaluateStringExpression((BoundStringExpression)node);
+					result = EvaluateStringExpression((BoundStringExpression)node);
+					break;
 				case BoundNodeKind.LiteralExpression:
-					return EvaluateLiteralExpression((BoundLiteralExpression)node);
+					result = EvaluateLiteralExpression((BoundLiteralExpression)node);
+					break;
 				case BoundNodeKind.VariableExpression:
-					return EvaluateVariableExpression((BoundVariableExpression)node);
+					result = EvaluateVariableExpression((BoundVariableExpression)node);
+					break;
 				case BoundNodeKind.AssignmentExpression:
-					return EvaluateAssignmentExpression((BoundAssignmentExpression)node);
+					result = EvaluateAssignmentExpression((BoundAssignmentExpression)node);
+					break;
 				case BoundNodeKind.UnaryExpression:
-					return EvaluateUnaryExpression((BoundUnaryExpression)node);
+					result = EvaluateUnaryExpression((BoundUnaryExpression)node);
+					break;
 				case BoundNodeKind.BinaryExpression:
-					return EvaluateBinaryExpression((BoundBinaryExpression)node);
+					result = EvaluateBinaryExpression((BoundBinaryExpression)node);
+					break;
 				case BoundNodeKind.FunctionExpression:
-					return EvaluateFunctionExpression((BoundFunctionExpression)node);
+					result = EvaluateFunctionExpression((BoundFunctionExpression)node);
+					break;
 				case BoundNodeKind.EmptyArrayConstructorExpression:
-					return EvaluateEmptyArrayConstructorExpression((BoundEmptyArrayConstructorExpression)node);
+					result = EvaluateEmptyArrayConstructorExpression((BoundEmptyArrayConstructorExpression)node);
+					break;
 				case BoundNodeKind.ArrayExpression:
-					return EvaluateArrayExpression((BoundArrayExpression)node);
+					result = EvaluateArrayExpression((BoundArrayExpression)node);
+					break;
 				case BoundNodeKind.EnumExpression:
-					return EvaluateEnumExpression((BoundEnumExpression)node);
+					result = EvaluateEnumExpression((BoundEnumExpression)node);
+					break;
 				case BoundNodeKind.FieldAccessExpression:
-					return EvaluateFieldAccessExpression((BoundFieldAccessExpression)node);
+					result = EvaluateFieldAccessExpression((BoundFieldAccessExpression)node);
+					break;
 				case BoundNodeKind.FunctionAccessExpression:
-					return EvaluateFunctionAccessExpression((BoundFunctionAccessExpression)node);
+					result = EvaluateFunctionAccessExpression((BoundFunctionAccessExpression)node);
+					break;
 				case BoundNodeKind.ConversionExpression:
-					return EvaluateConversion((BoundConversion)node);
+					result = EvaluateConversion((BoundConversion)node);
+					break;
 				case BoundNodeKind.MathExpression:
-					return EvaluateMathExpression((BoundMathExpression)node);
+					result = EvaluateMathExpression((BoundMathExpression)node);
+					break;
 				case BoundNodeKind.ArrayAccessExpression:
-					return EvaluateArrayAccessExpression((BoundArrayAccessExpression)node);
+					result = EvaluateArrayAccessExpression((BoundArrayAccessExpression)node);
+					break;
 				default:
 					throw new Exception($"Unexpected node {node.Kind}");
 			}
+			if (result?.GetType().IsArray == true)
+				return ConvertToArray(result);
+			return result;
+		}
+
+		private object[] ConvertToArray(object value)
+		{
+			if (value is ICollection<int> intArray)
+			{
+				var result = new object[intArray.Count];
+				for (int i = 0; i < result.Length; i++)
+					result[i] = intArray.ElementAt(i);
+				return result;
+			}
+			if (value is ICollection<float> floatArray)
+			{
+				var result = new object[floatArray.Count];
+				for (int i = 0; i < result.Length; i++)
+					result[i] = floatArray.ElementAt(i);
+				return result;
+			}
+			if (value is ICollection<string> stringArray)
+			{
+				var result = new object[stringArray.Count];
+				for (int i = 0; i < result.Length; i++)
+					result[i] = stringArray.ElementAt(i);
+				return result;
+			}
+			if (value is ICollection<bool> boolArray)
+			{
+				var result = new object[boolArray.Count];
+				for (int i = 0; i < result.Length; i++)
+					result[i] = boolArray.ElementAt(i);
+				return result;
+			}
+			if (value is ICollection<object> objectArray)
+			{
+				//This assures, that we can change the array later and it will be actually saved.
+				return (object[])objectArray;
+			}
+			throw new NotImplementedException();
 		}
 
 		protected virtual object EvaluateStringExpression(BoundStringExpression node)
@@ -98,7 +157,7 @@ namespace Minsk.CodeAnalysis
 
 		protected virtual void AssignVariable(VariableSymbol variable, object value) { }
 		protected virtual void AssignField(object parent, VariableSymbol field, object value) { }
-		protected virtual void AssignArray(object[] array, int index, object value) { }
+		protected virtual void AssignArray(object[] array, int index, object value, VariableSymbol optionalVariable) { }
 
 		protected virtual object EvaluateAssignmentExpression(BoundAssignmentExpression node)
 		{
@@ -118,7 +177,10 @@ namespace Minsk.CodeAnalysis
 					var arrayAccessExpression = (BoundArrayAccessExpression)node.LValue;
 					var array = (object[])EvaluateExpression(arrayAccessExpression.Child);
 					var index = (int)EvaluateExpression(arrayAccessExpression.Index);
-					AssignArray(array, index, value);
+					VariableSymbol variable = null;
+					if (arrayAccessExpression.Child is BoundVariableExpression variableExpression)
+						variable = variableExpression.Variable;
+					AssignArray(array, index, value, variable);
 					break;
 				default:
 					throw new NotImplementedException();
@@ -147,6 +209,8 @@ namespace Minsk.CodeAnalysis
 					return new Unit(-oldUnit.Value, oldUnit.Kind);
 				case BoundUnaryOperatorKind.LogicalNegation:
 					return !(bool)operand;
+				case BoundUnaryOperatorKind.NoneableNegation:
+					return operand;
 				default:
 					throw new Exception($"Unexpected unary operator {op}");
 			}
@@ -268,51 +332,7 @@ namespace Minsk.CodeAnalysis
 				vertical = vl;
 			else if (right is Vertical vr)
 				vertical = vr;
-			return AddOrientations(horizontal, vertical);
-		}
-
-		protected Orientation AddOrientations(Horizontal h, Vertical v)
-		{
-			switch (h)
-			{
-				case Horizontal.Left:
-					switch (v)
-					{
-						case Vertical.Top: return Orientation.LeftTop;
-						case Vertical.Stretch: return Orientation.LeftStretch;
-						case Vertical.Center: return Orientation.LeftCenter;
-						case Vertical.Bottom: return Orientation.LeftBottom;
-					}
-					break;
-				case Horizontal.Stretch:
-					switch (v)
-					{
-						case Vertical.Top: return Orientation.StretchTop;
-						case Vertical.Stretch: return Orientation.Stretch;
-						case Vertical.Center: return Orientation.StretchCenter;
-						case Vertical.Bottom: return Orientation.StretchBottom;
-					}
-					break;
-				case Horizontal.Center:
-					switch (v)
-					{
-						case Vertical.Top: return Orientation.CenterTop;
-						case Vertical.Stretch: return Orientation.CenterStretch;
-						case Vertical.Center: return Orientation.Center;
-						case Vertical.Bottom: return Orientation.CenterBottom;
-					}
-					break;
-				case Horizontal.Right:
-					switch (v)
-					{
-						case Vertical.Top: return Orientation.RightTop;
-						case Vertical.Stretch: return Orientation.RightStretch;
-						case Vertical.Center: return Orientation.RightCenter;
-						case Vertical.Bottom: return Orientation.RightBottom;
-					}
-					break;
-			}
-			throw new Exception();
+			return SlidesHelper.AddOrientations(horizontal, vertical);
 		}
 
 
@@ -471,6 +491,13 @@ namespace Minsk.CodeAnalysis
 		{
 			if (function.Name == "len")
 				return ((ICollection<object>)parent).Count;
+			if (function.Name == "getSafe")
+				return ((ICollection<object>)parent).ElementAtOrDefault((int)args[0]);
+			if (function.Name == "getLoop")
+			{
+				var array = (ICollection<object>)parent;
+				return array.ElementAt((int)args[0] % array.Count);
+			}
 			var type = parent.GetType();
 			var parameters = function.Parameter.Select(p => _builtInTypes.LookTypeUp(p.Type)).ToArray();
 			var method = type.GetMethod(function.Name, parameters);

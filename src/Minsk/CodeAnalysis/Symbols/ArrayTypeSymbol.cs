@@ -25,6 +25,20 @@ namespace Minsk.CodeAnalysis.Symbols
 							LenFunction
 						};
 					return true;
+				case "getSafe":
+					function = new FunctionSymbol[]
+					{
+						new FunctionSymbol("getSafe",
+							new VariableSymbol("index", true, PrimitiveTypeSymbol.Integer, false),
+							Child.Type == TypeType.Noneable ? Child : new NoneableTypeSymbol(Child))
+					};
+					return true;
+				case "getLoop":
+					function = new FunctionSymbol[]
+					{
+						new FunctionSymbol("getLoop", new VariableSymbol("index", true, PrimitiveTypeSymbol.Integer, false), Child)
+					};
+					return true;
 				default:
 					return base.TryLookUpFunction(name, out function);
 			}

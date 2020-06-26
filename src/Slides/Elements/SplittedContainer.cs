@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Slides.Elements
 {
-	public class SplittedContainer : Element
+	public class SplittedContainer : ParentElement
 	{
 		public Container childA { get; private set; }
 		public Container childB { get; private set; }
@@ -31,7 +32,7 @@ namespace Slides.Elements
 			childB.fill(element);
 		}
 
-		protected override Unit get_InitialHeight()
+		internal override Unit get_InitialHeight()
 		{
 			switch (flow)
 			{
@@ -44,7 +45,7 @@ namespace Slides.Elements
 			}
 		}
 
-		protected override Unit get_InitialWidth()
+		internal override Unit get_InitialWidth()
 		{
 			switch (flow)
 			{
@@ -55,6 +56,14 @@ namespace Slides.Elements
 				default:
 					throw new NotImplementedException();
 			}
+		}
+
+		//Maybe we should return the containers themself here.
+		//But a container in a container? That's a lil bit strange..
+		protected override IEnumerable<Element> get_Children()
+		{
+			yield return childA.child;
+			yield return childB.child;
 		}
 	}
 }

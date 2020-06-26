@@ -1,4 +1,6 @@
-﻿namespace Slides.Elements
+﻿using System;
+
+namespace Slides.Elements
 {
 	public class IFrame : Element
 	{
@@ -17,8 +19,8 @@
 			this.src = src;
 			this.allow = allow;
 			Extra = extra;
-			initWidth = width;
-			initHeight = height;
+			this.width = width;
+			this.height = height;
 		}
 
 		public override ElementKind kind => ElementKind.IFrame;
@@ -27,8 +29,8 @@
 		public string allow { get; }
 		public string Extra { get; }
 
-		protected override Unit get_InitialHeight() => initHeight;
+		internal override Unit get_InitialHeight() => throw new Exception();
 
-		protected override Unit get_InitialWidth() => initWidth;
+		internal override Unit get_InitialWidth() => throw new Exception();
 	}
 }

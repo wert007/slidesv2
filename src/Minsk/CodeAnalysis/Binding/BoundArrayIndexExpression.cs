@@ -9,7 +9,7 @@ namespace Minsk.CodeAnalysis.Binding
 			Child = child;
 			Index = index;
 			var arrayType = child.Type as ArrayTypeSymbol;
-			Type = arrayType.Child;
+			Type = arrayType?.Child ?? PrimitiveTypeSymbol.Error;
 		}
 
 

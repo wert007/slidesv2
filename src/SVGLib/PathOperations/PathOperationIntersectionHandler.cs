@@ -185,7 +185,7 @@ namespace Slides.SVG
 	{
 		private static PathOperationSegment[] PathToPathSegments(Path p)
 		{
-			var op = PathOperationHelper.Translate(PathOperationHelper.ToAbsolute(p.Operations), p.x, p.y);
+			var op = PathOperationHelper.Translate(PathOperationHelper.ToAbsolute(p.Operations), p.X, p.Y);
 			return ToSegment(op);
 		}
 
@@ -330,8 +330,8 @@ namespace Slides.SVG
 		}
 		public static Vertex[] CollectVertices(Path a, Path b)
 		{
-			var aOp = PathOperationHelper.Translate(PathOperationHelper.ToAbsolute(a.Operations), a.x, a.y);
-			var bOp = PathOperationHelper.Translate(PathOperationHelper.ToAbsolute(b.Operations), b.x, b.y);
+			var aOp = PathOperationHelper.Translate(PathOperationHelper.ToAbsolute(a.Operations), a.X, a.Y);
+			var bOp = PathOperationHelper.Translate(PathOperationHelper.ToAbsolute(b.Operations), b.X, b.Y);
 			var aSeg = ToSegment(aOp);
 			var bSeg = ToSegment(bOp);
 			var vertices = FindVertices(aSeg, bSeg);
@@ -428,8 +428,8 @@ namespace Slides.SVG
 
 		public static Intersection[] FindIntersections(Path a, Path b)
 		{
-			var aOp = PathOperationHelper.Translate(a.Operations, a.x, a.y);
-			var bOp = PathOperationHelper.Translate(b.Operations, b.x, b.y);
+			var aOp = PathOperationHelper.Translate(a.Operations, a.X, a.Y);
+			var bOp = PathOperationHelper.Translate(b.Operations, b.X, b.Y);
 			var aSeg = ToSegment(aOp);
 			var bSeg = ToSegment(bOp);
 			var result = new HashSet<Intersection>();

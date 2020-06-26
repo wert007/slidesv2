@@ -17,14 +17,14 @@ namespace SVGLib.GraphicsElements
 		public Path(PathOperation[] operations, int width, int height)
 		{
 			_operations.AddRange(operations);
-			this.width = width;
-			this.height = height;
+			this.Width = width;
+			this.Height = height;
 		}
 
 		public Path(int width, int height)
 		{
-			this.width = width;
-			this.height = height;
+			this.Width = width;
+			this.Height = height;
 		}
 
 		public void add(PathOperation operation)
@@ -40,12 +40,12 @@ namespace SVGLib.GraphicsElements
 		{
 			_operations = PathOperationHelper.ToAbsolute(_operations.ToArray()).ToList();
 			var rad = (float)(degree * Math.PI / 180f);
-			_operations = PathOperationHelper.Rotate(_operations.ToArray(), rad, width * xOrigin, height * yOrigin).ToList();
+			_operations = PathOperationHelper.Rotate(_operations.ToArray(), rad, Width * xOrigin, Height * yOrigin).ToList();
 		}
 
 		public override Path toPath()
 		{
-			return new Path(Operations, width, height);
+			return new Path(Operations, Width, Height);
 		}
 	}
 }

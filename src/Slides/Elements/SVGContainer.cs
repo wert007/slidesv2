@@ -24,8 +24,8 @@ namespace Slides.SVG
 
 		public override ElementKind kind => ElementKind.SVGContainer;
 
-		protected override Unit get_InitialHeight() => new Unit(300, Unit.UnitKind.Pixel);
+		internal override Unit get_InitialHeight() => new Unit(300, Unit.UnitKind.Pixel);
 
-		protected override Unit get_InitialWidth() => new Unit(300, Unit.UnitKind.Pixel);
+		internal override Unit get_InitialWidth() => new Unit(300, Unit.UnitKind.Pixel);
 	}
 }

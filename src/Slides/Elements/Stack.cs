@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Slides.Helpers;
+using System;
 using System.Collections.Generic;
 
 namespace Slides.Elements
@@ -6,11 +7,32 @@ namespace Slides.Elements
 	public class Stack : Element
 	{
 		private List<Element> _children = new List<Element>();
+		private Orientation _orientation;
 
 		public Element[] children => _children.ToArray();
 		public FlowAxis StackFlow { get; }
 		public override ElementKind kind => ElementKind.Stack;
-
+		public new Orientation orientation
+		{
+			get => _orientation;
+			set
+			{
+				_orientation = value;
+				switch (StackFlow)
+				{
+					case FlowAxis.Horizontal:
+						foreach (var c in _children)
+							c.orientation = SlidesHelper.AddOrientations(SlidesHelper.GetHorizontal(c.orientation), SlidesHelper.GetVertical(_orientation));
+						break;
+					case FlowAxis.Vertical:
+						foreach (var c in _children)
+							c.orientation = SlidesHelper.AddOrientations(SlidesHelper.GetHorizontal(_orientation), SlidesHelper.GetVertical(c.orientation));
+						break;
+					default:
+						throw new NotImplementedException();
+				}
+			}
+		}
 
 		public Stack(FlowAxis orientation)
 		{
@@ -23,7 +45,7 @@ namespace Slides.Elements
 			_children.Add(child);
 		}
 
-		protected override Unit get_InitialWidth()
+		internal override Unit get_InitialWidth()
 		{
 			switch (StackFlow)
 			{
@@ -51,7 +73,7 @@ namespace Slides.Elements
 			}
 		}
 
-		protected override Unit get_InitialHeight()
+		internal override Unit get_InitialHeight()
 		{
 			switch (StackFlow)
 			{

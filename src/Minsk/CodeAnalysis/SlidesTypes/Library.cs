@@ -5,6 +5,7 @@ using System.Reflection;
 using Minsk.CodeAnalysis.Symbols;
 using Slides;
 using Slides.Elements;
+using Slides.Styling;
 
 namespace Minsk.CodeAnalysis.SlidesTypes
 {

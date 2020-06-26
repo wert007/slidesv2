@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Minsk.CodeAnalysis.Symbols;
 using Slides;
+using Slides.Styling;
 
 namespace Minsk.CodeAnalysis.SlidesTypes
 {

@@ -27,19 +27,10 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 
 	public static class GlobalSVGFunctions
 	{
-		public static UnitRect rect(Unit width, Unit height)
-		{
-			return new UnitRect(width, height);
-		}
-
-		public static UnitLine line(UnitPair p1, UnitPair p2, Color stroke, Unit strokeWidth) => line(p1.X, p1.Y, p2.X, p2.Y, stroke, strokeWidth);
-		public static UnitLine line(Unit x1, Unit y1, Unit x2, Unit y2, Color stroke, Unit strokeWidth)
-		{
-			var result = new UnitLine(x1, y1, x2, y2);
-			result.stroke = stroke;
-			result.strokeWidth = strokeWidth;
-			return result;
-		}
+		public static UnitRect rect(Unit width, Unit height) => new UnitRect(width, height);
+		public static UnitRect rect(UnitPair topLeft, UnitPair bottomRight) => UnitRect.FromBounds(topLeft.X, topLeft.Y, bottomRight.X, bottomRight.Y);
+		public static UnitLine line(UnitPair p1, UnitPair p2) => line(p1.X, p1.Y, p2.X, p2.Y);
+		public static UnitLine line(Unit x1, Unit y1, Unit x2, Unit y2) => new UnitLine(x1, y1, x2, y2);
 
 		public static SVGPath path(string m, int width, int height)
 		{
@@ -146,18 +137,18 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 		public static SVGPath intersectPaths(SVGPath a, SVGPath b)
 		{
 			var test = PathOperationIntersectionHandler.PathOperationShape(a, b, PathShapeOperation.Intersect);
-			return new SVGPath(test, a.width, a.height);
+			return new SVGPath(test, a.Width, a.Height);
 		}
 
 		public static SVGPath unitePaths(SVGPath a, SVGPath b)
 		{
 			var ops = PathOperationIntersectionHandler.PathOperationShape(a, b, PathShapeOperation.Unite);
-			return new SVGPath(ops, a.width, b.width);
+			return new SVGPath(ops, a.Width, b.Width);
 		}
 		public static SVGPath differPaths(SVGPath a, SVGPath b)
 		{
 			var ops = PathOperationIntersectionHandler.PathOperationShape(a, b, PathShapeOperation.Difference);
-			return new SVGPath(ops, a.width, b.width);
+			return new SVGPath(ops, a.Width, b.Width);
 		}
 
 		public static SVGTag loadSVG(string fileName)

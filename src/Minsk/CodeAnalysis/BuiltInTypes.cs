@@ -28,6 +28,8 @@ using Slides.Elements;
 using SVGLib.Filters;
 using SVGLib.Filters.Lights;
 using Slides.Elements.SVG;
+using Slides.Styling;
+using Slides.Data;
 
 namespace Minsk.CodeAnalysis
 {
@@ -105,6 +107,7 @@ namespace Minsk.CodeAnalysis
 			Add(typeof(Range), isData:true);
 			Add(typeof(MathFormula), isData: true);
 
+			Add(typeof(Style), CreateEmptySymbol("Style"));
 			Add(typeof(CustomStyle), CreateEmptySymbol("Style"));
 			Add(typeof(StdStyle), CreateEmptySymbol("Style"));
 			Add(typeof(ElementKind), CreateEmptySymbol("ElementType"));
@@ -125,11 +128,16 @@ namespace Minsk.CodeAnalysis
 			Add(typeof(Vertical));
 			Add(typeof(Orientation));
 			Add(typeof(Interpolation));
+			Add(typeof(Brush.BrushMode));
+			Add(typeof(Brush), new TypeSymbol[] { LookSymbolUp(typeof(Color)), LookSymbolUp(typeof(ImageSource)) });
+
+			Add(typeof(Filter), isData: true);
+
+			Add(typeof(FormattedString));
 			
 			Add(typeof(SVGColor));
 			Add(typeof(SVGMatrix), isData: true);
 
-			Add(typeof(Filter), isData: true);
 			Add(typeof(IFilterInput), CreateEmptySymbol("FilterInput"));
 			var implementsIFilterInput = new TypeSymbol[] { LookSymbolUp(typeof(IFilterInput)) };
 			Add(typeof(SVGFilter), isData: true, canBeCastedTo: implementsIFilterInput);
@@ -163,10 +171,11 @@ namespace Minsk.CodeAnalysis
 			Add(typeof(OffsetFilter), isData: true);
 			Add(typeof(TileFilter), isData: true);
 
-			Add(typeof(Brush.BrushMode));
-			Add(typeof(Brush), new TypeSymbol[] { LookSymbolUp(typeof(Color)), LookSymbolUp(typeof(ImageSource)) });
+//			Add(typeof(ParentElement), CreateEmptySymbol(nameof(ParentElement)));
 			Add(typeof(Element), canBeCastedTo: implementsIFilterInput);
 			Add(typeof(Element), name: "any", canBeCastedTo: implementsIFilterInput);
+			Add(typeof(TextElement));
+			Add(typeof(ParentElement));
 			Add(typeof(ImageStretching));
 			Add(typeof(Image));
 			Add(typeof(FlowAxis));
@@ -175,6 +184,7 @@ namespace Minsk.CodeAnalysis
 			Add(typeof(Label));
 			Add(typeof(Container));
 			Add(typeof(SplittedContainer));
+			Add(typeof(List.ListMarkerType));
 			Add(typeof(List));
 			Add(typeof(IFrame));
 			Add(typeof(Slider));
@@ -185,6 +195,8 @@ namespace Minsk.CodeAnalysis
 			Add(typeof(YouTubePlayer));
 			Add(typeof(TableChild));
 			Add(typeof(Table));
+			Add(typeof(CaptionPlacement));
+			Add(typeof(Captioned));
 
 			Add(typeof(CodeBlock));
 
@@ -197,6 +209,7 @@ namespace Minsk.CodeAnalysis
 
 			Add(typeof(ViewBox));
 			Add(typeof(SVGVector2));
+			Add(typeof(LineCap));
 			Add(typeof(SVGTransform), CreateEmptySymbol("Transform"));
 			Add(typeof(SVGElementKind));
 			Add(typeof(SVGElement));
@@ -337,6 +350,7 @@ namespace Minsk.CodeAnalysis
 			{
 				TypeSymbol fieldType = null;
 				var fieldName = field.Name.ToVariableLower();
+				if (fieldName.StartsWith("h_")) continue;
 				if (field.FieldType != type)
 				{
 					fieldType = LookSymbolUp(field.FieldType);
@@ -355,6 +369,7 @@ namespace Minsk.CodeAnalysis
 			{
 				TypeSymbol propertyType = null;
 				var propName = prop.Name.ToVariableLower();
+				if (propName.StartsWith("h_")) continue;
 				if (prop.PropertyType != type)
 				{
 					propertyType = LookSymbolUp(prop.PropertyType);
@@ -394,7 +409,7 @@ namespace Minsk.CodeAnalysis
 					mname == "GetHashCode" ||
 					mname == "GetType")
 					continue;
-				if (mname.StartsWith("get_") || mname.StartsWith("set_") || mname.StartsWith("add_"))
+				if (mname.StartsWith("get_") || mname.StartsWith("set_") || mname.StartsWith("add_") || mname.StartsWith("h_"))
 					continue;
 				if (mname.StartsWith("op_"))
 					continue;
@@ -416,18 +431,21 @@ namespace Minsk.CodeAnalysis
 				}
 				else
 				{
+					//TODO: Add if array type or normal type...
 					todoList.Add(mname);
 				}
 			}
+			//TODO: Why do we have this? Isn't there already a applyStyle in Element?
 			if (typeof(Element).IsAssignableFrom(type))
 			{
-				functions.Add(new FunctionSymbol("applyStyle", new VariableSymbol("style", true, LookSymbolUp(typeof(StdStyle)), false), PrimitiveTypeSymbol.Void));
+				functions.Add(new FunctionSymbol("applyStyle", new VariableSymbol("style", true, LookSymbolUp(typeof(Style)), false), PrimitiveTypeSymbol.Void));
 			}
 			functions.Seal();
 			var parent = type.BaseType;
 			TypeSymbol parentSymbol = null;
 			if (parent != null && parent != typeof(object) && parent != typeof(ValueType))
 				parentSymbol = LookSymbolUp(parent);
+			//TODO: remove todoList by adding a almost empty constructor to AdvancedTypeSymbol
 			symbol = new AdvancedTypeSymbol(name, fields, constructor, functions, parentSymbol, canBeCastedTo);
 			foreach (string todo in todoList)
 			{

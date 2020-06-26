@@ -38,6 +38,8 @@ namespace Minsk.CodeAnalysis
 
 
 
+		public bool HasErrors() => _diagnostics.Any(d => d.Level == DiagnosticLevel.Error);
+
 		public string Join(object[] obj, string prefix = null, string postfix = null)
 		{
 			if (prefix == null) prefix = string.Empty;
@@ -226,15 +228,22 @@ namespace Minsk.CodeAnalysis
 		{
 			if (parent == PrimitiveTypeSymbol.Error)
 				return;
-			//TODO(Improvement): Find similiar functions. Maybe you can call one of those.
 			var message = $"Function '{parent}.{name}' doesn't exist.";
+			if (parent is AdvancedTypeSymbol advanced)
+			{
+				var mostSimiliarOnes = SimiliarValues(advanced.Functions.Select(f => f.Name).ToArray(), name);
+				if (mostSimiliarOnes.Length > 0)
+					message += $" Maybe try {Join(mostSimiliarOnes, "'", "'")}.";
+			}
 			Report(span, message, DiagnosticLevel.Error);
 		}
 
 		public void ReportUndefinedFunction(TextSpan span, string name, LibrarySymbol library)
 		{
-			//TODO(Improvement): Find similiar functions. Maybe you can call one of those.
 			var message = $"Function '{library.Name}.{name} doesn't exist in '{library.Name}'.";
+			var mostSimiliarOnes = SimiliarValues(library.GlobalFunctions.Select(f => f.Name).ToArray(), name);
+			if (mostSimiliarOnes.Length > 0)
+				message += $" Maybe try {Join(mostSimiliarOnes, "'", "'")}.";
 			Report(span, message, DiagnosticLevel.Error);
 		}
 

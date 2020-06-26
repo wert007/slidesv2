@@ -2,7 +2,7 @@
   "profiles": {
     "mc": {
       "commandName": "Project",
-      "commandLineArgs": "sldsrc/slide1.sld presentation -build-fresh"
+      "commandLineArgs": "sldsrc/gti_qmc/presentation.sld gti_qmc -build-fresh"
     }
   }
 }

@@ -4,6 +4,7 @@ using Slides;
 using Slides.Debug;
 using Slides.Elements;
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -14,6 +15,25 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 
 	public static class GlobalFunctions
 	{
+		public static string join(string seperator, object[] array)
+		{
+			return string.Join(seperator, array);
+		}
+		public static string utf8(int codepoint)
+		{
+			var codepointBytes = BitConverter.GetBytes(codepoint);
+			var text = Encoding.UTF8.GetString(codepointBytes);
+			return text.First().ToString(); //Remove trailing '\0'
+		}
+		public static int[] utf8(string str)
+		{
+			var result = new int[str.Length];
+			for (int i = 0; i < str.Length; i++)
+				result[i] = str[i];
+			return result;
+		}
+		public static bool contains(string hay, string needle) => hay.Contains(needle);
+		public static FormattedString fmt(string str) => FormattedString.FromString(str);
 		public static string toTime(int time)
 		{
 			var result = new StringBuilder();
@@ -85,6 +105,11 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			if (a > b) return a;
 			return b;
 		}
+
+		public static Unit max(Unit a, Unit b)
+		{
+			return Unit.Max(a, b);
+		}
 		public static CSVFile csv(string fileName)
 		{
 			//TODO: This isn't needed for some reason..
@@ -140,6 +165,18 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 		public static Color hsla(int hue, int sat, int light, int alpha)
 		{
 			return Color.FromHSLA(hue, (byte)sat, (byte)light, (byte)alpha);
+		}
+
+		public static Color hex(string hex)
+		{
+			hex = hex.Substring(1);
+			var rStr = hex.Substring(0, 2);
+			var gStr = hex.Substring(2, 2);
+			var bStr = hex.Substring(4, 2);
+			var r = (byte)int.Parse(rStr, NumberStyles.HexNumber);
+			var g = (byte)int.Parse(gStr, NumberStyles.HexNumber);
+			var b = (byte)int.Parse(bStr, NumberStyles.HexNumber);
+			return new Color(r, g, b, 255);
 		}
 
 		public static Color rgb(int r, int g, int b)

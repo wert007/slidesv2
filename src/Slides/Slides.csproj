@@ -55,10 +55,12 @@
     <Compile Include="Data\Alignment.cs" />
     <Compile Include="AnimationCall.cs" />
     <Compile Include="Data\BorderStyle.cs" />
+    <Compile Include="Data\FormattedString.cs" />
     <Compile Include="Elements\BoxElement.cs" />
     <Compile Include="Data\Brush.cs" />
     <Compile Include="CaseCall.cs" />
     <Compile Include="Data\Color.cs" />
+    <Compile Include="Elements\Captioned.cs" />
     <Compile Include="Elements\Chart.cs" />
     <Compile Include="Elements\ChartType.cs" />
     <Compile Include="Elements\Container.cs" />
@@ -71,7 +73,9 @@
     <Compile Include="Elements\ElementKind.cs" />
     <Compile Include="Elements\FlowAxis.cs" />
     <Compile Include="Elements\ImageStretching.cs" />
+    <Compile Include="Elements\ParentElement.cs" />
     <Compile Include="Elements\SplittedContainer.cs" />
+    <Compile Include="Elements\TextElement.cs" />
     <Compile Include="Elements\UnitRect.cs" />
     <Compile Include="Elements\SVG\UnitLine.cs" />
     <Compile Include="Elements\TableChild.cs" />
@@ -83,6 +87,7 @@
     <Compile Include="Elements\YouTubePlayer.cs" />
     <Compile Include="Filter.cs" />
     <Compile Include="Helpers\JavaScriptEmitter.cs" />
+    <Compile Include="Helpers\SlidesHelper.cs" />
     <Compile Include="ImportExpression.cs" />
     <Compile Include="Data\Interpolation.cs" />
     <Compile Include="Elements\Label.cs" />
@@ -96,6 +101,10 @@
     <Compile Include="PresentationFlags.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Step.cs" />
+    <Compile Include="Styling\Selector.cs" />
+    <Compile Include="Styling\SelectorKind.cs" />
+    <Compile Include="Styling\Substyle.cs" />
+    <Compile Include="Styling\SubstyleCollection.cs" />
     <Compile Include="Template.cs" />
     <Compile Include="Transforms\RotationTransform.cs" />
     <Compile Include="Transforms\SingleValueTransform.cs" />
@@ -106,7 +115,7 @@
     <Compile Include="Elements\Stack.cs" />
     <Compile Include="Data\Thickness.cs" />
     <Compile Include="Data\Time.cs" />
-    <Compile Include="Style.cs" />
+    <Compile Include="Styling\Style.cs" />
     <Compile Include="Elements\SVGContainer.cs" />
     <Compile Include="Elements\Table.cs" />
     <Compile Include="Transforms\Transform.cs" />

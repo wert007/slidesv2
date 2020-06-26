@@ -1,7 +1,10 @@
 ﻿using Slides;
 using Slides.Code;
+using Slides.Data;
 using Slides.Debug;
 using Slides.Elements;
+using Slides.Helpers;
+using Slides.Styling;
 using Slides.SVG;
 using Slides.Transforms;
 using System;
@@ -16,48 +19,68 @@ namespace HTMLWriter
 		{
 			switch (type)
 			{
-				case "std": return "*";
 				case "Slide": return "slide";
 				case "Label": return "label";
 				case "Image": return "image";
-				case "Table": return "table, .tablecell";
+				case "Table":
+					throw new NotImplementedException();
+					return "table, .tablecell";
 				default:
 					Logger.LogUnmatchedCSSField(type);
 					return type.ToLower();
 			}
 		}
-		private static void WriteTypedModification(CSSWriter writer, TypedModifications typedModifications)
+		private static void WriteTypedModification(CSSWriter writer, Substyle substyle)
 		{
-			writer.StartClass(TypeSymbolToCSSClass(typedModifications.Type));
+			writer.StartSelector(SelectorToString(substyle.Selector));
 
-			foreach (var modifiedField in typedModifications.ModifiedFields)
+			foreach (var property in substyle.Properties)
 			{
-				writer.WriteAttribute(CSSWriter.ToCssAttribute(modifiedField.Key), modifiedField.Value);
+				//if (property.IsNonCSS) continue;
+				writer.WriteAttribute(CSSWriter.ToCssAttribute(property.Key), property.Value);
 			}
 			writer.EndSelector();
 		}
+
+		private static string SelectorToString(Selector selector)
+		{
+			if (selector == null) return "";
+			switch (selector.Kind)
+			{
+				case SelectorKind.All:
+					return "*";
+				case SelectorKind.Custom:
+				case SelectorKind.Type:
+					return $".{selector.Name}{SelectorToString(selector.Child)}";
+				case SelectorKind.Field:
+					return $">.{selector.Name}{SelectorToString(selector.Child)}";
+				default:
+					throw new NotImplementedException();
+			}
+		}
+
 		private static void WriteStdStyle(CSSWriter writer, StdStyle style, out string stdTransition)
 		{
 			stdTransition = null;
 			writer.StartSelector("*");
 			Transition toWrite = null;
-			foreach (var modifiedField in style.GetStyle("*").ModifiedFields)
+			foreach (var property in style.Substyles.GetAllStyle().Properties)
 			{
-				switch (modifiedField.Key)
+				switch (property.Key)
 				{
 					case "transition":
-						toWrite = (Transition)modifiedField.Value;
+						toWrite = (Transition)property.Value;
 						break;
 					default:
-						writer.WriteAttribute(CSSWriter.ToCssAttribute(modifiedField.Key), modifiedField.Value);
+						writer.WriteAttribute(CSSWriter.ToCssAttribute(property.Key), property.Value);
 						break;
 				}
 			}
 			writer.EndSelector();
 
-			foreach (var substyle in style.Substyles)
+			foreach (var substyle in style.Substyles.GetIterator())
 			{
-				if (substyle.Type == "*")
+				if (substyle.Selector.Kind == SelectorKind.All)
 					continue;
 				WriteTypedModification(writer, substyle);
 			}
@@ -71,30 +94,54 @@ namespace HTMLWriter
 
 		private static void WriteCustomStyle(CSSWriter writer, CustomStyle style)
 		{
-			writer.StartClass(style.Name);
+			writer.StartClass($"{style.Name}, .{style.Name} *");
 			Transition toWrite = null;
-
-			foreach (var modifiedField in style.ModifiedFields)
+			foreach (var property in style.Substyles.GetRootCustomStyle().Properties)
 			{
-				switch (modifiedField.Key)
+				switch (property.Key)
 				{
 					case "transition":
-						toWrite = (Transition)modifiedField.Value;
-						break;
-					case "orientation":
-						//This is no css attribute. we set it in the element.
-					case "margin":
-						//We ignore margin, because we write it per element
-						//and mostly just use left, top, right, bottom and
-						//not the actual margin.
+						toWrite = (Transition)property.Value;
 						break;
 					default:
-						writer.WriteAttribute(CSSWriter.ToCssAttribute(modifiedField.Key), modifiedField.Value);
+						writer.WriteAttribute(CSSWriter.ToCssAttribute(property.Key), property.Value);
 						break;
 				}
 			}
 			writer.EndSelector();
 
+			foreach (var substyle in style.Substyles.GetIterator())
+			{
+				if (substyle.Selector.Kind == SelectorKind.Custom && substyle.Selector.Child == null)
+					continue;
+				WriteTypedModification(writer, substyle);
+			}
+			//foreach (var modifiedField in style.ModifiedFields)
+			//{
+			//	switch (modifiedField.Key)
+			//	{
+			//		case "transition":
+			//			toWrite = (Transition)modifiedField.Value;
+			//			break;
+			//		case "orientation":
+			//		//This is no css attribute. we set it in the element.
+			//		case "margin":
+			//		case "left":
+			//		case "top":
+			//		case "right":
+			//		case "bottom":
+			//			//We ignore margin, because we write it per element
+			//			//and mostly just use left, top, right, bottom and
+			//			//not the actual margin.
+			//			break;
+			//		default:
+			//			writer.WriteAttribute(CSSWriter.ToCssAttribute(modifiedField.Key), modifiedField.Value);
+			//			break;
+			//	}
+			//}
+			//writer.EndSelector();
+
+			//How can a custom style have a std transition?!?!
 			if (toWrite != null)
 			{
 				WriteStdTransition(writer, toWrite.name, toWrite.from, toWrite.to);
@@ -111,6 +158,7 @@ namespace HTMLWriter
 
 		private static void WriteStdTransition(CSSWriter writer, string transitionName, TransitionCall from, TransitionCall to)
 		{
+			return;
 			writer.StartSelector($"section.slide.{transitionName}-from");
 			writer.WriteAttribute("animation-name", from.Name);
 			writer.WriteAttribute("animation-duration", from.Duration);
@@ -156,6 +204,8 @@ namespace HTMLWriter
 			writer.WriteAttributeIfValue("color", slide.Attributes.color);
 			writer.WriteAttributeIfValue("font", slide.Attributes.font);
 			writer.WriteAttributeIfValue("filter", slide.Attributes.n_filter);
+			writer.WriteAttributeIfValue("font-size", slide.Attributes.fontsize);
+			writer.WriteAttributeIfValue("font-family", slide.Attributes.font);
 			writer.EndId();
 		}
 
@@ -181,13 +231,7 @@ namespace HTMLWriter
 			if (element.name == null)
 				return;
 			var id = $"{parentName}-{element.name}";
-			//TODO: New way to get properties from elements?
-			//A way that includes the applied styles??
-			//something like
-			//var listOfPropertys = {"borderColor"};
-			//foreach prop in listOfPropertys:
-			//	writer.WriteAttributeIfValue(CSSWriter.ToCssAttribute(prop), element.get_Property(prop));
-			writer.StartId(id);
+			writer.StartId($"{id}");
 			WriteBrush(writer, element.background);
 			var properties = new string[] { "borderColor", "borderStyle", "borderThickness", "color", "filter", "padding" };
 			foreach (var prop in properties)
@@ -201,49 +245,61 @@ namespace HTMLWriter
 
 			switch (element)
 			{
-				case Label l:
-					writer.WriteAttributeIfValue("font-size", l.fontsize);
-					if (l.fontsize != null)
-						writer.WriteAttribute("line-height", l.fontsize + new Unit(6, Unit.UnitKind.Point));
-					writer.WriteAttributeIfValue("font-family", l.font);
-					writer.WriteAttribute("text-align", l.align);
-					break;
-				case List list:
-					writer.WriteAttributeIfValue("font-size", list.fontsize);
-					if (list.fontsize != null)
-						writer.WriteAttribute("line-height", list.fontsize + new Unit(6, Unit.UnitKind.Point));
-					writer.WriteAttributeIfValue("font-family", list.font);
-					//writer.WriteAttribute("text-align", list.align);
-					break;
-				case BoxElement b:
-					writer.WriteAttributeIfValue("font-size", b.fontsize);
-					if (b.fontsize != null)
-						writer.WriteAttribute("line-height", b.fontsize + new Unit(6, Unit.UnitKind.Point));
-					break;
-				case CodeBlock cb:
-					writer.WriteAttribute("font-family", cb.font);
-					writer.WriteAttributeIfValue("font-size", cb.fontsize);
+				case TextElement e:
+					writer.WriteAttributeIfValueOrInherit("font-size", e.fontsize, e.InheritsFontsize());
+
+					if (e.fontsize != null && e.kind != ElementKind.Captioned)
+						writer.WriteAttribute("line-height", e.fontsize + new Unit(6, Unit.UnitKind.Point));
+
+					writer.WriteAttributeIfValueOrInherit("font-family", e.font, e.InheritsFont());
+					switch (e)
+					{
+						case Label l:
+							writer.WriteAttribute("text-align", l.align);
+							break;
+						case List list:
+							writer.WriteAttributeIfNotDefault("list-style-type", list.markerType, List.ListMarkerType.Disk);
+							if (list.get_TextMarker() != null)
+								writer.WriteAttribute("padding-left", "1em");
+							break;
+						case Table _:
+							writer.WriteAttribute("border-collapse", "collapse");
+							break;
+					}
 					break;
 				case Image i:
 					writer.WriteAttribute("object-fit", i.stretching);
-					break;
-				case Table t:
-					writer.WriteAttribute("border-collapse", "collapse");
 					break;
 				default:
 					break;
 			}
 			writer.EndId();
 
+
+			if (element is List listCustomMarker)
+			{
+				if (!listCustomMarker.isOrdered && listCustomMarker.get_TextMarker() != null)
+				{
+					writer.StartId($"{id} li", "before");
+					writer.WriteAttribute("content", $"\"{FormattedString.Convert(listCustomMarker.get_TextMarker())}\"");
+					writer.WriteAttribute("left", "0");
+					writer.WriteAttribute("position", "absolute");
+					writer.EndSelector();
+				}
+			}
+
 			if (element.hover == null)
 				return;
 
 			writer.StartId(id, pseudoClass: "hover");
-			foreach (var modifiedField in element.hover.ModifiedFields)
+			//There should be now substyles in hover. 
+			//Maybe there should. But we don't support it right now!
+			foreach (var property in element.hover.Substyles.GetIterator().Single().Properties)
 			{
-				writer.WriteAttribute(CSSWriter.ToCssAttribute(modifiedField.Key), modifiedField.Value);
+				writer.WriteAttribute(CSSWriter.ToCssAttribute(property.Key), property.Value);
 			}
 			writer.EndSelector();
+
 		}
 
 
@@ -256,7 +312,7 @@ namespace HTMLWriter
 			var appliedStyles = element.get_AppliedStyles();
 			if (element.position == null)
 			{
-				if (parent != null && parent is Stack)
+				if (parent != null && parent is Stack || parent is List)
 					writer.WriteAttribute("position", "relative");
 				else
 					writer.WriteAttribute("position", "absolute");
@@ -265,9 +321,7 @@ namespace HTMLWriter
 				writer.WriteAttribute("position", element.position);
 
 
-			var m = (Thickness)appliedStyles.FirstOrDefault(s => s.ModifiedFields.ContainsKey("margin"))?.ModifiedFields["margin"] ?? new Thickness();
-			if (element.margin != new Thickness())
-				m = element.margin;
+			var m = element.margin;
 
 			var margin = m + element.padding;
 			if (parent != null && parent.padding != null)
@@ -281,29 +335,24 @@ namespace HTMLWriter
 
 			var unit100Percent = new Unit(100, Unit.UnitKind.Percent);
 			var orientation = element.orientation;
-			if(element.get_Property("orientation") == null)
-			{
-				foreach (var style in appliedStyles)
-				{
-					if (style.ModifiedFields.ContainsKey("orientation"))
-						orientation = (Orientation)style.ModifiedFields["orientation"];
-				}
-			}
-			var hasHorizontalStretch = orientation == Orientation.StretchTop ||
-												orientation == Orientation.Stretch ||
-												orientation == Orientation.StretchCenter ||
-												orientation == Orientation.StretchBottom;
-			var hasVerticalStretch = orientation == Orientation.LeftStretch ||
-											 orientation == Orientation.Stretch ||
-											 orientation == Orientation.CenterStretch ||
-											 orientation == Orientation.RightStretch;
+			//as far as I know, this should be handled in element already
+			//if (element.get_Property("orientation") == null)
+			//{
+			//	foreach (var style in appliedStyles)
+			//	{
+			//		if (style.ModifiedFields.ContainsKey("orientation"))
+			//			orientation = (Orientation)style.ModifiedFields["orientation"];
+			//	}
+			//}
+			var hasHorizontalStretch = SlidesHelper.GetHorizontal(orientation) == Horizontal.Stretch && element.h_AllowsHorizontalStretching;
+			var hasVerticalStretch = SlidesHelper.GetVertical(orientation) == Vertical.Stretch && element.h_AllowsVerticalStretching;
 
 
-			if(element.kind != ElementKind.UnitSVGShape) 
+			if (element.kind != ElementKind.UnitSVGShape)
 			{
 				if (hasVerticalStretch)
 				{
-					writer.WriteAttribute("height", unit100Percent - margin.Vertical);
+					writer.WriteAttribute("height", unit100Percent - m.Vertical);
 				}
 				else if (element.get_StyleHeight() == null)
 				{
@@ -314,7 +363,7 @@ namespace HTMLWriter
 
 
 				if (hasHorizontalStretch)
-					writer.WriteAttribute("width", unit100Percent - margin.Horizontal);
+					writer.WriteAttribute("width", unit100Percent - m.Horizontal);
 				else if (element.get_StyleWidth() == null)
 				{
 					writer.WriteAttribute("width", "fit-content");
@@ -322,8 +371,8 @@ namespace HTMLWriter
 				else
 					writer.WriteAttributeIfValue("width", element.get_StyleWidth());
 			}
-			
-			
+
+
 			WriteOrientation_(writer, element, orientation, m);
 		}
 

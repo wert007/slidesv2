@@ -109,13 +109,16 @@ namespace Slides
 
 		public static Unit operator +(Unit a, Unit b)
 		{
+			if (a is UnitAddition add) 
+				return add.Add(b);
+			if (a is UnitSubtraction sub) 
+				return sub.Add(b);
 			if (a.Kind == b.Kind)
 				return new Unit(a.Value + b.Value, a.Kind);
 			if (a.Value == 0 && a.Kind != UnitKind.Auto)
 				return b;
 			if (b.Value == 0 && b.Kind != UnitKind.Auto)
 				return a;
-			if (a is UnitAddition add) return add.Add(b);
 			return new UnitAddition(a, b);
 		}
 
@@ -133,16 +136,33 @@ namespace Slides
 		public static Unit Max(Unit a, Unit b)
 		{
 			if (a.Kind == b.Kind && a.Kind != UnitKind.Addition && a.Kind != UnitKind.Subtraction) return a.Value > b.Value ? a : b;
-			a = a.GetMaxComponent();
-			b = b.GetMaxComponent();
-			if (a.IsRelative()) return a;
-			return b;
+			var maxA = a.GetMaxComponent();
+			var maxB = b.GetMaxComponent();
+			if (maxA.IsRelative() && !maxB.IsRelative()) return a;
+			if (!maxA.IsRelative() && maxB.IsRelative()) return b;
+			if (maxA.Kind == maxB.Kind) return maxA.Value > maxB.Value ? a : b;
+			throw new Exception();
 		}
 
-		public static Unit operator *(float a, Unit b) => new Unit(b.Value * a, b.Kind);
+		public static Unit operator *(float a, Unit b)
+		{
+			if (b.Kind == UnitKind.Subtraction)
+				return ((UnitSubtraction)b) * a;
+			if (b.Kind == UnitKind.Addition)
+				return ((UnitAddition)b) * a;
+			return new Unit(b.Value * a, b.Kind);
+		}
+
 		public static Unit operator *(Unit a, float b) => b * a;
 
-		public static Unit operator /(Unit a, float b) => new Unit(a.Value / b, a.Kind);
+		public static Unit operator /(Unit a, float b)
+		{
+			if (a.Kind == UnitKind.Subtraction)
+				return ((UnitSubtraction)a) / b;
+			if (a.Kind == UnitKind.Addition)
+				return ((UnitAddition)a) / b;
+			return new Unit(a.Value / b, a.Kind);
+		}
 
 		public static bool operator ==(Unit left, Unit right)
 		{

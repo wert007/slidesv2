@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SVGLib.Datatypes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,6 +11,7 @@ namespace Slides.Elements.SVG
 	{
 		public Color stroke { get; set; } = new Color(0, 0, 0, 255);
 		public Unit strokeWidth { get; set; } = new Unit(1, Unit.UnitKind.Pixel);
+		public LineCap strokeLineCap { get; set; } = LineCap.Round;
 		public UnitLine(Unit x1, Unit y1, Unit x2, Unit y2)
 		{
 			X1 = x1;
@@ -25,8 +27,8 @@ namespace Slides.Elements.SVG
 
 		public override ElementKind kind => ElementKind.UnitSVGShape;
 
-		protected override Unit get_InitialHeight() => Y2 - Y1;
+		internal override Unit get_InitialHeight() => Y2 - Y1;
 
-		protected override Unit get_InitialWidth() => X2 - X1;
+		internal override Unit get_InitialWidth() => X2 - X1;
 	}
 }
