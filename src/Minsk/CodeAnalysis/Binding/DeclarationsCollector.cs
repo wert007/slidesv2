@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Minsk.CodeAnalysis.SlidesTypes;
 using Minsk.CodeAnalysis.Symbols;
@@ -18,14 +19,12 @@ namespace Minsk.CodeAnalysis.Binding
 		private BoundScope _scope;
 		private readonly StatementSyntax _root;
 		private Dictionary<VariableSymbol, BoundStatement> _declarations = new Dictionary<VariableSymbol, BoundStatement>();
-		private Binder _binder;
-
-		public DeclarationsCollector(Binder binder, BoundScope scope, StatementSyntax root)
+	
+		public DeclarationsCollector(DiagnosticBag diagnostics, BoundScope scope, StatementSyntax root)
 		{
-			_binder = binder;
 			_scope = scope;
 			_root = root;
-			_diagnostics = binder.Diagnostics;
+			_diagnostics = diagnostics;
 		}
 
 		public Dictionary<VariableSymbol, BoundStatement> CollectDeclarations()
@@ -40,37 +39,37 @@ namespace Minsk.CodeAnalysis.Binding
 			switch (syntax.Kind)
 			{
 				case SyntaxKind.FileBlockStatement:
-					CollectDeclarations((FileBlockStatementSyntax)syntax);
+					CollectFileBlockStatementDeclarations((FileBlockStatementSyntax)syntax);
 					break;
 				case SyntaxKind.GroupStatement:
-					CollectDeclarations((GroupStatementSyntax)syntax);
+					CollectGroupStatementDeclarations((GroupStatementSyntax)syntax);
 					break;
 				case SyntaxKind.SVGStatement:
-					CollectDeclarations((SVGStatementSyntax)syntax);
+					CollectSVGStatementDeclarations((SVGStatementSyntax)syntax);
 					break;
-				case SyntaxKind.DataStatement:
-					CollectDeclarations((DataStatementSyntax)syntax);
+				case SyntaxKind.StructStatement:
+					CollectStructStatementDeclarations((StructStatementSyntax)syntax);
 					break;
 				case SyntaxKind.StyleStatement:
-					CollectDeclarations((StyleStatementSyntax)syntax);
+					CollectStyleStatementDeclarations((StyleStatementSyntax)syntax);
 					break;
 				case SyntaxKind.TransitionStatement:
-					CollectDeclarations((TransitionStatementSyntax)syntax);
+					CollectTransitionStatmentDeclarations((TransitionStatementSyntax)syntax);
 					break;
 				case SyntaxKind.FilterStatement:
-					CollectDeclarations((FilterStatementSyntax)syntax);
+					CollectFilterStatementDeclarations((FilterStatementSyntax)syntax);
 					break;
 				case SyntaxKind.AnimationStatement:
-					CollectDeclarations((AnimationStatementSyntax)syntax);
+					CollectAnimationStatementDeclarations((AnimationStatementSyntax)syntax);
 					break;
 				case SyntaxKind.TemplateStatement:
-					CollectDeclarations((TemplateStatementSyntax)syntax);
+					CollectTemplateStatementDeclarations((TemplateStatementSyntax)syntax);
 					break;
 				case SyntaxKind.SlideStatement:
-					CollectDeclarations((SlideStatementSyntax)syntax);
+					CollectSlideStatementDeclarations((SlideStatementSyntax)syntax);
 					break;
 				case SyntaxKind.LibraryStatement:
-				//TODO: Set the presentation-flags during binding time!
+					throw new Exception();
 				case SyntaxKind.ImportStatement:
 					//ImportStatements should always be the first thing you do in 
 					//your code. So we don't collect them from anywhere else.
@@ -81,7 +80,7 @@ namespace Minsk.CodeAnalysis.Binding
 			}
 		}
 
-		private void CollectDeclarations(FileBlockStatementSyntax syntax)
+		private void CollectFileBlockStatementDeclarations(FileBlockStatementSyntax syntax)
 		{
 			foreach (var statement in syntax.Statements)
 			{
@@ -89,11 +88,12 @@ namespace Minsk.CodeAnalysis.Binding
 			}
 		}
 
-		private void CollectDeclarations(GroupStatementSyntax syntax)
+		private void CollectGroupStatementDeclarations(GroupStatementSyntax syntax)
 		{
 			var name = syntax.Identifier.Text;
 			_scope = new BoundScope(_scope);
-			var boundParameters = _binder.BindParameterBlockStatement(syntax.ParameterStatement);
+			var binder = new Binder(_scope, null, _diagnostics.FileName, true);
+			var boundParameters = binder.BindParameterBlockStatement(syntax.ParameterStatement);
 			_scope = _scope.Parent;
 			var fields = new VariableSymbolCollection(boundParameters.Statements.Select(p => p.Variable));
 			var constructor = new FunctionSymbolCollection();
@@ -106,11 +106,12 @@ namespace Minsk.CodeAnalysis.Binding
 				_diagnostics.ReportTypeAlreadyDeclared(syntax.Identifier.Span, name);
 			_declarations.Add(new VariableSymbol(name, true, type, false), null);
 		}
-		private void CollectDeclarations(SVGStatementSyntax syntax)
+		private void CollectSVGStatementDeclarations(SVGStatementSyntax syntax)
 		{
 			var name = syntax.Identifier.Text;
 			_scope = new BoundScope(_scope);
-			var boundParameters = _binder.BindParameterBlockStatement(syntax.ParameterStatement);
+			var binder = new Binder(_scope, null, _diagnostics.FileName, true);
+			var boundParameters = binder.BindParameterBlockStatement(syntax.ParameterStatement);
 			_scope = _scope.Parent;
 			var fields = new VariableSymbolCollection(boundParameters.Statements.Select(p => p.Variable));
 			var constructor = new FunctionSymbolCollection();
@@ -124,19 +125,21 @@ namespace Minsk.CodeAnalysis.Binding
 			_declarations.Add(new VariableSymbol(name, true, type, false), null);
 		}
 
-		private void CollectDeclarations(DataStatementSyntax syntax)
+		private void CollectStructStatementDeclarations(StructStatementSyntax syntax)
 		{
 			var name = syntax.Identifier.Text;
-			var fields = BindDataBlockStatement(syntax.Body);
+			var fields = BindStructBlockStatement(syntax.Body);
+			var fieldVariables = new VariableSymbolCollection(fields.Select(p => p.Variable));
 			var constructor = new FunctionSymbolCollection();
-			constructor.Add(new FunctionSymbol("constructor", VariableSymbolCollection.Empty, null));
-			constructor.Add(new FunctionSymbol("constructor", fields, null));
+			//constructor.Add(new FunctionSymbol("constructor", VariableSymbolCollection.Empty, null));
+			constructor.Add(new FunctionSymbol("constructor", fieldVariables, null));
+			constructor.Add(new FunctionSymbol("constructor", new VariableSymbolCollection(fields.Where(p => p.Initializer == null).Select(p => p.Variable)), null));
 			constructor.Seal();
 
-			var customType = new AdvancedTypeSymbol(name, fields, constructor, FunctionSymbolCollection.Empty);
+			var customType = new AdvancedTypeSymbol(name, fieldVariables, fields.Select(p => p.Initializer).ToArray(), constructor, FunctionSymbolCollection.Empty, null, new TypeSymbol[0]);
 			customType.SetData(true);
-			constructor[0].Type = customType;
-			constructor[1].Type = customType;
+			for (int i = 0; i < constructor.Count; i++)
+				constructor[i].Type = customType;
 
 			if (!_scope.TryDeclare(customType))
 				_diagnostics.ReportTypeAlreadyDeclared(syntax.Identifier.Span, name);
@@ -144,7 +147,7 @@ namespace Minsk.CodeAnalysis.Binding
 			_declarations.Add(new VariableSymbol(name, true, customType, false), null);
 		}
 
-		private void CollectDeclarations(StyleStatementSyntax syntax)
+		private void CollectStyleStatementDeclarations(StyleStatementSyntax syntax)
 		{
 			var name = syntax.Identifier.Text;
 			VariableSymbol variable = null;
@@ -166,7 +169,7 @@ namespace Minsk.CodeAnalysis.Binding
 			}
 		}
 
-		private void CollectDeclarations(TransitionStatementSyntax syntax)
+		private void CollectTransitionStatmentDeclarations(TransitionStatementSyntax syntax)
 		{
 			var name = syntax.Identifier.Text;
 			var variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(Transition)), false);
@@ -177,7 +180,7 @@ namespace Minsk.CodeAnalysis.Binding
 			_declarations.Add(variable, null);
 		}
 
-		private void CollectDeclarations(FilterStatementSyntax syntax)
+		private void CollectFilterStatementDeclarations(FilterStatementSyntax syntax)
 		{
 			var name = syntax.Identifier.Text;
 			var variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(Filter)), true);
@@ -188,7 +191,7 @@ namespace Minsk.CodeAnalysis.Binding
 			_declarations.Add(variable, null);
 		}
 
-		private void CollectDeclarations(AnimationStatementSyntax syntax)
+		private void CollectAnimationStatementDeclarations(AnimationStatementSyntax syntax)
 		{
 			var name = syntax.Identifier.Text;
 			var variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(AnimationSymbol)), false);
@@ -199,7 +202,7 @@ namespace Minsk.CodeAnalysis.Binding
 			_declarations.Add(variable, null);
 		}
 
-		private void CollectDeclarations(TemplateStatementSyntax syntax)
+		private void CollectTemplateStatementDeclarations(TemplateStatementSyntax syntax)
 		{
 			var name = syntax.Identifier.Text;
 			var variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(Template)), false);
@@ -210,7 +213,7 @@ namespace Minsk.CodeAnalysis.Binding
 			_declarations.Add(variable, null);
 		}
 
-		private void CollectDeclarations(SlideStatementSyntax syntax)
+		private void CollectSlideStatementDeclarations(SlideStatementSyntax syntax)
 		{
 			var name = syntax.Identifier.Text;
 			var isVisible = syntax.PretildeToken == null;
@@ -229,15 +232,15 @@ namespace Minsk.CodeAnalysis.Binding
 		}
 
 
-		private VariableSymbolCollection BindDataBlockStatement(DataBlockStatementSyntax syntax)
+		private IEnumerable<BoundParameterStatement> BindStructBlockStatement(StructBlockStatementSyntax syntax)
 		{
-			var statements = new VariableSymbolCollection();
+			var statements = new List<BoundParameterStatement>();
 			_scope = new BoundScope(_scope);
-
+			var binder = new Binder(_scope, null, _diagnostics.FileName,true);
 			foreach (var statementSyntax in syntax.Statements)
 			{
-				var statement = _binder.BindParameterStatement(statementSyntax.Parameter);
-				statements.Add(statement.Variable);
+				var statement = binder.BindParameterStatement(statementSyntax.Parameter);
+				statements.Add(statement);
 			}
 
 			_scope = _scope.Parent;

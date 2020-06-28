@@ -5,6 +5,22 @@ namespace Minsk.CodeAnalysis.Syntax
 {
 	public static class SyntaxFacts
 	{
+		public static bool IsAssignmentOperator(this SyntaxKind kind)
+		{
+			switch(kind)
+			{
+				case SyntaxKind.EqualsToken:
+				case SyntaxKind.PlusEqualsToken:
+				case SyntaxKind.MinusEqualsToken:
+				case SyntaxKind.StarEqualsToken:
+				case SyntaxKind.SlashEqualsToken:
+				case SyntaxKind.PipeEqualsToken:
+				case SyntaxKind.AmpersandEqualsToken:
+					return true;
+				default:
+					return false;
+			}
+		}
 		public static int GetUnaryOperatorPrecedence(this SyntaxKind kind)
 		{
 			switch (kind)
@@ -277,6 +293,10 @@ namespace Minsk.CodeAnalysis.Syntax
 					return "*=";
 				case SyntaxKind.SlashEqualsToken:
 					return "/=";
+				case SyntaxKind.PipeEqualsToken:
+					return "|=";
+				case SyntaxKind.AmpersandEqualsToken:
+					return "&=";
 
 				case SyntaxKind.OpenParenthesisToken:
 					return "(";
@@ -448,6 +468,10 @@ namespace Minsk.CodeAnalysis.Syntax
 					return SyntaxKind.StarEqualsToken;
 				case "/=":
 					return SyntaxKind.SlashEqualsToken;
+				case "|=":
+					return SyntaxKind.PipeEqualsToken;
+				case "&=":
+					return SyntaxKind.AmpersandEqualsToken;
 
 				case "(":
 					return SyntaxKind.OpenParenthesisToken;

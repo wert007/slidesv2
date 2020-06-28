@@ -32,7 +32,7 @@ namespace Minsk.CodeAnalysis
 					result = SerializeCaseStatement((BoundCaseStatement)statement);
 					break;
 				case BoundNodeKind.DataStatement:
-					result = SerializeDataStatement((BoundDataStatement)statement);
+					result = SerializeDataStatement((BoundStructStatement)statement);
 					break;
 				case BoundNodeKind.ExpressionStatement:
 					result = SerializeExpressionStatement((BoundExpressionStatement)statement);
@@ -153,7 +153,7 @@ namespace Minsk.CodeAnalysis
 		private static string SerializeCaseStatement(BoundCaseStatement statement)
 			=> $"{Serialize(statement.Condition)}>{Serialize(statement.Body)}";
 
-		private static string SerializeDataStatement(BoundDataStatement statement)
+		private static string SerializeDataStatement(BoundStructStatement statement)
 		{
 			var type = statement.Type as AdvancedTypeSymbol;
 			return $"{type}={string.Join(",", (type as AdvancedTypeSymbol).Fields.Symbols.Select(s => SerializeMin(s)))}";
@@ -239,7 +239,7 @@ namespace Minsk.CodeAnalysis
 				source = SerializeReference(expression.Source) + ":";
 			return $"{source}{Serialize(expression.Function)}<({string.Join(",", expression.Arguments.Select(e => Serialize(e)))})";
 		}
-		private static string SerializeLiteralExpression(BoundLiteralExpression expression) => Serialize(expression.Value);
+		private static string SerializeLiteralExpression(BoundLiteralExpression expression) => Serialize(expression.ConstantValue);
 
 		private static CultureInfo _usCulture = CultureInfo.CreateSpecificCulture("US-us");
 		private static string Serialize(object value)

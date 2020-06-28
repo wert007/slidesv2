@@ -1,8 +1,8 @@
 ﻿namespace Minsk.CodeAnalysis.Syntax
 {
-	internal class DataBlockStatementSyntax : StatementSyntax
+	internal class StructBlockStatementSyntax : StatementSyntax
 	{
-		public DataBlockStatementSyntax(VariableTypeDeclarationStatement[] statements)
+		public StructBlockStatementSyntax(VariableTypeDeclarationStatement[] statements)
 		{
 			Statements = statements;
 		}

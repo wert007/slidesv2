@@ -78,7 +78,7 @@ namespace Minsk.CodeAnalysis.Binding
 				case BoundNodeKind.AnimationStatement:
 					return RewriteAnimationStatement((BoundAnimationStatement)node);
 				case BoundNodeKind.DataStatement:
-					return RewriteDataStatement((BoundDataStatement)node);
+					return RewriteDataStatement((BoundStructStatement)node);
 				case BoundNodeKind.FilterStatement:
 					return RewriteFilterStatement((BoundFilterStatement)node);
 				case BoundNodeKind.ForStatement:
@@ -147,7 +147,7 @@ namespace Minsk.CodeAnalysis.Binding
 			return new BoundCaseStatement(newCondition, newBody);
 		}
 
-		protected virtual BoundStatement RewriteDataStatement(BoundDataStatement node)
+		protected virtual BoundStatement RewriteDataStatement(BoundStructStatement node)
 		{
 			return node;
 		}

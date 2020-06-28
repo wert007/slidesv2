@@ -21,6 +21,7 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 		public string[] Imports { get; }
 		public static LibrarySymbol Seperator => GetSeperator();
 		public static LibrarySymbol Code => CodeLibrary.GetLibrary();
+		public static LibrarySymbol QR => QRLibrary.GetLibrary();
 		public Type SourceType { get; set; }
 
 		public LibrarySymbol(string name, LibrarySymbol[] libraries, BodySymbol[] customTypes, Style[] styles, VariableValueCollection globalVariables, string[] imports)

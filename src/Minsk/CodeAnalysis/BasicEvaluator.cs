@@ -147,7 +147,7 @@ namespace Minsk.CodeAnalysis
 
 		protected virtual object EvaluateLiteralExpression(BoundLiteralExpression node)
 		{
-			return node.Value;
+			return node.ConstantValue;
 		}
 
 		protected virtual object EvaluateVariableExpression(BoundVariableExpression node)

@@ -8,8 +8,8 @@ namespace Slides.Elements
 	{
 		protected abstract IEnumerable<Element> get_Children();
 		protected Dictionary<string, Element> _namedChildren = new Dictionary<string, Element>();
-
-		protected override void handleApplyStyle(Style style)
+		protected virtual bool _shouldApplyStyleToChildren { get; } = false;
+		protected override void HandleApplyStyle(Style style)
 		{
 			foreach (var substyle in style.Substyles.GetIterator())
 			{
@@ -25,10 +25,9 @@ namespace Slides.Elements
 					element.applyStyle(substyle);
 				}
 			}
-			foreach (var child in get_Children())
-			{
-				child.applyStyle(style);
-			}
+			if(_shouldApplyStyleToChildren)
+				foreach (var child in get_Children())
+					child.applyStyle(style);
 		}
 	}
 }

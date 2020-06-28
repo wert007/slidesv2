@@ -1,4 +1,5 @@
 ﻿using Minsk.CodeAnalysis.Symbols;
+using System;
 using System.Collections.Generic;
 
 namespace Minsk.CodeAnalysis
@@ -14,6 +15,8 @@ namespace Minsk.CodeAnalysis
 				object value = null;
 				if (data.Length > i)
 					value = data[i];
+				else
+					throw new Exception();
 				_fields.Add(field.Name, value);
 			}
 		}

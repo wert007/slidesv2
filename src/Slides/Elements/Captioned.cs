@@ -35,8 +35,8 @@ namespace Slides.Elements
 		public override ElementKind kind => ElementKind.Captioned;
 		public override bool h_AllowsHorizontalStretching => child.h_AllowsHorizontalStretching;
 		public override bool h_AllowsVerticalStretching => child.h_AllowsVerticalStretching;
-
 		protected override bool NeedsInitialSizeCalculated => true;
+
 		private CaptionPlacement _captionPlacement;
 
 		public Element child { get; }
@@ -46,11 +46,11 @@ namespace Slides.Elements
 			get => _captionPlacement; set
 			{
 				_captionPlacement = value;
-				LayoutUpdated();
+				UpdateLayout();
 			}
 		}
-		
-		private void LayoutUpdated()
+
+		protected override void UpdateLayout()
 		{
 			switch (captionPlacement)
 			{

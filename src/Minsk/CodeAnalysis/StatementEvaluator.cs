@@ -53,7 +53,7 @@ namespace Minsk.CodeAnalysis
 					EvaluateAnimationStatement((BoundAnimationStatement)node);
 					break;
 				case BoundNodeKind.DataStatement:
-					EvaluateDataStatement((BoundDataStatement)node);
+					EvaluateStructStatement((BoundStructStatement)node);
 					break;
 				case BoundNodeKind.IfStatement:
 					EvaluateIfStatement((BoundIfStatement)node);
@@ -167,7 +167,7 @@ namespace Minsk.CodeAnalysis
 		protected virtual void EvaluateGroupStatement(BoundGroupStatement node) { }
 		protected virtual void EvaluateStyleStatement(BoundStyleStatement node) { }
 		protected virtual void EvaluateAnimationStatement(BoundAnimationStatement node) { }
-		protected virtual void EvaluateDataStatement(BoundDataStatement node) { }
+		protected virtual void EvaluateStructStatement(BoundStructStatement node) { }
 
 		protected virtual void EvaluateIfStatement(BoundIfStatement node)
 		{

@@ -32,6 +32,8 @@ namespace SVGLib.Parsing
 					return LoadGTag(node);
 				case "path":
 					return LoadPathTag(node);
+				case "rect":
+					return LoadRectTag(node);
 				case "defs":
 				case "metadata":
 					return null;
@@ -60,6 +62,24 @@ namespace SVGLib.Parsing
 			return result;
 		}
 
+		private Rect LoadRectTag(XmlNode node)
+		{
+			if (!int.TryParse(node.Attributes["x"]?.Value, out var x))
+				Console.WriteLine($"(SVGLib) WARNING: Failed parsing x-value for rect.");
+			if (!int.TryParse(node.Attributes["y"]?.Value, out var y))
+				Console.WriteLine($"(SVGLib) WARNING: Failed parsing y-value for rect.");
+			if (!int.TryParse(node.Attributes["width"]?.Value, out var width))
+				Console.WriteLine($"(SVGLib) WARNING: Failed parsing width-value for rect.");
+			if (!int.TryParse(node.Attributes["height"]?.Value, out var height))
+				Console.WriteLine($"(SVGLib) WARNING: Failed parsing height-value for rect.");
+			var result = new Rect(x, y, width, height);
+
+			ParseStyle(result, node.Attributes["style"]?.Value);
+			ParseTransform(result, node.Attributes["transform"]?.Value);
+			ParseStyleFromNode(result, node);
+			return result;
+		}
+
 
 		private Group LoadGTag(XmlNode node)
 		{
@@ -83,6 +103,7 @@ namespace SVGLib.Parsing
 			{
 				viewBox = ParseViewBox(viewBoxAttribute.Value);
 			}
+
 			var children = new List<SVGElement>();
 			foreach (XmlNode childNode in node.ChildNodes)
 			{
@@ -163,6 +184,11 @@ namespace SVGLib.Parsing
 			}
 		}
 
+		private void ParseStyleFromNode(SVGElement element, XmlNode node)
+		{
+			if(node.Attributes["fill"] != null)
+				element.Fill = ParseColor(node.Attributes["fill"].Value);
+		}
 		private Color ParseColor(string value)
 		{
 			if (value == "none") return Color.Transparent;

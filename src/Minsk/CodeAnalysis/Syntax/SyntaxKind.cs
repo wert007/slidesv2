@@ -56,6 +56,8 @@ namespace Minsk.CodeAnalysis.Syntax
 		MinusEqualsToken,
 		StarEqualsToken,
 		SlashEqualsToken,
+		PipeEqualsToken,
+		AmpersandEqualsToken,
 
 		//Pairs
 		OpenParenthesisToken,
@@ -132,7 +134,7 @@ namespace Minsk.CodeAnalysis.Syntax
 		//Top Level Statements
 		AnimationStatement,
 		CaseBlockStatement,
-		DataStatement,
+		StructStatement,
 		DataBlockStatement,
 		FilterStatement,
 		GroupStatement,

@@ -410,7 +410,8 @@ namespace HTMLWriter
 			_htmlWriter.StartTag(startTag, id: id, classes: "list " + optionalFieldName + " " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
 			foreach (var child in element.children)
 			{
-				if(child is Label)
+				
+				if(child is Label) //TODO: Hacky. Replace <p> with <li> instead!
 					_htmlWriter.StartTag("li", useNewLine: false);
 				WriteElement(id, child, element);
 				if (child is Label)
@@ -545,7 +546,7 @@ namespace HTMLWriter
 				for (int c = 0; c < element.columns; c++)
 				{
 					//element[r, c].applyStyle(cellStyle);
-					WriteElement(id, element[r, c], element);
+					WriteElement(id, element[c, r], element);
 				}
 				_htmlWriter.EndTag();
 			}

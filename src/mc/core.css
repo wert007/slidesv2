@@ -16,6 +16,12 @@ body {
 table, table * {
 	border-style: solid;
 	border-width: 1px;
+	table-layout: fixed;
+}
+
+tr, tbody {
+	font-family: inherit;
+	font-size: inherit;
 }
 
 ul li, ol li {

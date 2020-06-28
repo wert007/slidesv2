@@ -38,6 +38,8 @@ namespace Slides
 		public Unit(float value, UnitKind kind)
 		{
 			Value = value;
+			if (float.IsInfinity(value)) 
+				throw new Exception();
 			Kind = kind;
 		}
 
@@ -105,7 +107,7 @@ namespace Slides
 			}
 		}
 
-		protected virtual Unit GetMaxComponent() => this;
+		internal virtual Unit GetMaxComponent() => this;
 
 		public static Unit operator +(Unit a, Unit b)
 		{
@@ -124,6 +126,10 @@ namespace Slides
 
 		public static Unit operator -(Unit a, Unit b)
 		{
+			if (a is UnitAddition add)
+				return add.Subtract(b);
+			if (a is UnitSubtraction sub)
+				return sub.Subtract(b);
 			if (a.Kind == b.Kind && a.Kind != UnitKind.Subtraction && a.Kind != UnitKind.Addition)
 				return new Unit(a.Value - b.Value, a.Kind);
 			if (a.Value == 0 && a.Kind != UnitKind.Auto)
@@ -137,7 +143,11 @@ namespace Slides
 		{
 			if (a.Kind == b.Kind && a.Kind != UnitKind.Addition && a.Kind != UnitKind.Subtraction) return a.Value > b.Value ? a : b;
 			var maxA = a.GetMaxComponent();
+			while (maxA.Kind == UnitKind.Addition || maxA.Kind == UnitKind.Subtraction)
+				maxA = maxA.GetMaxComponent();
 			var maxB = b.GetMaxComponent();
+			while (maxB.Kind == UnitKind.Addition || maxB.Kind == UnitKind.Subtraction)
+				maxB = maxB.GetMaxComponent();
 			if (maxA.IsRelative() && !maxB.IsRelative()) return a;
 			if (!maxA.IsRelative() && maxB.IsRelative()) return b;
 			if (maxA.Kind == maxB.Kind) return maxA.Value > maxB.Value ? a : b;

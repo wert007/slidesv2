@@ -265,7 +265,7 @@ namespace Minsk.CodeAnalysis
 			_declarations.Remove(node.Variable);
 		}
 
-		protected override void EvaluateDataStatement(BoundDataStatement node)
+		protected override void EvaluateStructStatement(BoundStructStatement node)
 		{
 			var data = new BodySymbol(node.Type, null);
 			_presentationBuilder.AddCustomType(data);
@@ -538,6 +538,27 @@ namespace Minsk.CodeAnalysis
 			//TODO(Minor): 
 			//As of now they are included in the _groupChildren. You just need to give them
 			//a better name! Numbers are not that good. arbitrarly numbers even..
+			object result = null;
+			if (group.Body == null)
+			{
+				if(args.Length < advanced.Fields.Count)
+				{
+					var offset = 0;
+					var argsTmp = new object[advanced.Fields.Count];
+					for (int i = 0; i < argsTmp.Length; i++)
+					{
+						if (advanced.FieldDefaultValues[i] != null)
+						{
+							argsTmp[i] = EvaluateExpression(advanced.FieldDefaultValues[i]);
+							offset++;
+						}
+						else
+							argsTmp[i] = args[i - offset];
+					}
+					args = argsTmp;
+				}
+				result = new DataObject(advanced, args);
+			}
 			SVGGraphicsElement[] svgValues = null;
 			Element[] groupValues = null;
 			var builder = _groupBuilders.Pop();
@@ -547,23 +568,21 @@ namespace Minsk.CodeAnalysis
 				groupValues = builder.GetGroupValues();
 			_variables = _variables.Pop(out cVariables);
 			_variables = _variables.Pop(out var _);
-			object result;
-			if (group.Body == null)
+			if (group.Body != null)
 			{
-				result = new DataObject(advanced, args);
-			}
-			else if (isSVG)
-			{
-				var viewBox = (ViewBox)cVariables.FirstOrDefault(v => v.Key.Name == "viewBox").Value;
-				result = new SVGTag(viewBox, svgValues);
-			}
-			else
-			{
-				var be = new BoxElement(group.Symbol.Name, groupValues);
-				foreach (var style in builder.GetAppliedStyles())
-					be.applyStyle(style);
-				SetAttributes(be, cVariables);
-				result = be;
+				if (isSVG)
+				{
+					var viewBox = (ViewBox)cVariables.FirstOrDefault(v => v.Key.Name == "viewBox").Value;
+					result = new SVGTag(viewBox, svgValues);
+				}
+				else
+				{
+					var be = new BoxElement(group.Symbol.Name, groupValues);
+					foreach (var style in builder.GetAppliedStyles())
+						be.applyStyle(style);
+					SetAttributes(be, cVariables);
+					result = be;
+				}
 			}
 			return result;
 		}
@@ -659,14 +678,14 @@ namespace Minsk.CodeAnalysis
 		public override object LookVariableUp(VariableSymbol variable)
 		{
 			var value = _constants[variable];
-			if (_constants.ContainsKey(variable)) return value;
+			if (_constants.HasKey(variable)) return value;
 			if (value == null)
 				value = _variables[variable];
-			if (_variables.ContainsKey(variable)) return value;
+			if (_variables.HasKey(variable)) return value;
 			if (value == null && _currentReferenced != null)
 			{
 				value = _currentReferenced.GlobalVariables[variable];
-				if (_currentReferenced.GlobalVariables.ContainsKey(variable)) return value;
+				if (_currentReferenced.GlobalVariables.HasKey(variable)) return value;
 			}
 			if (value == null)
 			{

@@ -15,21 +15,6 @@ namespace HTMLWriter
 {
 	public static class StyleWriter
 	{
-		private static string TypeSymbolToCSSClass(string type)
-		{
-			switch (type)
-			{
-				case "Slide": return "slide";
-				case "Label": return "label";
-				case "Image": return "image";
-				case "Table":
-					throw new NotImplementedException();
-					return "table, .tablecell";
-				default:
-					Logger.LogUnmatchedCSSField(type);
-					return type.ToLower();
-			}
-		}
 		private static void WriteTypedModification(CSSWriter writer, Substyle substyle)
 		{
 			writer.StartSelector(SelectorToString(substyle.Selector));
@@ -94,7 +79,7 @@ namespace HTMLWriter
 
 		private static void WriteCustomStyle(CSSWriter writer, CustomStyle style)
 		{
-			writer.StartClass($"{style.Name}, .{style.Name} *");
+			writer.StartClass($"{style.Name}");
 			Transition toWrite = null;
 			foreach (var property in style.Substyles.GetRootCustomStyle().Properties)
 			{

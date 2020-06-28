@@ -14,7 +14,7 @@ namespace Slides
 		public Unit A { get; }
 		public Unit B { get; }
 
-		protected override Unit GetMaxComponent() => Max(A, B);
+		internal override Unit GetMaxComponent() => Max(A, B);
 
 		public Unit Add(Unit u)
 		{
@@ -52,7 +52,7 @@ namespace Slides
 
 		public Unit A { get; }
 		public Unit B { get; }
-		protected override Unit GetMaxComponent() => Max(A, B);
+		internal override Unit GetMaxComponent() => Max(A, B);
 
 
 		public static UnitSubtraction operator *(float a, UnitSubtraction b) => new UnitSubtraction(b.A * a, b.B * a);
@@ -63,16 +63,40 @@ namespace Slides
 		{
 			if (A.Kind == u.Kind)
 				return new UnitSubtraction(A + u, B);
+			if(B.Kind == u.Kind)
+			{
+				if(B.Value - u.Value != 0 || B.Kind == UnitKind.Addition || B.Kind == UnitKind.Subtraction)
+					return new UnitSubtraction(A, B - u);
+				return A;
+			}
 			if (Kind == u.Kind) //TODO: Try to simplify!
-				return new UnitAddition(this, u);
+			{
+				var sub = (UnitSubtraction)u;
+				return this + sub.A - sub.B;
+			}
 			return new UnitSubtraction(A, B + u);
 		}
 		//TODO: Precedence
 		public Unit Subtract(Unit u)
 		{
 			if (A.Kind == u.Kind)
-				return new UnitSubtraction(A - u, B);
-			return new UnitSubtraction(A, B - u);
+			{
+				if(A.Value - u.Value != 0 || B.Kind == UnitKind.Addition || B.Kind == UnitKind.Subtraction)
+					return new UnitSubtraction(A - u, B);
+				return new Unit(-B.Value, B.Kind);
+			}
+			if (B.Kind == u.Kind)
+			{
+				if(B.Value + u.Value != 0)
+					return new UnitSubtraction(A, B + u);
+				return A;
+			}
+			if (Kind == u.Kind) //TODO: Try to simplify!
+			{
+				var sub = (UnitSubtraction)u;
+				return this - sub.A + sub.B;
+			}
+			return new UnitSubtraction(this, u);
 		}
 		public override string ToString()
 		{

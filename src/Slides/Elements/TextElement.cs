@@ -46,10 +46,7 @@ namespace Slides.Elements
 
 		protected Unit GetFontsize()
 		{
-			Unit stdStyleFontsize = null;
-			if (StdStyle != null && StdStyle.GetMainStyle().Properties.TryGetValue("fontsize", out var stdStyleFontsizeObj))
-				stdStyleFontsize = (Unit)stdStyleFontsizeObj;
-			return GetLocalFontsize() ?? GetParentFontsize() ?? stdStyleFontsize;
+			return GetLocalFontsize() ?? GetParentFontsize();
 		}
 
 		public bool InheritsFont() => GetParentFont() != null && GetLocalFont() == null;
@@ -62,7 +59,11 @@ namespace Slides.Elements
 				font = defaultFont;
 			if (font == null || !font.exists)
 				font = stdFont;
-			var fontsize = GetFontsize() ?? new Unit(14, Unit.UnitKind.Point);
+
+			Unit stdStyleFontsize = null;
+			if (StdStyle != null && StdStyle.GetMainStyle().Properties.TryGetValue("fontsize", out var stdStyleFontsizeObj))
+				stdStyleFontsize = (Unit)stdStyleFontsizeObj;
+			var fontsize = GetFontsize() ?? stdStyleFontsize ?? new Unit(14, Unit.UnitKind.Point);
 			return font.Measure(text, fontsize * (lineHeightFactor ?? 1f));
 		}
 	}

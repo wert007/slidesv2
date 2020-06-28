@@ -1,8 +1,8 @@
 ﻿namespace Minsk.CodeAnalysis.Syntax
 {
-	internal class DataStatementSyntax : StatementSyntax
+	internal class StructStatementSyntax : StatementSyntax
 	{
-		public DataStatementSyntax(SyntaxToken dataKeyword, SyntaxToken identifier, SyntaxToken colonToken, DataBlockStatementSyntax body, SyntaxToken endDataKeyword)
+		public StructStatementSyntax(SyntaxToken dataKeyword, SyntaxToken identifier, SyntaxToken colonToken, StructBlockStatementSyntax body, SyntaxToken endDataKeyword)
 		{
 			DataKeyword = dataKeyword;
 			Identifier = identifier;
@@ -14,9 +14,9 @@
 		public SyntaxToken DataKeyword { get; }
 		public SyntaxToken Identifier { get; }
 		public SyntaxToken ColonToken { get; }
-		public DataBlockStatementSyntax Body { get; }
+		public StructBlockStatementSyntax Body { get; }
 		public SyntaxToken EndDataKeyword { get; }
 
-		public override SyntaxKind Kind => SyntaxKind.DataStatement;
+		public override SyntaxKind Kind => SyntaxKind.StructStatement;
 	}
 }

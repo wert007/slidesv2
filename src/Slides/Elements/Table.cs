@@ -8,30 +8,30 @@ namespace Slides.Elements
 	public class Table : ParentElement
 	{
 		public override ElementKind kind => ElementKind.Table;
-		public TableChild this[int row, int column]
+		public TableChild this[int column, int row]
 		{
 			get
 			{
-				return cells[row][column];
+				return cells[column][row];
 			}
 		}
 		public int columns { get; }
 		public int rows { get; }
 		public Alignment align { get; set; }
 		public TableChild[][] cells { get; set; }
-		public Table(int rows, int columns) : this()
+		public Table(int columns, int rows) : this()
 		{
 			this.rows = rows;
 			this.columns = columns;
-			cells = new TableChild[rows][];
-			for (int r = 0; r < rows; r++)
+			cells = new TableChild[columns][];
+			for (int c = 0; c < columns; c++)
 			{
-				cells[r] = new TableChild[columns];
-				for (int c = 0; c < columns; c++)
+				cells[c] = new TableChild[rows];
+				for (int r = 0; r < rows; r++)
 				{
-					cells[r][c] = new TableChild("");
-					cells[r][c].ContentUpdated += UpdateLayout;
-					cells[r][c].h_parent = this;
+					cells[c][r] = new TableChild("");
+					cells[c][r].ContentUpdated += UpdateLayout;
+					cells[c][r].h_parent = this;
 				}
 			}
 			UpdateLayout();
@@ -41,19 +41,19 @@ namespace Slides.Elements
 			rows = contents.Length;
 			for (int i = 0; i < rows; i++)
 				columns = Math.Max(contents[i].Length, columns);
-			cells = new TableChild[rows][];
+			cells = new TableChild[columns][];
 
-			for (int r = 0; r < rows; r++)
+			for (int c = 0; c < columns; c++)
 			{
-				cells[r] = new TableChild[columns];
-				for (int c = 0; c < columns; c++)
+				cells[c] = new TableChild[rows];
+				for (int r = 0; r < rows; r++)
 				{
 					var content = "";
 					if (c < contents[r].Length)
 						content = contents[r][c];
-					cells[r][c] = new TableChild(content);
-					cells[r][c].ContentUpdated += UpdateLayout;
-					cells[r][c].h_parent = this;
+					cells[c][r] = new TableChild(content);
+					cells[c][r].ContentUpdated += UpdateLayout;
+					cells[c][r].h_parent = this;
 				}
 			}
 			UpdateLayout();
@@ -64,60 +64,81 @@ namespace Slides.Elements
 			font = null;
 			fontsize = new Unit(14, Unit.UnitKind.Point);
 			align = Alignment.Unset;
-			//borderColor = new Color(0, 0, 0, 255);
-			//var px = new Unit(1, Unit.UnitKind.Pixel);
-			//borderThickness = new Thickness(px, px, px, px);
-			//borderStyle = BorderStyle.Solid;
 		}
 
 		//TODO: 
-		//			l += Unit.Max(getColumnWidth(c), w / columns);
-		//gives the wrong result, when getColumnWidth is bigger than w.
-		//in that case you would need to subtract the columnWidth and 
-		//divide w by columns - 1 in the future. 
 		// And let's not forget how shitty Unit.Max is... 
 		//    if you have w = 80% and 10 columns you have a
 		//    columnWidth of 8%. Which is, if your screen is 2000px wide, 360px
 		//    so if your text is longer than that we would never know. because we say
 		//    relative is always bigger than absolute. even if your text is 500px long..
-		private void UpdateLayout()
+		protected override void UpdateLayout()
 		{
 			var t = top;
 			var l = left;
 			var w = get_ActualWidth();
-			var h = get_ActualHeight();
-			for (int r = 0; r < rows; r++)
+			var availableFairColumnCount = columns;
+			for (int c = 0; c < columns; c++)
 			{
-				var rowHeight = Unit.Max(getRowHeight(r), h / rows);
-				for (int c = 0; c < columns; c++)
+				var availableWidth = availableFairColumnCount == 0 ? new Unit() : w / availableFairColumnCount;
+				var columnWidth = Unit.Max(getColumnWidth(c), availableWidth);
+				if (getUserDefinedColumnWidth(c) != null) columnWidth = getUserDefinedColumnWidth(c);
+				if (columnWidth != availableWidth)
 				{
-					cells[r][c].set_Top(t);
-					cells[r][c].set_Left(l);
-					cells[r][c].width = Unit.Max(getColumnWidth(c), w / columns);
-					cells[r][c].height = rowHeight;
-					l = cells[r][c].rightSide;
+					w -= columnWidth;
+					availableFairColumnCount--;
 				}
-				t = cells[r][0].bottomSide;
-				l = left;
+				var h = get_ActualHeight();
+				var availableFairRowCount = rows;
+				for (int r = 0; r < rows; r++)
+				{
+					cells[c][r].set_Top(t);
+					cells[c][r].set_Left(l);
+
+					var availableHeight = availableFairRowCount == 0 ? new Unit() : h / availableFairRowCount;
+					var rowHeight = Unit.Max(getRowHeight(r), availableHeight);
+					if (getUserDefinedRowHeight(r) != null) rowHeight = getUserDefinedRowHeight(r);
+					if (rowHeight != availableHeight)
+					{
+						h -= rowHeight;
+						availableFairRowCount--;
+					}
+					cells[c][r].set_WidthFromTable(columnWidth);
+					cells[c][r].set_HeightFromTable(rowHeight);
+					t = cells[c][r].bottomSide;
+				}
+				l = cells[c][0].rightSide;
+				t = top;
+				//l = left;
 			}
 		}
 
 		private Unit getRowHeight(int r)
 		{
 			var row = getRow(r);
-			var maxValue = float.MinValue;
 			var maxUnit = new Unit();
 			foreach (var child in row)
 			{
 				var u = child.get_ActualTableChildHeight();
-				if(u.Value > maxValue) //TODO: Unit Comparison!
-				{
-					maxValue = u.Value;
-					maxUnit = u;
-				}
+				maxUnit = Unit.Max(maxUnit, u);
 			}
 			return maxUnit;
 		}
+
+		private Unit getUserDefinedRowHeight(int r)
+		{
+			var row = getRow(r);
+			Unit result = null;
+			foreach (var child in row)
+			{
+				var height = child.get_UserDefinedHeight();
+				if (result == null) result = height;
+				if (height != null)
+					result = Unit.Max(result, height);
+			}
+			return result;
+		}
+
 		private Unit getColumnWidth(int c)
 		{
 			var column = getColumn(c);
@@ -135,12 +156,26 @@ namespace Slides.Elements
 			return maxUnit;
 		}
 
+		private Unit getUserDefinedColumnWidth(int c)
+		{
+			var column = getColumn(c);
+			Unit result = null;
+			foreach (var child in column)
+			{
+				var width = child.get_UserDefinedWidth();
+				if (result == null) result = width;
+				if (width != null)
+					result = Unit.Max(result, width);
+			}
+			return result;
+		}
+
 		public TableChild[] getRow(int r)
 		{
 			if (r < 0 || r >= rows) return new TableChild[0];
 			var result = new TableChild[columns];
 			for (int c = 0; c < columns; c++)
-				result[c] = this[r, c];
+				result[c] = this[c, r];
 			return result;
 		}
 
@@ -149,28 +184,28 @@ namespace Slides.Elements
 			if (c < 0 || c >= columns) return new TableChild[0];
 			var result = new TableChild[rows];
 			for (int r = 0; r < rows; r++)
-				result[r] = this[r, c];
+				result[r] = this[c, r];
 			return result;
 		}
 
 		//TODO: We exposed the cells[][] so do we need an extra getAt()?
-		public TableChild getAt(int r, int c)
+		public TableChild getAt(int c, int r)
 		{
-			return this[r, c];
+			return this[c, r];
 		}
 
 		public void setRow(string[] contents, int row) => setRow(contents, row, 0);
 		public void setRow(string[] contents, int row, int offset)
 		{
 			for (int c = offset; c < Math.Min(contents.Length + offset, columns); c++)
-				cells[row][c].content = contents[c - offset];
+				cells[c][row].content = contents[c - offset];
 		}
 
 		public void setColumn(string[] contents, int column) => setColumn(contents, column, 0);
 		public void setColumn(string[] contents, int column, int offset)
 		{
 			for (int r = offset; r < Math.Min(contents.Length + offset, rows); r++)
-				cells[r][column].content = contents[r - offset];
+				cells[column][r].content = contents[r - offset];
 		}
 
 		//TODO: What if we set the fontsize in a style?
@@ -178,14 +213,14 @@ namespace Slides.Elements
 		internal override Unit get_InitialHeight()
 		{
 			var maxHeight = new Unit(0, Unit.UnitKind.Pixel);
-			for (int i = 0; i < columns; i++)
+			for (int c = 0; c < columns; c++)
 			{
 				Unit sum = null;
 				for (int r = 0; r < rows; r++)
 					if (sum == null)
-						sum = this[r, i].get_InitialHeight();
+						sum = this[c, r].get_InitialHeight();
 					else
-						sum += this[r, i].get_InitialHeight();
+						sum += this[c, r].get_InitialHeight();
 				if (sum.Value > maxHeight.Value)
 					maxHeight = sum;
 			}
@@ -196,14 +231,14 @@ namespace Slides.Elements
 		internal override Unit get_InitialWidth()
 		{
 			var maxWidth = new Unit(0, Unit.UnitKind.Pixel);
-			for (int i = 0; i < rows; i++)
+			for (int r = 0; r < rows; r++)
 			{
 				Unit sum = null;
 				for (int c = 0; c < columns; c++)
 					if (sum == null)
-						sum = this[i, c].get_InitialWidth();
+						sum = this[c, r].get_InitialWidth();
 					else
-						sum += this[i, c].get_InitialWidth();
+						sum += this[c, r].get_InitialWidth();
 
 				if (sum.Value > maxWidth.Value)
 					maxWidth = sum;
@@ -213,8 +248,8 @@ namespace Slides.Elements
 
 		protected override IEnumerable<Element> get_Children()
 		{
-			foreach (var row in cells)
-				foreach (var c in row)
+			foreach (var col in cells)
+				foreach (var c in col)
 					yield return c;
 		}
 

@@ -55,12 +55,14 @@ namespace Minsk.CodeAnalysis.Binding
 					{
 						LibrarySymbol.Seperator,
 						LibrarySymbol.Code,
+						LibrarySymbol.QR,
 					}).ToArray();
 			else
 				_references = new LibrarySymbol[]
 				{
 					LibrarySymbol.Seperator,
 					LibrarySymbol.Code,
+					LibrarySymbol.QR,
 				};
 			_diagnostics = new DiagnosticBag(fileName);
 
@@ -68,6 +70,7 @@ namespace Minsk.CodeAnalysis.Binding
 
 			_builtInConstants.Add("seperator", new VariableSymbol("seperator", true, _builtInTypes.LookSymbolUp(typeof(LibrarySymbol)), false));
 			_builtInConstants.Add("code", new VariableSymbol("code", true, _builtInTypes.LookSymbolUp(typeof(LibrarySymbol)), false));
+			_builtInConstants.Add("qr", new VariableSymbol("qr", true, _builtInTypes.LookSymbolUp(typeof(LibrarySymbol)), false));
 
 			_builtInConstants.Add("auto", new VariableSymbol("auto", true, _builtInTypes.LookSymbolUp(typeof(Unit)), false));
 			foreach (var color in Color.GetStaticColors())
@@ -83,7 +86,7 @@ namespace Minsk.CodeAnalysis.Binding
 			var parentScope = CreateParentScope(previous);
 			var scope = new BoundScope(parentScope);
 			var binder = new Binder(scope, references, syntax.Text.FileName, offlineView);
-			var declarationsCollector = new DeclarationsCollector(binder, scope, syntax.Root.Statement);
+			var declarationsCollector = new DeclarationsCollector(binder.Diagnostics, scope, syntax.Root.Statement);
 			var declarations = declarationsCollector.CollectDeclarations();
 			binder.Declarations = declarations;
 
@@ -153,8 +156,8 @@ namespace Minsk.CodeAnalysis.Binding
 					return BindFilterStatement((FilterStatementSyntax)syntax);
 				case SyntaxKind.LibraryStatement:
 					return BindLibraryStatement((LibraryStatementSyntax)syntax);
-				case SyntaxKind.DataStatement:
-					return BindDataStatement((DataStatementSyntax)syntax);
+				case SyntaxKind.StructStatement:
+					return BindStructStatement((StructStatementSyntax)syntax);
 				case SyntaxKind.ImportStatement:
 					return BindImportStatement((ImportStatementSyntax)syntax);
 				case SyntaxKind.IfStatement:
@@ -319,11 +322,11 @@ namespace Minsk.CodeAnalysis.Binding
 			return new BoundJSInsertionStatement(_foundJSInsertionDependencies.ToArray(), boundBody);
 		}
 
-		private BoundStatement BindDataStatement(DataStatementSyntax syntax)
+		private BoundStatement BindStructStatement(StructStatementSyntax syntax)
 		{
 			var name = syntax.Identifier.Text;
 			_scope.TryLookup(name, out TypeSymbol customType);
-			var result = new BoundDataStatement(customType);
+			var result = new BoundStructStatement(customType);
 			Declarations[new VariableSymbol(name, true, customType, false)] = result;
 			return result;
 		}
@@ -788,6 +791,8 @@ namespace Minsk.CodeAnalysis.Binding
 			{
 				if (syntax.Kind == SyntaxKind.LiteralExpression)
 					result = BindLiteralExpression((LiteralExpressionSyntax)syntax, targetType);
+				if (result == null && syntax.Kind == SyntaxKind.ArrayConstructorExpression)
+					result = BindArrayConstructorExpression((ArrayConstructorExpressionSyntax)syntax, targetType);
 			}
 			if (result == null)
 				result = BindExpression(syntax);
@@ -965,7 +970,7 @@ namespace Minsk.CodeAnalysis.Binding
 		{
 			var length = BindExpression(syntax.LengthExpression, PrimitiveTypeSymbol.Integer);
 			var type = BindTypeDeclaration(syntax.TypeDeclaration);
-			if (!type.HasDefaultValue)
+			if (!type.HasDefaultValue) //TODO: don't throw this diagnostic, if the Length is zero!
 			{
 				_diagnostics.ReportNoDefaultValueForType(syntax.TypeDeclaration.Span, type);
 				return new BoundErrorExpression();
@@ -973,14 +978,18 @@ namespace Minsk.CodeAnalysis.Binding
 			return new BoundEmptyArrayConstructorExpression(length, type);
 		}
 
-		private BoundExpression BindArrayConstructorExpression(ArrayConstructorExpressionSyntax syntax)
+		private BoundExpression BindArrayConstructorExpression(ArrayConstructorExpressionSyntax syntax, TypeSymbol targetType = null)
 		{
-			if (syntax.Contents.Length <= 0)
+			if (syntax.Contents.Length <= 0 && targetType == null)
 			{
 				_diagnostics.ReportEmptyArray(syntax.Span);
 				return new BoundErrorExpression();
 			}
-			TypeSymbol targetType = null;
+			if(targetType != null)
+			{
+				if (targetType is ArrayTypeSymbol arrayType) targetType = arrayType.Child;
+				else _diagnostics.ReportCannotConvert(syntax.Span, new ArrayTypeSymbol(targetType), targetType);
+			}
 			var boundExpressions = new List<BoundExpression>();
 			foreach (var expressionSyntax in syntax.Contents)
 			{
@@ -1349,7 +1358,7 @@ namespace Minsk.CodeAnalysis.Binding
 			var pathExpression = expression[0];
 			if (pathExpression is BoundLiteralExpression l)
 			{
-				var fileName = l.Value.ToString();
+				var fileName = l.ConstantValue.ToString();
 				var path = Path.Combine(CompilationFlags.Directory, fileName);
 				if (!File.Exists(path))
 				{
@@ -1465,6 +1474,12 @@ namespace Minsk.CodeAnalysis.Binding
 					break;
 				case SyntaxKind.SlashEqualsToken:
 					boundExpression = BindBinaryExpression(new BinaryExpressionSyntax(syntax.LValue, new SyntaxToken(SyntaxKind.SlashToken, syntax.OperatorToken.Position, "/", null), syntax.Expression));
+					break;
+				case SyntaxKind.PipeEqualsToken:
+					boundExpression = BindBinaryExpression(new BinaryExpressionSyntax(syntax.LValue, new SyntaxToken(SyntaxKind.PipePipeToken, syntax.OperatorToken.Position, "||", null), syntax.Expression));
+					break;
+				case SyntaxKind.AmpersandEqualsToken:
+					boundExpression = BindBinaryExpression(new BinaryExpressionSyntax(syntax.LValue, new SyntaxToken(SyntaxKind.AmpersandAmpersandToken, syntax.OperatorToken.Position, "&&", null), syntax.Expression));
 					break;
 				case SyntaxKind.EqualsToken:
 					boundExpression = BindExpression(syntax.Expression, boundLValue.Type);

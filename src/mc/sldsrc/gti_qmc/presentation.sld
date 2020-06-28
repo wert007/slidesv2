@@ -2,8 +2,6 @@
 import gfont('Roboto Mono') as mono;
 
 /**********     Notes   ****************
- - &= Assignment doesn't work!
- - Auto Conversion with BoundBinaryOperator.
 let d = {
     'Hallo Welt': 6,
     'Tüdelü': 2,
@@ -11,10 +9,6 @@ let d = {
 
 d.add('lol', 99);
 d['not_eZ'] = -5;
-
- - Think about auto child appliance of CustomStyles ("<style-name>, <style-name> *" selector)
- - Converting any to anything!
- - rename utf8 to utf32
 ****************************************/
 
 /*This could be a constant
@@ -126,7 +120,6 @@ slide programStructure < withTitle:
     list.isOrdered = true;
     list.applyStyle(contentStyle);
     list.applyStyle(1, subListStyle);
-    //list.fontsize = 18pt;
 endslide
 
 
@@ -288,17 +281,22 @@ style quineMcCluskeyTableStyle(e: Table):
     e.fontsize = 9pt;
     e.align = Alignment.Center;
     e.font = mono;
+    e.color = black;
 endstyle
 
 group QuineMcCluskeyTable(implicants: string[], simplifiedImplicants: string[], selected: int[], deleted: int[], alreadyFound: string[]):
     let completeFound = [:string;alreadyFound.len() + selected.len()];
     completeFound[..] = alreadyFound[..];
-    for s in 0..selected.len():
-        completeFound[s + alreadyFound.len()] = simplifiedImplicants[selected[s]];
+    //TODO
+    //for s, i in selected:
+    //    completeFound[i + alreadyFound.len()] = simplifiedImplicants[s];
+    //endfor
+    for i in 0..selected.len():
+        completeFound[i + alreadyFound.len()] = simplifiedImplicants[selected[i]];
     endfor
-    let resultText = $'Ergebnis = {join(', ', completeFound)}';
+    let resultText = $'__Ergebnis = {join(', ', completeFound)}__';
     if completeFound.len() == 0:
-        resultText = '';
+        resultText = ' ';
     endif
     let labelResult = new Label(resultText);
     labelResult.orientation = Horizontal.Left | Vertical.Bottom;
@@ -309,17 +307,15 @@ group QuineMcCluskeyTable(implicants: string[], simplifiedImplicants: string[], 
     table.applyStyle(quineMcCluskeyTableStyle);
     table.setRow(implicants, 0, 1);
     table.setColumn(simplifiedImplicants, 0, 1);
+    table.cells[0][..].width = 50px;
+    table.cells[..][0].height = 40px;
     for x in 0..implicants.len():
         for y in 0..simplifiedImplicants.len():
             let tmp = true;
             let implicant = implicants[x];
             let simpleImplicant = simplifiedImplicants[y];
-            for simpleCP in utf8(simpleImplicant):
-                //let test = 'Hello World!';
-                //BUG: simpleCP should either be int or any! not string!
-                //test = simpleCP;
-
-                tmp = tmp && contains(implicant, utf8(simpleCP));
+            for simpleCP in utf32(simpleImplicant):
+                tmp &= contains(implicant, utf32(simpleCP));
             endfor
             if tmp:
                 table.cells[x + 1][y + 1].content = 'x';
@@ -327,11 +323,11 @@ group QuineMcCluskeyTable(implicants: string[], simplifiedImplicants: string[], 
         endfor
     endfor
 
-    let selectedRects = [:UnitRect?;selected.len()]; // table.rows * table.columns];
+    let selectedRects = [:UnitRect?;selected.len()];
     for i in 0..selected.len():
         let s = selected[i];
-        let ~left = table.cells[s + 1][0];
-        let ~right = table.cells[s + 1][table.rows - 1];
+        let ~left = table.cells[0][s + 1];
+        let ~right = table.cells[table.columns - 1][s + 1];
         selectedRects[i] = rect(~left.relativePos(Vertical.Top | Horizontal.Left), ~right.relativePos(Vertical.Bottom | Horizontal.Right));
         selectedRects[i].stroke = orange;
         selectedRects[i].strokeWidth = 2px;
@@ -339,17 +335,17 @@ group QuineMcCluskeyTable(implicants: string[], simplifiedImplicants: string[], 
 
     let deletedLines = [:UnitLine?;deleted.len()];
     for i in 0..deleted.len():
-        let d = deleted[i];
-        if d < simplifiedImplicants.len():
-            let ~left = table.cells[d + 1][0];
-            let ~right = table.cells[d + 1][table.rows - 1];
+        let d = deleted[i] + 1;
+        if d <= simplifiedImplicants.len():
+            let ~left = table.cells[0][d];
+            let ~right = table.cells[table.columns - 1][d];
             deletedLines[i] = line(~left.relativePos(Vertical.Center | Horizontal.Left), ~right.relativePos(Vertical.Center | Horizontal.Right));
             deletedLines[i].stroke = red;
             deletedLines[i].strokeWidth = 2px;
         else
             d -= simplifiedImplicants.len();
-            let ~top = table.cells[0][d + 1];
-            let ~bottom = table.cells[table.columns - 1][d + 1];
+            let ~top = table.cells[d][0];
+            let ~bottom = table.cells[d][table.rows - 1];
             deletedLines[i] = line(~top.relativePos(Vertical.Top | Horizontal.Center), ~bottom.relativePos(Vertical.Bottom | Horizontal.Center));
             deletedLines[i].stroke = red;
             deletedLines[i].strokeWidth = 2px;
@@ -360,14 +356,6 @@ group QuineMcCluskeyTable(implicants: string[], simplifiedImplicants: string[], 
     height = table.height + labelResult.height;
 endgroup
 
-style quineMcCluskeyStepsDefaultStyle(e : List):
-    e.color = hex('#898989');
-endstyle
-
-style quineMcCluskeyStepsHighlightStyle(e : any):
-    e.color = black;
-endstyle
-
 group QuineMcCluskeySteps(highlight: int):
     let list = new List();
     list.add('Erstellen einer Tabelle');
@@ -376,20 +364,96 @@ group QuineMcCluskeySteps(highlight: int):
     list.add('Falls kein Element dem Ergebnis hinzugefügt wurde, wird das Element mit den wenigsten Primimplikanten gewählt');
     list.add(1, 'Streichen der dominanten Spalten und dominierten Zeilen');
     list.add('Wiederholen bis die Tabelle leer ist.');
-    list.applyStyle(quineMcCluskeyStepsDefaultStyle);
     list.applyStyle(defaultList);
-//    list.children[highlight].applyStyle(quineMcCluskeyStepsHighlightStyle);
     list.children[highlight].color = black;
+    list.children[highlight].background = rgb(239, 239, 239);
     width = list.width;
     height = list.height;
 endgroup
 
-slide test < withTitle:
+struct PhaseIIData:
+    implicants: string[];
+    simplifiedImplicants: string[];
+    selected = [:int;0];
+    deleted = [:int;0];
+    alreadyFound = [:string;0];
+    highlightedStep: int;
+endstruct
+
+group PhaseIIPanel(data: PhaseIIData):
+    let container = seperator.vertical(50%);
+    let ~table = new QuineMcCluskeyTable(data.implicants, data.simplifiedImplicants, data.selected, data.deleted, data.alreadyFound);
+    let ~steps = new QuineMcCluskeySteps(data.highlightedStep);
+    container.fill(~steps, ~table);
+    width = 100%;
+    height = 100%;
+endgroup
+
+slide implementationOfPhaseII_0 < withTitle:
     setData('title', 'Implementierung von Phase II');
     let implicants = ['abc', 'abC', 'aBc', 'AbC', 'ABc', 'ABC'];
     let simplifiedImplicants = ['ab', 'ac', 'bC', 'Bc', 'AC', 'AB'];
-    let container = seperator.vertical(50%);
-    let ~table = new QuineMcCluskeyTable(implicants, simplifiedImplicants, [4], [9, 11], [:string;0]);
-    let ~steps = new QuineMcCluskeySteps(3);
-    container.fill(~steps, ~table);
+    let data = new PhaseIIData(implicants, simplifiedImplicants, 0);
+    let panel = new PhaseIIPanel(data);
+endslide
+
+slide implementationOfPhaseII_1 < withTitle:
+    setData('title', 'Implementierung von Phase II');
+    let implicants = ['abc', 'abC', 'aBc', 'AbC', 'ABc', 'ABC'];
+    let simplifiedImplicants = ['ab', 'ac', 'bC', 'Bc', 'AC', 'AB'];
+    let data = new PhaseIIData(implicants, simplifiedImplicants, [4], [9, 11], [:string;0], 3);
+    let panel = new PhaseIIPanel(data);
+endslide
+
+slide implementationOfPhaseII_2 < withTitle:
+    setData('title', 'Implementierung von Phase II');
+    let implicants = ['abc', 'abC', 'aBc', 'ABc'];
+    let simplifiedImplicants = ['ab', 'ac', 'bC', 'Bc', 'AB'];
+    let data = new PhaseIIData(implicants, simplifiedImplicants, [:int;0], [2, 4], ['AC'], 4);
+    let panel = new PhaseIIPanel(data);
+endslide
+
+
+slide implementationOfPhaseII_3 < withTitle:
+    setData('title', 'Implementierung von Phase II');
+    let implicants = ['abc', 'abC', 'aBc', 'ABc'];
+    let simplifiedImplicants = ['ab', 'ac', 'Bc'];
+    let data = new PhaseIIData(implicants, simplifiedImplicants, [:int;0], [3, 5], ['AC'], 3);
+    let panel = new PhaseIIPanel(data);
+endslide
+
+
+slide implementationOfPhaseII_4 < withTitle:
+    setData('title', 'Implementierung von Phase II');
+    let implicants = ['abC', 'ABc'];
+    let simplifiedImplicants = ['ab', 'Bc'];
+    let data = new PhaseIIData(implicants, simplifiedImplicants, [0, 1], [:int;0], ['AC'], 2);
+    let panel = new PhaseIIPanel(data);
+endslide
+
+slide possibleImprovement < withTitle:
+    setData('title', 'Verbesserungsmöglichkeiten');
+    let list = new List([
+        'Zusätzliche Möglichkeit Zahlenwerte bzw Wertetabellen einzulesen',
+        'Umfangreicheres Testen',
+        'Falls in der Eingabe ein Parameter mit aAc eingegeben wird, wird einfach der letzte Wert genommen, ohne Rücksicht auf Tippfehler'
+    ]);
+    list.isOrdered = true;
+    list.fontsize = 24pt;
+endslide
+
+slide showingTheActualProgram:
+    let l = new Label('Vorführung des Programms');
+    l.fontsize = 48pt;
+    l.align = Alignment.Center;
+    l.orientation = Orientation.Center;
+endslide
+
+slide theEnd < withTitle:
+    setData('title', 'Fragen & Quellen');
+    let container = seperator.vertical(30%);
+    let ~repoLink = new Label('Source Code: github.com/wert007/GTIProject');
+    container.fillA(~repoLink);
+    let imgSrc = qr.urlQRCode('github.com/wert007/GTIProject', red, white);
+    container.fillB(new SVGContainer(imgSrc));
 endslide

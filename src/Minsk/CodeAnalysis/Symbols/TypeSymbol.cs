@@ -86,7 +86,7 @@ namespace Minsk.CodeAnalysis.Symbols
 		{
 			if (this == Undefined || to == Undefined)
 				return true;
-			if (this == PrimitiveTypeSymbol.Object || to == PrimitiveTypeSymbol.Object)
+			if (to == PrimitiveTypeSymbol.Object)
 				return true;
 			if (Type != TypeType.Noneable && to.Type == TypeType.Noneable)
 			{

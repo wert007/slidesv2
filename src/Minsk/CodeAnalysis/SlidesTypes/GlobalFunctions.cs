@@ -19,17 +19,25 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 		{
 			return string.Join(seperator, array);
 		}
-		public static string utf8(int codepoint)
+		public static string utf32(int codepoint)
 		{
 			var codepointBytes = BitConverter.GetBytes(codepoint);
-			var text = Encoding.UTF8.GetString(codepointBytes);
+			var text = Encoding.UTF32.GetString(codepointBytes);
 			return text.First().ToString(); //Remove trailing '\0'
 		}
-		public static int[] utf8(string str)
+		public static int[] utf32(string str)
 		{
-			var result = new int[str.Length];
-			for (int i = 0; i < str.Length; i++)
-				result[i] = str[i];
+			var bytes = Encoding.UTF32.GetBytes(str);
+			var result = new int[bytes.Length / 4];
+			
+			//Let's just hope this is right..
+			for (int i = 0; i < result.Length; i++)
+			{
+				result[i] = bytes[i * 4];
+				result[i] |= bytes[i * 4 + 1] << 4;
+				result[i] |= bytes[i * 4 + 2] << 8;
+				result[i] |= bytes[i * 4 + 3] << 12;
+			}
 			return result;
 		}
 		public static bool contains(string hay, string needle) => hay.Contains(needle);

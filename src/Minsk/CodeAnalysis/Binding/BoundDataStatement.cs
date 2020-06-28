@@ -3,9 +3,9 @@ using System.Linq;
 
 namespace Minsk.CodeAnalysis.Binding
 {
-	internal class BoundDataStatement : BoundStatement
+	internal class BoundStructStatement : BoundStatement
 	{
-		public BoundDataStatement(TypeSymbol type)
+		public BoundStructStatement(TypeSymbol type)
 		{
 			Type = type;
 		}

@@ -465,7 +465,7 @@ namespace Minsk.CodeAnalysis
 			return new BoundCaseStatement(condition, body);
 		}
 
-		private BoundDataStatement DeserializeDataStatement()
+		private BoundStructStatement DeserializeDataStatement()
 		{
 			ConsumeStatementHeader();
 			var identifier = ConsumeToken();
@@ -485,7 +485,7 @@ namespace Minsk.CodeAnalysis
 			foreach (var c in constructor)
 				c.Type = type;
 			ConsumeStatementTail();
-			return new BoundDataStatement(type);
+			return new BoundStructStatement(type);
 		}
 
 		private BoundExpressionStatement DeserializeExpressionStatement()

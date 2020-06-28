@@ -23,7 +23,15 @@ namespace Slides.Elements
 		public Brush background { get; set; }
 		public Color color { get; set; }
 		public Filter filter { get; set; }
-		public Orientation orientation { get; set; }
+		private Orientation _orientation;
+		public Orientation orientation
+		{
+			get => _orientation; set
+			{
+				_orientation = value;
+				UpdateLayout();
+			}
+		}
 		public Thickness margin { get; set; }
 		public Thickness padding { get; set; }
 		public Thickness marginAndPadding => margin + padding;
@@ -110,7 +118,6 @@ namespace Slides.Elements
 		}
 
 
-
 		public Unit width
 		{
 			get
@@ -122,6 +129,7 @@ namespace Slides.Elements
 			set
 			{
 				_width = value;
+				UpdateLayout();
 			}
 		}
 		public Unit height
@@ -135,10 +143,11 @@ namespace Slides.Elements
 			set
 			{
 				_height = value;
+				UpdateLayout();
 			}
 		}
-		Unit _width = null;
-		Unit _height = null;
+		protected Unit _width = null;
+		protected Unit _height = null;
 		public string name { get; set; }
 		public bool isVisible { get; set; }
 		public CustomStyle hover { get; set; }
@@ -149,11 +158,12 @@ namespace Slides.Elements
 
 		private Stack<Style> appliedStyles;
 
-		private readonly Dictionary<string, Action<object>> applyStyleHandlers = new Dictionary<string, Action<object>>();
+		private readonly Dictionary<string, Action<object>> _applyStyleHandlers = new Dictionary<string, Action<object>>();
 
 		private Stack<Transform> _transforms = new Stack<Transform>();
 
 		private static int index = 0;
+
 		private Step step { get; set; }
 		private SlideAttributes slideStyle { get; set; }
 		public static StdStyle StdStyle { get; private set; }
@@ -166,14 +176,14 @@ namespace Slides.Elements
 			borderStyle = BorderStyle.Unset;
 			background = null;
 			color = new Color(0, 0, 0, 0);
-			orientation = Orientation.LeftTop;
+			_orientation = Orientation.LeftTop;
 			margin = new Thickness();
 			padding = new Thickness();
 			isVisible = true;
 			appliedStyles = new Stack<Style>();
 
-			width = null;
-			height = null;
+			_width = null;
+			_height = null;
 			name = index.ToString();
 			index++;
 
@@ -187,11 +197,11 @@ namespace Slides.Elements
 
 		public void applyStyle(Style style)
 		{
-			handleApplyStyle(style);
+			HandleApplyStyle(style);
 			foreach (var field in style.GetMainStyle().Properties)
 			{
-				if (applyStyleHandlers.ContainsKey(field.Key))
-					applyStyleHandlers[field.Key].Invoke(field.Value);
+				if (_applyStyleHandlers.ContainsKey(field.Key))
+					_applyStyleHandlers[field.Key].Invoke(field.Value);
 			}
 			//foreach (var field in applyStyleHandlers.Keys)
 			//	style.ModifiedFields.Remove(field);
@@ -199,11 +209,12 @@ namespace Slides.Elements
 				appliedStyles.Push(style);
 		}
 
-		protected virtual void handleApplyStyle(Style style) { }
+		protected virtual void HandleApplyStyle(Style style) { }
+		protected virtual void UpdateLayout() { }
 
 		protected void addApplyStyleHandler(string name, Action<object> handler)
 		{
-			applyStyleHandlers[name] = handler;
+			_applyStyleHandlers[name] = handler;
 		}
 		public UnitPair center() => relativePos(Orientation.Center);
 		public UnitPair relativePos(Orientation o)
@@ -280,7 +291,7 @@ namespace Slides.Elements
 		public object get_Property(string name)
 		{
 			object styleValue = null;
-			if(StdStyle != null)
+			if (StdStyle != null)
 				foreach (var field in StdStyle.GetMainStyle().Properties)
 					if (field.Key == name)
 						styleValue = field.Value;

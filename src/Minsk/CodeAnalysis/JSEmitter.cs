@@ -193,7 +193,7 @@ namespace Minsk.CodeAnalysis
 
 		private void EmitLiteralExpression(BoundLiteralExpression node, IndentedTextWriter writer)
 		{
-			writer.EmitObject(node.Value);
+			writer.EmitObject(node.ConstantValue);
 		}
 
 		private void EmitVariableExpression(BoundVariableExpression node, IndentedTextWriter writer)

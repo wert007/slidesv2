@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Minsk.CodeAnalysis.Binding;
+using System;
 
 namespace Minsk.CodeAnalysis.Symbols
 {
@@ -9,24 +10,29 @@ namespace Minsk.CodeAnalysis.Symbols
 			: this(name, fields, constructor, FunctionSymbolCollection.Empty)
 		{
 		}
-		public AdvancedTypeSymbol(string name, VariableSymbolCollection fields, FunctionSymbolCollection constructor, FunctionSymbolCollection functions) :
-			this(name, fields, constructor, functions, null)
+		public AdvancedTypeSymbol(string name, VariableSymbolCollection fields, FunctionSymbolCollection constructor, FunctionSymbolCollection functions) 
+			: this(name, fields, constructor, functions, null)
 		{ }
-		public AdvancedTypeSymbol(string name, VariableSymbolCollection fields, FunctionSymbolCollection constructor, FunctionSymbolCollection functions, TypeSymbol parent) : this(name, fields, constructor, functions, parent, new TypeSymbol[0])
+		public AdvancedTypeSymbol(string name, VariableSymbolCollection fields, FunctionSymbolCollection constructor, FunctionSymbolCollection functions, TypeSymbol parent) 
+			: this(name, fields, constructor, functions, parent, new TypeSymbol[0])
 		{
-			Fields = fields;
-			Constructor = constructor;
-			Functions = functions;
-			Parent = parent;
 		}
-		public AdvancedTypeSymbol(string name, VariableSymbolCollection fields, FunctionSymbolCollection constructor, FunctionSymbolCollection functions, TypeSymbol parent, TypeSymbol[] canBeCastedTo) : base(name)
+		public AdvancedTypeSymbol(string name, VariableSymbolCollection fields, FunctionSymbolCollection constructor, FunctionSymbolCollection functions, TypeSymbol parent, TypeSymbol[] canBeCastedTo) 
+			: this(name, fields, new BoundExpression[fields.Count], constructor, functions, parent, canBeCastedTo)
+		{
+		}
+
+		internal AdvancedTypeSymbol(string name, VariableSymbolCollection fields, BoundExpression[] fieldDefaultValues, FunctionSymbolCollection constructor, FunctionSymbolCollection functions, TypeSymbol parent, TypeSymbol[] canBeCastedTo) 
+			: base(name)
 		{
 			Fields = fields;
+			FieldDefaultValues = fieldDefaultValues;
 			Constructor = constructor;
 			Functions = functions;
 			Parent = parent;
 			CanBeCastedTo = canBeCastedTo;
 		}
+
 
 		private bool _isData = false;
 		public override TypeType Type => TypeType.Advanced;
@@ -36,6 +42,7 @@ namespace Minsk.CodeAnalysis.Symbols
 		public override object DefaultValue => null;
 
 		public VariableSymbolCollection Fields { get; }
+		internal BoundExpression[] FieldDefaultValues { get; }
 		public FunctionSymbolCollection Constructor { get; }
 		public FunctionSymbolCollection Functions { get; }
 		public TypeSymbol Parent { get; }

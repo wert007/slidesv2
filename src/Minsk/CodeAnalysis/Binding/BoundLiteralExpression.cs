@@ -7,25 +7,26 @@ namespace Minsk.CodeAnalysis.Binding
 	{
 		public BoundLiteralExpression(object value)
 		{
-			Value = value;
-			_type = BuiltInTypes.Instance.LookSymbolUp(Value.GetType());
+			ConstantValue = value;
+			_type = BuiltInTypes.Instance.LookSymbolUp(ConstantValue.GetType());
 		}
 
 		public BoundLiteralExpression(object value, TypeSymbol type)
 		{
-			Value = value;
+			ConstantValue = value;
 			_type = type;
 		}
 
 		private TypeSymbol _type;
 		public override BoundNodeKind Kind => BoundNodeKind.LiteralExpression;
 		public override TypeSymbol Type => _type;
-		public object Value { get; }
+		public override object ConstantValue { get; }
+
 
 		public override bool EqualsBoundExpression(BoundExpression expression)
 		{
 			var e = (BoundLiteralExpression)expression;
-			return Value.Equals(e.Value);
+			return ConstantValue.Equals(e.ConstantValue);
 		}
 	}
 }

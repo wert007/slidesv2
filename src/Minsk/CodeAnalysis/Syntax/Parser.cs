@@ -257,7 +257,7 @@ namespace Minsk.CodeAnalysis.Syntax
 			return new VariableTypeDeclarationStatement(parameter, semicolonToken);
 		}
 
-		private DataBlockStatementSyntax ParseDataBlockStatement()
+		private StructBlockStatementSyntax ParseDataBlockStatement()
 		{
 			var statements = new List<VariableTypeDeclarationStatement>();
 
@@ -272,10 +272,10 @@ namespace Minsk.CodeAnalysis.Syntax
 					NextToken();
 			}
 
-			return new DataBlockStatementSyntax(statements.ToArray());
+			return new StructBlockStatementSyntax(statements.ToArray());
 		}
 
-		private DataStatementSyntax ParseDataStatement()
+		private StructStatementSyntax ParseDataStatement()
 		{
 			var dataKeyword = MatchToken(SyntaxKind.StructKeyword);
 			var identifier = MatchToken(SyntaxKind.IdentifierToken);
@@ -283,7 +283,7 @@ namespace Minsk.CodeAnalysis.Syntax
 			var body = ParseDataBlockStatement();
 			var endDataKeyword = MatchToken(SyntaxKind.EndStructKeyword);
 
-			return new DataStatementSyntax(dataKeyword, identifier, colonToken, body, endDataKeyword);
+			return new StructStatementSyntax(dataKeyword, identifier, colonToken, body, endDataKeyword);
 		}
 
 		private UseStatement ParseUseStatement()
@@ -647,6 +647,7 @@ namespace Minsk.CodeAnalysis.Syntax
 			return new BlockStatementSyntax(statements.ToArray());
 		}
 
+
 		private StatementSyntax ParseVariableDeclaration()
 		{
 			var keyword = MatchToken(SyntaxKind.LetKeyword);
@@ -956,6 +957,8 @@ namespace Minsk.CodeAnalysis.Syntax
 					case SyntaxKind.MinusEqualsToken:
 					case SyntaxKind.StarEqualsToken:
 					case SyntaxKind.SlashEqualsToken:
+					case SyntaxKind.PipeEqualsToken:
+					case SyntaxKind.AmpersandEqualsToken:
 					case SyntaxKind.ColonToken:
 					case SyntaxKind.SemicolonToken:
 					case SyntaxKind.LetKeyword:
@@ -986,11 +989,7 @@ namespace Minsk.CodeAnalysis.Syntax
 				i++;
 				peek = Peek(i);
 			}
-			return Peek(i).Kind == SyntaxKind.EqualsToken ||
-				Peek(i).Kind == SyntaxKind.PlusEqualsToken ||
-				Peek(i).Kind == SyntaxKind.MinusEqualsToken ||
-				Peek(i).Kind == SyntaxKind.StarEqualsToken ||
-				Peek(i).Kind == SyntaxKind.SlashEqualsToken;
+			return Peek(i).Kind.IsAssignmentOperator();
 		}
 
 		private ExpressionSyntax ParseAssignmentExpression()
@@ -1004,11 +1003,7 @@ namespace Minsk.CodeAnalysis.Syntax
 					_diagnostics.ReportCannotAssign(left.Span, $"is no valid l value ({left.ToString()})");
 					left = new VariableExpressionSyntax(null, new SyntaxToken(SyntaxKind.IdentifierToken, left.Span.Start, null, null));
 				}
-				if (Current.Kind != SyntaxKind.EqualsToken &&
-					Current.Kind != SyntaxKind.PlusEqualsToken &&
-					Current.Kind != SyntaxKind.MinusEqualsToken &&
-					Current.Kind != SyntaxKind.StarEqualsToken &&
-					Current.Kind != SyntaxKind.SlashEqualsToken)
+				if (!Current.Kind.IsAssignmentOperator())
 				{
 					//TODO(Minor): Not all possible operators. Maybe we should report them too!
 					_diagnostics.ReportUnexpectedToken(Current.Span, Current.Kind, SyntaxKind.EqualsToken);

@@ -201,7 +201,12 @@ namespace Minsk.CodeAnalysis.Syntax
 
 				case '&':
 					_position++;
-					if (Current != '&')
+					if(Current == '=')
+					{
+						_kind = SyntaxKind.AmpersandEqualsToken;
+						_position++;
+					}
+					else if (Current != '&')
 					{
 						_kind = SyntaxKind.BadToken;
 					}
@@ -213,7 +218,12 @@ namespace Minsk.CodeAnalysis.Syntax
 					break;
 				case '|':
 					_position++;
-					if (Current != '|')
+					if (Current == '=')
+					{
+						_kind = SyntaxKind.PipeEqualsToken;
+						_position++;
+					}
+					else if (Current != '|')
 					{
 						_kind = SyntaxKind.PipeToken;
 					}

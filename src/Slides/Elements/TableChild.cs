@@ -1,4 +1,6 @@
-﻿namespace Slides.Elements
+﻿using System;
+
+namespace Slides.Elements
 {
 	public class TableChild : TextElement
 	{
@@ -6,10 +8,14 @@
 		internal event ContentUpdatedHandler ContentUpdated;
 
 		private string _content;
+
+		private Unit _tableHeight;
+		private Unit _tableWidth;
+
 		public string content { get => _content; set
 			{
 				_content = value;
-				ContentUpdated?.Invoke();
+				UpdateLayout();
 			}
 		}
 		public Alignment? align { get; set; }
@@ -21,6 +27,7 @@
 
 		public override Unit top => _top;
 		public override Unit left => _left;
+		protected override bool NeedsInitialSizeCalculated => true;
 
 		public void set_Top(Unit t) => _top = t;
 		public void set_Left(Unit l) => _left = l;
@@ -37,12 +44,20 @@
 
 		public override string ToString() => content;
 
-		public Unit get_ActualTableChildHeight() => get_ActualHeight();
-		public Unit get_ActualTableChildWidth() => get_ActualWidth();
+		internal Unit get_ActualTableChildHeight() => get_ActualHeight();
+		internal Unit get_ActualTableChildWidth() => get_ActualWidth();
+		internal Unit get_UserDefinedHeight() => _height;
+		internal Unit get_UserDefinedWidth() => _width;
 
-	
 
-		internal override Unit get_InitialWidth() => new Unit(MeasureText(_content).X, Unit.UnitKind.Pixel);
-		internal override Unit get_InitialHeight() => new Unit(MeasureText(_content).Y, Unit.UnitKind.Pixel);
+		protected override void UpdateLayout()
+		{
+			ContentUpdated?.Invoke();
+		}
+		internal override Unit get_InitialWidth() => _tableWidth ?? new Unit(MeasureText(_content).X, Unit.UnitKind.Pixel);
+		internal override Unit get_InitialHeight() => _tableHeight ?? new Unit(MeasureText(_content).Y, Unit.UnitKind.Pixel);
+
+		internal void set_HeightFromTable(Unit height) => _tableHeight = height;
+		internal void set_WidthFromTable(Unit width) => _tableWidth = width;
 	}
 }
