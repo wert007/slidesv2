@@ -87,12 +87,12 @@ namespace Minsk.CodeAnalysis
 			if (result.Diagnostics.Any(d => d.Level == DiagnosticLevel.Error))
 				return new LibrarySymbol(key);
 
-			IFormatter formatter = new BinaryFormatter();
-			var serializableLibrary = new SerializableLibrarySymbol((LibrarySymbol)result.Value);
+			//IFormatter formatter = new BinaryFormatter();
+			//var serializableLibrary = new SerializableLibrarySymbol((LibrarySymbol)result.Value);
 
-			var fileName = Path.GetFileNameWithoutExtension(key);
-			using (var stream = new FileStream($@".\{fileName}.bsld", FileMode.Create, FileAccess.Write))
-				formatter.Serialize(stream, serializableLibrary);
+			//var fileName = Path.GetFileNameWithoutExtension(key);
+			//using (var stream = new FileStream($@".\{fileName}.bsld", FileMode.Create, FileAccess.Write))
+			//	formatter.Serialize(stream, serializableLibrary);
 			return (LibrarySymbol)result.Value;
 		}
 
@@ -171,17 +171,17 @@ namespace Minsk.CodeAnalysis
 			if (!_loadedCompilations.ContainsKey(path))
 			{
 				//TODO(Major): Find out when we need to rebuild our bsld-file
-				string fileName = Path.GetFileNameWithoutExtension(path);
-				if (!_completeRebuild && File.Exists(fileName + ".bsld"))
-				{
-					using (var stream = new FileStream($@".\{fileName}.bsld", FileMode.Open, FileAccess.Read))
-					{
-						var formatter = new BinaryFormatter();
-						var library = (SerializableLibrarySymbol)formatter.Deserialize(stream);
-						_collectedLibraries.Add(path, library.ToLibrarySymbol());
-					}
-					return;
-				}
+				//string fileName = Path.GetFileNameWithoutExtension(path);
+				//if (!_completeRebuild && File.Exists(fileName + ".bsld"))
+				//{
+				//	using (var stream = new FileStream($@".\{fileName}.bsld", FileMode.Open, FileAccess.Read))
+				//	{
+				//		var formatter = new BinaryFormatter();
+				//		var library = (SerializableLibrarySymbol)formatter.Deserialize(stream);
+				//		_collectedLibraries.Add(path, library.ToLibrarySymbol());
+				//	}
+				//	return;
+				//}
 				var compilation = Loader.LoadCompilationFromFile(CompilationFlags.Directory, path, _offlineView);
 				if (compilation == null)
 				{

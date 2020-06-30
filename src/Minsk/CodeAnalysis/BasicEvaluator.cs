@@ -520,6 +520,8 @@ namespace Minsk.CodeAnalysis
 						return new Unit(f * 100, Unit.UnitKind.Percent);
 					case int i:
 						return new Unit(i, Unit.UnitKind.Pixel);
+					case Unit u:
+						return u;
 					default:
 						throw new NotSupportedException();
 				}
@@ -532,7 +534,16 @@ namespace Minsk.CodeAnalysis
 					throw new Exception();
 				return value;
 			}
-			throw new Exception();
+			if(targetType.Type == TypeType.Noneable)
+			{
+				var targetSymbol = ((NoneableTypeSymbol)targetType).BaseType;
+				var target = _builtInTypes.LookTypeUp(targetSymbol);
+				if (target.IsAssignableFrom(value.GetType()))
+					return value;
+				return null;
+			}
+			//Do we need checks here?
+			return value;
 		}
 
 		protected virtual object EvaluateMathExpression(BoundMathExpression node)

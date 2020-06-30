@@ -5,6 +5,7 @@ using Slides.Styling;
 using SVGLib.ContainerElements;
 using SVGLib.Parsing;
 using System;
+using static QRCoder.PayloadGenerator;
 
 namespace Minsk.CodeAnalysis.SlidesTypes
 {
@@ -44,8 +45,9 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 		}
 		public static SVGTag CreateURLQRCodeWithColors(string data, Color dark, Color light)
 		{
+			var url = new Url(data);
 			var qrGenerator = new QRCodeGenerator();
-			var qrCodeData = qrGenerator.CreateQrCode(data, QRCodeGenerator.ECCLevel.Q);
+			var qrCodeData = qrGenerator.CreateQrCode(url.ToString(), QRCodeGenerator.ECCLevel.Q);
 			var qrCode = new SvgQRCode(qrCodeData);
 			var qrCodeAsSVG = qrCode.GetGraphic(1, dark.ToHex(), light.ToHex(), sizingMode: SvgQRCode.SizingMode.ViewBoxAttribute);
 			SVGParser parser = new SVGParser();

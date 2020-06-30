@@ -519,7 +519,7 @@ namespace Minsk.CodeAnalysis
 			ConsumeToken(); //>
 			var body = DeserializeBlockStatement();
 			ConsumeStatementTail();
-			return new BoundForStatement(variable, collection, body);
+			return new BoundForStatement(variable, null, collection, body);
 		}
 
 		private BoundIfStatement DeserializeIfStatement()

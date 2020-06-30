@@ -69,10 +69,14 @@ namespace Minsk.CodeAnalysis.Binding
 					CollectSlideStatementDeclarations((SlideStatementSyntax)syntax);
 					break;
 				case SyntaxKind.LibraryStatement:
+					break; //TODO: Why is there an exception? Just ignore it if its there.
+					//It's fine, it's no mistake...
 					throw new Exception();
+				case SyntaxKind.VariableDeclaration:
 				case SyntaxKind.ImportStatement:
 					//ImportStatements should always be the first thing you do in 
 					//your code. So we don't collect them from anywhere else.
+					//the same is true for variable declarations!
 					break;
 				default:
 					_diagnostics.ReportBadTopLevelStatement(syntax);

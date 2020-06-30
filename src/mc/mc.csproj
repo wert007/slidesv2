@@ -48,6 +48,9 @@
     <None Update="sldsrc\gti_qmc\presentation.sld">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="sldsrc\gti_qmc\qmclib.sld">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="sldsrc\gti_qmc\src_code\main.c">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

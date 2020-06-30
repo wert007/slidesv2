@@ -89,7 +89,7 @@ namespace Minsk.CodeAnalysis.Binding
             return (BoundForStatement)replacement;
          var collection = RewriteExpression(statement.Collection, source, replacement);
          var body = RewriteBlockStatement(statement.Body, source, replacement);
-         return new BoundForStatement(statement.Variable, collection, body);
+         return new BoundForStatement(statement.Variable, statement.OptionalIndexer, collection, body);
       }
 
       private static BoundExpressionStatement RewriteExpressionStatement(BoundExpressionStatement statement, BoundNode source, BoundNode replacement)

@@ -70,6 +70,8 @@ namespace Minsk.CodeAnalysis.Syntax
 
 		// Keywords
 		LetKeyword,
+		ConstKeyword,
+		CastKeyword,
 		TrueKeyword,
 		FalseKeyword,
 		StdKeyword,
@@ -172,5 +174,6 @@ namespace Minsk.CodeAnalysis.Syntax
 		MemberAccessExpression,
 		StringExpression,
 		StringInsertionExpression,
+		CastExpression,
 	}
 }

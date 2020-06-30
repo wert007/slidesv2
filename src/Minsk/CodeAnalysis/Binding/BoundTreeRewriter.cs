@@ -58,7 +58,7 @@ namespace Minsk.CodeAnalysis.Binding
 				{
 					new BoundExpressionStatement(newExpression),
 				});
-				var result = new BoundForStatement(iteratorVariable, collection, body);
+				var result = new BoundForStatement(iteratorVariable, null, collection, body);
 				return RewriteStatement(result);
 			}
 		}
@@ -167,7 +167,7 @@ namespace Minsk.CodeAnalysis.Binding
 			var newBody = RewriteStatement(node.Body);
 			if (node.Collection == newCollection && node.Body == newBody)
 				return node;
-			return new BoundForStatement(node.Variable, newCollection, (BoundBlockStatement)newBody);
+			return new BoundForStatement(node.Variable, node.OptionalIndexer, newCollection, (BoundBlockStatement)newBody);
 		}
 
 		protected virtual BoundStatement RewriteGroupStatement(BoundGroupStatement node)

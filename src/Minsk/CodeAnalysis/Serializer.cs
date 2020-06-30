@@ -120,7 +120,8 @@ namespace Minsk.CodeAnalysis
 					result = SerializeVariableExpression((BoundVariableExpression)expression);
 					break;
 				default:
-					throw new NotImplementedException();
+					result = "";
+					break;
 			}
 			return $"{expression.Kind}::{result};";
 		}

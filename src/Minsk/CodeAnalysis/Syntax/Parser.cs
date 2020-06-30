@@ -99,6 +99,8 @@ namespace Minsk.CodeAnalysis.Syntax
 					return ParseDataStatement();
 				case SyntaxKind.ImportKeyword:
 					return ParseImportStatement();
+				case SyntaxKind.ConstKeyword:
+					return ParseVariableDeclaration();
 				case SyntaxKind.FilterKeyword:
 					return ParseFilterStatement();
 				default:
@@ -204,20 +206,19 @@ namespace Minsk.CodeAnalysis.Syntax
 		{
 			var forKeyword = MatchToken(SyntaxKind.ForKeyword);
 			var variable = ParseVariableExpression();
-			//TODO(Major): Implement a [0..10] element.
-			//[0..10]		Normal
-			//[0..10:2]		Step 2
-			//[2:0..10]		Step 2
-			//[0..10>3]		Step 2
-			//[0..10->3]	Step 2
-			//(old todo) No indexing in the for-loop..
+			VariableExpressionSyntax optionalIndexer = null;
+			if(Current.Kind == SyntaxKind.CommaToken)
+			{
+				var commaToken = MatchToken(SyntaxKind.CommaToken);
+				optionalIndexer = ParseVariableExpression();
+			}
 			var inKeyword = MatchToken(SyntaxKind.InKeyword);
 			var collection = ParseExpression();
 			var colonToken = MatchToken(SyntaxKind.ColonToken);
 			var body = ParseBlockStatement(SyntaxKind.ForKeyword);
 			var endForKeyword = MatchToken(SyntaxKind.EndForKeyword);
 
-			return new ForStatementSyntax(forKeyword, variable, inKeyword, collection, colonToken, body, endForKeyword);
+			return new ForStatementSyntax(forKeyword, variable, optionalIndexer, inKeyword, collection, colonToken, body, endForKeyword);
 		}
 
 		private ImportStatementSyntax ParseImportStatement()
@@ -650,7 +651,8 @@ namespace Minsk.CodeAnalysis.Syntax
 
 		private StatementSyntax ParseVariableDeclaration()
 		{
-			var keyword = MatchToken(SyntaxKind.LetKeyword);
+			
+			var keyword = Current.Kind == SyntaxKind.ConstKeyword ? NextToken() : MatchToken(SyntaxKind.LetKeyword);
 
 			var variable = ParseVariableExpression();
 			var optionalTypeDeclaration = TryParseTypeDeclaration();
@@ -799,6 +801,8 @@ namespace Minsk.CodeAnalysis.Syntax
 			{
 				case SyntaxKind.OpenParenthesisToken:
 					return ParseParenthesizedExpression();
+				case SyntaxKind.CastKeyword:
+					return ParseCastExpression();
 
 				case SyntaxKind.FalseKeyword:
 				case SyntaxKind.TrueKeyword:
@@ -1107,6 +1111,15 @@ namespace Minsk.CodeAnalysis.Syntax
 			var expression = ParseExpression();
 			var right = MatchToken(SyntaxKind.CloseParenthesisToken);
 			return new ParenthesizedExpressionSyntax(left, expression, right);
+		}
+
+		private ExpressionSyntax ParseCastExpression()
+		{
+			var castKeyword = MatchToken(SyntaxKind.CastKeyword);
+			var expression = ParseExpression();
+			var type = ParseTypeDeclaration();
+
+			return new CastExpressionSyntax(castKeyword, expression, type);
 		}
 
 		private ExpressionSyntax ParseBooleanLiteral()

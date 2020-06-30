@@ -128,19 +128,26 @@ namespace Minsk.CodeAnalysis
 		{
 		//	_variables = _variables.Push();
 			var collection = EvaluateExpression(node.Collection);
+			var indexer = 0;
 			if (collection is Range r)
 			{
 				if (r.Step >= 0)
 					for (int i = r.From; i < r.To; i += r.Step)
 					{
 						_variables[node.Variable] = i;
+						if (node.OptionalIndexer != null)
+							_variables[node.OptionalIndexer] = indexer;
 						EvaluateStatement(node.Body);
+						indexer++;
 					}
 				else
 					for (int i = r.From; i > r.To; i += r.Step)
 					{
 						_variables[node.Variable] = i;
+						if (node.OptionalIndexer != null)
+							_variables[node.OptionalIndexer] = indexer;
 						EvaluateStatement(node.Body);
+						indexer++;
 					}
 			}
 			else
@@ -151,11 +158,12 @@ namespace Minsk.CodeAnalysis
 				foreach (var item in e)
 				{
 					_variables[node.Variable] = item;
+					if (node.OptionalIndexer != null)
+						_variables[node.OptionalIndexer] = indexer;
 					EvaluateStatement(node.Body);
+					indexer++;
 				}
 			}
-			//_variables = _variables.Pop(out var _);
-
 		}
 
 		protected virtual void EvaluateExpressionStatement(BoundExpressionStatement node)

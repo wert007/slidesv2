@@ -186,19 +186,24 @@ namespace Minsk.CodeAnalysis.Binding
 				_diagnostics.ReportCannotConvert(syntax.Collection.Span, boundCollection.Type, new ArrayTypeSymbol(boundCollection.Type));
 			}
 			VariableSymbol variable = null;
+			VariableSymbol optionalIndexer = null;
 			if (isRange)
 			{
 				variable = CheckGlobalVariableExpression(syntax.Variable, PrimitiveTypeSymbol.Integer, true, false);
+				if (syntax.OptionalIndexer != null)
+					optionalIndexer = CheckGlobalVariableExpression(syntax.OptionalIndexer, PrimitiveTypeSymbol.Integer, true, false);
 			}
 			else if (boundCollection.Type != PrimitiveTypeSymbol.Error)
 			{
 				var type = boundCollection.Type as ArrayTypeSymbol;
 				variable = CheckGlobalVariableExpression(syntax.Variable, type.Child, true, false);
+				if (syntax.OptionalIndexer != null)
+					optionalIndexer = CheckGlobalVariableExpression(syntax.OptionalIndexer, PrimitiveTypeSymbol.Integer, true, false);
 			}
 			var boundBody = BindBlockStatement(syntax.Body);
 			CheckUnusedSymbols(_scope);
 			_scope = _scope.Parent;
-			return new BoundForStatement(variable, boundCollection, boundBody);
+			return new BoundForStatement(variable, optionalIndexer, boundCollection, boundBody);
 		}
 
 		private BoundBlockStatement BindBlockStatement(BlockStatementSyntax syntax, bool useSeperateScope = true)
@@ -579,9 +584,10 @@ namespace Minsk.CodeAnalysis.Binding
 			_scope = new BoundScope(_scope);
 			foreach (var field in ((AdvancedTypeSymbol)_builtInTypes.LookSymbolUp(typeof(Element))).Fields)
 			{
-				//Throw no warnings
-				//Erm.. i think we don't?
-
+				//Don't declare 'name', because we could not 
+				//access it during evaluation. and it really isn't
+				//important anyway
+				if (field.Name == "name") continue;
 				_scope.Declare(field, true);
 			}
 			_scope.TryDeclare(new VariableSymbol("fontsize", false, _builtInTypes.LookSymbolUp(typeof(Unit)), false), null);
@@ -849,6 +855,9 @@ namespace Minsk.CodeAnalysis.Binding
 				case SyntaxKind.ArrayAccessExpression:
 					result = BindArrayAccessExpression((ArrayAccessExpressionSyntax)syntax, writeToExpression);
 					break;
+				case SyntaxKind.CastExpression:
+					result = BindCastExpression((CastExpressionSyntax)syntax);
+					break;
 				case SyntaxKind.NameExpression:
 					result = new BoundErrorExpression(); //Let's hope somebody informed the diagnostics!
 					break;
@@ -1032,6 +1041,13 @@ namespace Minsk.CodeAnalysis.Binding
 				}
 			}
 			return new BoundArrayAccessExpression(boundExpression, boundIndex);
+		}
+
+		private BoundExpression BindCastExpression(CastExpressionSyntax syntax)
+		{
+			var boundExpression = BindExpression(syntax.Expression);
+			var type = BindTypeDeclaration(syntax.Type);
+			return BindConversion(syntax.Expression.Span, boundExpression, type);
 		}
 
 		private BoundExpression BindMemberAccessExpression(MemberAccessExpressionSyntax syntax, bool writeToMember)
@@ -1312,7 +1328,7 @@ namespace Minsk.CodeAnalysis.Binding
 
 			for (int i = 0; i < arguments.Count; i++)
 			{
-				arguments[i] = BindConversion(arguments[i], bestMatch.Parameter[i].Type);
+				arguments[i] = BindConversion(syntax.Arguments[i].Span, arguments[i], bestMatch.Parameter[i].Type);
 			}
 
 			switch (bestMatch.Name)
@@ -1338,13 +1354,24 @@ namespace Minsk.CodeAnalysis.Binding
 			return new BoundFunctionExpression(bestMatch, arguments.ToArray(), source);
 		}
 
-		private BoundExpression BindConversion(BoundExpression expression, TypeSymbol targetType)
+		private BoundExpression BindConversion(TextSpan span, BoundExpression expression, TypeSymbol targetType)
 		{
 			if ((expression.Type == PrimitiveTypeSymbol.Integer || expression.Type == PrimitiveTypeSymbol.Float) && targetType == PrimitiveTypeSymbol.Unit)
 				return new BoundConversion(expression, targetType);
 			if (expression.Type == PrimitiveTypeSymbol.Integer && targetType == PrimitiveTypeSymbol.Float)
 				return new BoundConversion(expression, targetType);
-			return expression;
+			if(expression.Type.CanBeConvertedTo(targetType))
+			{
+				if (expression.Type == targetType) return expression;
+				return new BoundConversion(expression, targetType);
+			}
+			if (!targetType.CanBeConvertedTo(expression.Type))
+			{
+				_diagnostics.ReportCannotConvert(span, expression.Type, targetType);
+				return new BoundConversion(expression, PrimitiveTypeSymbol.Error);
+			}
+			//This is a dynamic cast, so we can return none as well..
+			return new BoundConversion(expression, new NoneableTypeSymbol(targetType));
 		}
 
 		private void BindFontFunction(TextSpan span, FunctionSymbol function, BoundExpression[] immutableArguments)
@@ -1599,9 +1626,9 @@ namespace Minsk.CodeAnalysis.Binding
 			var boundLeft = BindExpression(syntax.Left);
 			var boundRight = BindExpression(syntax.Right);
 			if (boundLeft.Type == PrimitiveTypeSymbol.Integer && boundRight.Type == PrimitiveTypeSymbol.Float)
-				boundLeft = BindConversion(boundLeft, PrimitiveTypeSymbol.Float);
+				boundLeft = BindConversion(syntax.Left.Span, boundLeft, PrimitiveTypeSymbol.Float);
 			else if (boundLeft.Type == PrimitiveTypeSymbol.Float && boundRight.Type == PrimitiveTypeSymbol.Integer)
-				boundRight = BindConversion(boundRight, PrimitiveTypeSymbol.Float);
+				boundRight = BindConversion(syntax.Right.Span, boundRight, PrimitiveTypeSymbol.Float);
 
 			var boundOperator = BoundBinaryOperator.Bind(syntax.OperatorToken.Kind, boundLeft.Type, boundRight.Type);
 

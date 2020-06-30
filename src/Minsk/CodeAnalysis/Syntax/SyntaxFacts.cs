@@ -102,12 +102,16 @@ namespace Minsk.CodeAnalysis.Syntax
 					return SyntaxKind.ElseKeyword;
 				case "endif":
 					return SyntaxKind.EndIfKeyword;
-				case "false":
-					return SyntaxKind.FalseKeyword;
-				case "let":
-					return SyntaxKind.LetKeyword;
 				case "true":
 					return SyntaxKind.TrueKeyword;
+				case "false":
+					return SyntaxKind.FalseKeyword;
+				case "cast":
+					return SyntaxKind.CastKeyword;
+				case "let":
+					return SyntaxKind.LetKeyword;
+				case "const":
+					return SyntaxKind.ConstKeyword;
 				case "use":
 					return SyntaxKind.UseKeyword;
 				case "import":
@@ -315,6 +319,10 @@ namespace Minsk.CodeAnalysis.Syntax
 
 				case SyntaxKind.LetKeyword:
 					return "let";
+				case SyntaxKind.ConstKeyword:
+					return "const";
+				case SyntaxKind.CastKeyword:
+					return "cast";
 				case SyntaxKind.TrueKeyword:
 					return "true";
 				case SyntaxKind.FalseKeyword:
