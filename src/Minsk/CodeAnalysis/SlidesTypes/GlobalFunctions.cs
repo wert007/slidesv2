@@ -133,8 +133,8 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 
 		public static ImageSource image(string fileName)
 		{
+			var result = new ImageSource(fileName);
 			var path = Path.Combine(CompilationFlags.Directory, fileName);
-			var result = new ImageSource(path);
 			using (var image = new MagickImage(path))
 			{
 				result.width = image.BaseWidth;

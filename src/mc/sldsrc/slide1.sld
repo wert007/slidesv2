@@ -47,14 +47,6 @@ import gfont('Quicksand') as quicksand;
 //   and look for differences.
 // - Full Range support in ArrayAccessors
 //   - Incomplete ranges. (like arr[..5] gives the first 5 elements) 
-// - Add Caption-Element
-//
-//		let ~img = new Image(imgSrc);
-//      let cptImg = new Captioned(~img, 'This is a picture');
-//      cptImg.captionPosition = Direction.South; //Maybe use something like bottom?
-//      cptImg.captionInside = false;
-//		cptImg.caption = new Label('You should not be able to do this, because this would destroy everything. so probably readonly.');
-//
 // - LaTeX support?
 // - make arrays safe. What do we do if we have an IndexOutOfBoundsException?
 //   Should we throw a runtime exception? **Should we try our best to don't do that

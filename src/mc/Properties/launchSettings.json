@@ -2,7 +2,7 @@
   "profiles": {
     "mc": {
       "commandName": "Project",
-      "commandLineArgs": "sldsrc/gti_qmc/presentation.sld gti_qmc -build-fresh"
+      "commandLineArgs": "sldsrc/transsib/presentation.sld transsib -build-fresh"
     }
   }
 }

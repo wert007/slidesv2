@@ -114,6 +114,35 @@ slide structListAndNode < withTitle:
     container.fill(~stack, ~cCode);
 endslide
 
+slide implementationOfPhaseIOverview < withTitle:
+    step _1:
+        setData('title', 'Implementierung von Phase I');
+
+        let captionedStructCode = new Container();
+        captionedStructCode.fill(new Captioned(code.codeblock(sourceCodeMainC, 111..123), 'main.c'));
+        captionedStructCode.applyStyle(qmcLib.captionedCode);
+
+/*
+
+div/captionedStructCode:
+    div/child: '' 
+    div/child_1: 111..123 
+    div/child_2: 125..134 invisible
+    div/child_3: 136..151 invisible
+    div/child_WrapItUp: 153..169 invisible
+    p/caption: 'main.c'
+
+*/
+
+    step _2:
+        captionedStructCode.fill(new Captioned(code.codeblock(sourceCodeMainC, 125..134), 'main.c'));
+    step _3:
+        captionedStructCode.fill(new Captioned(code.codeblock(sourceCodeMainC, 136..151), 'main.c'));
+    step _WrapItUp:
+        captionedStructCode.fill(new Captioned(code.codeblock(sourceCodeMainC, 153..169), 'main.c'));
+endslide
+/*
+//Replacement above!
 slide implementationOfPhaseIOverview1 < withTitle:
     setData('title', 'Implementierung von Phase I');
     let ~structCode = code.codeblock(sourceCodeMainC, 111..123);
@@ -141,6 +170,8 @@ slide implementationOfPhaseIWrapItUp < withTitle:
     let cCode = new Captioned(~structCode, 'main.c');
     cCode.applyStyle(qmcLib.captionedCode);
 endslide
+*/
+
 
 slide implementationOfPhaseICompare < withTitle:
     setData('title', 'Implementierung von Phase I');
@@ -158,7 +189,6 @@ slide implementationOfPhaseICompare < withTitle:
     ~list.margin.left = 30px;
     container.fill(~cCode, ~list);
 endslide
-
 
 slide implementationOfPhaseICombineComponents < withTitle:
     setData('title', 'Implementierung von Phase I');

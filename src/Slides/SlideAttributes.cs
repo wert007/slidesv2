@@ -10,6 +10,7 @@ namespace Slides
 		public string name { get; }
 		public int index { get; }
 		public bool isVisible { get; }
+		//TODO: Can this be deleted?
 		public int startTime { get; }
 		public Brush background { get; set; }
 		public Color color { get; set; }
@@ -30,6 +31,8 @@ namespace Slides
 			this.name = name;
 			this.index = index;
 			this.isVisible = isVisible;
+			padding = new Thickness();
+
 		}
 
 		public void applyStyle(CustomStyle style)

@@ -20,7 +20,7 @@ import gfont('Roboto') as mono;
 slide helloWorld:
 
 	//Variable declaration
-	//Keyword let marks a variable declaration followed by an identifier
+	//The keyword 'let' marks a variable declaration followed by an identifier
 	//
 	//Initializer ("new Label('Hello World')") is a Label-Constructor 
 	//with the label content as parameter
@@ -31,6 +31,7 @@ slide helloWorld:
 	lbl.font = mono;
 
 	//Sets the fontsize of this Label. pt is a Unit well fitted for text.
+	//pt should be about the same as fontsize in google docs.
 	//But you could as well use Pixel. If you have a good reason for that..
 	lbl.fontsize = 100pt;
 
@@ -59,7 +60,7 @@ endslide
 //		But it will be as well an index.css and an index.js
 //		generated. All other files are copied.
 
-//So let's look at a little more. Time for a new slide.
+//So let's take look at a little more code. Time for a new slide.
 slide howDoesThePresentationWork:
 	//This time we create Variable, which only contains data. 
 	//So it can't be drawn to the screen. In this case it's just
@@ -77,8 +78,8 @@ slide howDoesThePresentationWork:
 	let controls = 'With the up and down arrow keys you can switch between slides. \n' +
 					'And I don\'t have more to say. **Big** __italic **stuff**__(c)';
 	
-	//If you use controls now you need to use as well the post-tilde.
-	//If you forget them, the "compiler" will cry loudly!
+	//So just like before where we wrote the text for the Label directly
+	//between the parenthesis, we can know just use the variable.
 	let lblControls = new Label(controls);
 	lblControls.font = mono;
 	lblControls.orientation = Vertical.Center | Horizontal.Center;
@@ -88,6 +89,7 @@ slide howDoesThePresentationWork:
 	//These just translate to css-text-align properties.
 	lblControls.align = Alignment.Right;
 
+	//Rotation is currently in degree (0-360)
 	lblControls.rotation = 30;
 
 endslide
@@ -98,7 +100,7 @@ endslide
 style std:
 	//Here we set the font to mono. Just like we did
 	//before on all the labels. But now every Label
-	//and erverything else, that displays text will
+	//and everything else, that displays text will
 	//automatically have this font. If you want to
 	//use a special font for a single element you can
 	//just write "specialelement.font = comicSans;" and
@@ -112,14 +114,20 @@ endstyle
 //the tilde before the identifier tells you, that this slide is hidden,
 //when the html file is generated.
 slide ~hidden:
-	let lbl = new Label('This slide will be skipped during compile-time.');
-	
+	let lbl = new Label('This slide will be skipped during compile-time.');	
+endslide
+
+slide lists:
 	//So we have Lists as well. A List is a list of Labels, so all the formatting
 	//works as well. 
 	let list = new List();
 	//via the add function you can add a list item
-	list.add('Great for when you want to have different presentations, with the same topic.');
-	list.add('Like when you have different target groups.');
+	//It takes a string, which the list will put into a Label to display
+	list.add('Just some bullet points...');
+	//If you want to make use of sub levels you can give a integer
+	//as the first argument. It defaults to zero if left out.
+	list.add(1, '...telling you about this new programming language...');
+	list.add(2, '...for programming slides!');
 
 	//This is really helpful when styling your slides.
 	//you can set the margin values "top", "right", "bottom", "left"
@@ -127,7 +135,7 @@ slide ~hidden:
 	//
 	//In this case we set it to the bottom_side of our lbl. 
 	//So if we move our Label, the List will move as well.
-	list.margin.top = lbl.bottomSide;
+	//list.margin.top = lbl.bottomSide;
 endslide
 
 //This is a CustomStyle. It takes the visual element as parameter
@@ -140,12 +148,6 @@ style hoverStyle(element: any):
 endstyle
 
 slide hoverExample:
-	//TODO: This shouldn't be needed. I want to copy that totally normal.
-	//because our source file is in the same directory and it would be 
-	//strange, if its afterwards different.
-	//
-	//Seems normal now..
-
 	let imgSrc = image('desert.jpg');
 	let imgDesert = new Image(imgSrc);
 	imgDesert.orientation = Horizontal.Stretch | Vertical.Stretch;

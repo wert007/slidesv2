@@ -10,7 +10,7 @@
 	height = diameter;
 endsvggroup
 
-svggroup diagramArrows(maxWidth: int, maxR: int, pos: int):
+svg diagramArrows(maxWidth: int, maxR: int, pos: int):
 	width = 2 * maxR;
 	height = 2 * maxR;
 	let a = [:Path?;3];
@@ -23,7 +23,7 @@ svggroup diagramArrows(maxWidth: int, maxR: int, pos: int):
 		a[i].y = yPos[i] - 15;
 		a[i].fill = rgb(102, 102, 102);
 	endfor
-endsvggroup
+endsvg
 
 //svggroup diagramLabels(dist: int[], initialWidth: int):
 //	let labels = ['', 'Umland', 'Übergangsbereich', '', 'Downtown', 'Central Business District'];

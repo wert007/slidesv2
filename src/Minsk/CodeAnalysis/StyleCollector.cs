@@ -17,6 +17,7 @@ namespace Minsk.CodeAnalysis
 		private readonly string _name;
 		private SubstyleCollection _substyles;
 		private readonly TypeSymbol _elementType;
+		private readonly TypeSymbol _slideType;
 
 
 		public StyleCollector(BoundBlockStatement statement, string name, VariableValueCollection variables)
@@ -26,6 +27,7 @@ namespace Minsk.CodeAnalysis
 			_name = name;
 			_substyles = new SubstyleCollection();
 			_elementType = BuiltInTypes.Instance.LookSymbolUp(typeof(Element));
+			_slideType = BuiltInTypes.Instance.LookSymbolUp(typeof(SlideAttributes));
 		}
 
 		internal Style CollectFields()
@@ -134,7 +136,8 @@ namespace Minsk.CodeAnalysis
 
 		private Selector GetSelectorFromVariableExpression(BoundVariableExpression expression, bool isStdStyle)
 		{
-			if (isStdStyle) return Selector.CreateType(expression.Variable.Name);
+			//TODO: ToLower could be wrong. Maybe you only want the first letter to be lowered..
+			if (isStdStyle) return Selector.CreateType(expression.Variable.Name.ToLower());
 			return Selector.CreateCustom(_name);
 		}
 
@@ -155,7 +158,7 @@ namespace Minsk.CodeAnalysis
 		private Selector GetSelectorFromFieldAccessExpression(BoundFieldAccessExpression expression, bool isStdStyle)
 		{
 			var parentSelector = GetSelectorFromExpression(expression.Parent, isStdStyle);
-			if (expression.Type.CanBeConvertedTo(_elementType))
+			if (NeedsTypeAsSelector(expression.Type))
 				parentSelector.AddField(expression.Field.Variable.Name);
 			return parentSelector;
 		}
@@ -182,7 +185,7 @@ namespace Minsk.CodeAnalysis
 		private string GetFieldFromFieldAccessExpression(BoundFieldAccessExpression expression, bool isStdStyle)
 		{
 			var fieldName = expression.Field.Variable.Name;
-			if (expression.Parent.Type.CanBeConvertedTo(_elementType))
+			if (NeedsTypeAsSelector(expression.Parent.Type))
 				return fieldName;
 			else
 				return $"{GetFieldFromExpression(expression.Parent, isStdStyle)}-{fieldName}";
@@ -193,6 +196,14 @@ namespace Minsk.CodeAnalysis
 			_substyles = new SubstyleCollection();
 			CollectTypedFieldsFromStatement(statement);
 			return new CustomStyle(_name, _substyles);
+		}
+
+		//TODO: Naming! Essentially you ask if a type is
+		//      a Element or Slide and know you need to 
+		//      create a subtype for it.
+		private bool NeedsTypeAsSelector(TypeSymbol type)
+		{
+			return type.CanBeConvertedTo(_elementType) || type.CanBeConvertedTo(_slideType);
 		}
 	}
 }
