@@ -63,7 +63,6 @@ namespace HTMLWriter
 			if (presentation.Flags.CodeHighlighter != CodeHighlighter.None)
 			{
 				CopyFile("prism.js", targetDirectory, alwaysCopyEverything);
-				CopyFile("github.js", targetDirectory, alwaysCopyEverything);
 			}
 			using (FileStream stream = new FileStream(Path.Combine(targetDirectory, "index.html"), FileMode.Create))
 			using (_htmlWriter = new HTMLWriter(stream))

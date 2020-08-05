@@ -57,10 +57,8 @@ span.italic {
 	font-style: italic;
 }
 
-.codeblock-caption {
-	position: absolute;
-	top: 2%;
-	right: 2%;
+.codeblock>pre {
+	margin: 0 !important;
 }
 
 .slider {

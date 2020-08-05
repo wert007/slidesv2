@@ -133,6 +133,10 @@
       <Project>{48471C54-50FA-4FA6-9406-140A55690B8E}</Project>
       <Name>Github</Name>
     </ProjectReference>
+    <ProjectReference Include="..\SimpleLogger\SimpleLogger.csproj">
+      <Project>{6F72B942-D818-4071-A707-7DF818A8A977}</Project>
+      <Name>SimpleLogger</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SVGLib\SVGLib.csproj">
       <Project>{b2521bab-4f8e-4655-a2dd-61ba3b295440}</Project>
       <Name>SVGLib</Name>

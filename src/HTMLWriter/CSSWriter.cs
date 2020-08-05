@@ -1,5 +1,5 @@
-﻿using Slides;
-using Slides.Debug;
+﻿using SimpleLogger;
+using Slides;
 using Slides.Elements;
 using Slides.Helpers;
 using System;
@@ -124,7 +124,7 @@ namespace HTMLWriter
 				case "margin-bottom":
 					return field;
 				default:
-					Logger.LogUnmatchedCSSField(field);
+					Logger.Log($"Could not match field '{field}' to a css attribute.");
 					return field;
 			}
 		}
@@ -160,6 +160,15 @@ namespace HTMLWriter
 					break;
 				case Unit unit:
 					WriteUnit(unit);
+					break;
+				case Thickness thickness:
+					WriteValue(thickness.top);
+					_writer.Write(" ");
+					WriteValue(thickness.right);
+					_writer.Write(" ");
+					WriteValue(thickness.bottom);
+					_writer.Write(" ");
+					WriteValue(thickness.left);
 					break;
 				case Font font:
 					_writer.Write($"'{font.name}'");
@@ -214,7 +223,7 @@ namespace HTMLWriter
 					WriteFilter(addition.B);
 					return;
 				default:
-					Logger.LogUnknownFilter(filter.GetType(), filter.Name);
+					Logger.Log($"Unknown filter '{filter.GetType()}' found. Could not match name '{filter.Name}'.");
 					return;
 			}
 
@@ -282,28 +291,6 @@ namespace HTMLWriter
 		{
 			_writer.Flush();
 			_writer.Dispose();
-		}
-
-		public void WriteAlternateThickness(string field, Thickness value)
-		{
-			WriteAttribute(field, GetAlternativeThickness(value));
-		}
-
-		public string GetAlternativeThickness(Thickness value)
-		{
-			var stringBuilder = new StringBuilder();
-			stringBuilder.Append($"{GetAlternativeUnit(value.top, true)} {GetAlternativeUnit(value.right, false)} {GetAlternativeUnit(value.bottom, true)} {GetAlternativeUnit(value.left, false)}");
-			return stringBuilder.ToString();
-		}
-
-		private string GetAlternativeUnit(Unit value, bool isVertical)
-		{
-			if (value.Kind != Unit.UnitKind.Percent)
-				return GetValue(value);
-			var postfix = "vw";
-			if (isVertical)
-				postfix = "vh";
-			return $"{value.Value}{postfix}";
 		}
 
 		public static string GetValue(object value)

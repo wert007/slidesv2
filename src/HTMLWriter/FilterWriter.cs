@@ -1,5 +1,5 @@
-﻿using Slides;
-using Slides.Debug;
+﻿using SimpleLogger;
+using Slides;
 using SVGLib.Filters;
 using SVGLib.Filters.Lights;
 using System;
@@ -76,7 +76,7 @@ namespace HTMLWriter
 						WriteTileFilter(writer, filter, tile);
 						break;
 					default:
-						Logger.LogUnknownFilter(current.GetType(), current.Name);
+						Logger.Log($"Unknown filter '{current.GetType()}' found. Could not match name '{current.Name}'.");
 						break;
 				}
 			}

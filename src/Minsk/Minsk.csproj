@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Github\Github.csproj" />
+    <ProjectReference Include="..\SimpleLogger\SimpleLogger.csproj" />
     <ProjectReference Include="..\Slides\Slides.csproj" />
   </ItemGroup>
 

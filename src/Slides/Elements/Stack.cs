@@ -47,6 +47,7 @@ namespace Slides.Elements
 
 		internal override Unit get_InitialWidth()
 		{
+			if (children.Length == 0) return new Unit();
 			switch (StackFlow)
 			{
 				case FlowAxis.Horizontal:
@@ -75,6 +76,7 @@ namespace Slides.Elements
 
 		internal override Unit get_InitialHeight()
 		{
+			if (children.Length == 0) return new Unit();
 			switch (StackFlow)
 			{
 				case FlowAxis.Vertical:

@@ -25,7 +25,10 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			Console.WriteLine($"Loading {path}...");
 			string fileContent;
 			if (!File.Exists(path))
-				throw new ArgumentException();
+			{
+				Console.WriteLine($"{path} doesn't exist. Exiting...");
+				Environment.Exit(1);
+			}
 			using (FileStream fs = new FileStream(path, FileMode.Open))
 			using (StreamReader reader = new StreamReader(fs))
 			{

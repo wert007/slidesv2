@@ -1,10 +1,12 @@
 ﻿using Minsk.CodeAnalysis.Binding;
 using Minsk.CodeAnalysis.Symbols;
+using SimpleLogger;
 using Slides;
 using Slides.Elements;
 using Slides.Styling;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Minsk.CodeAnalysis
@@ -111,6 +113,9 @@ namespace Minsk.CodeAnalysis
 					var property = "non-css-custom-text-marker";
 					var value = _evaluator.EvaluateExpression(expression.FunctionCall.Arguments[0]);
 					_substyles.AddProperty(selector, property, value);
+					break;
+				case "applyStyle":
+					Logger.Log("applyStyle not supported");
 					break;
 				default:
 					throw new NotImplementedException();

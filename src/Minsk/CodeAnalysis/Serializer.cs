@@ -2,7 +2,7 @@
 using Minsk.CodeAnalysis.SlidesTypes;
 using Minsk.CodeAnalysis.Symbols;
 using Minsk.CodeAnalysis.Syntax;
-using Slides.Debug;
+using SimpleLogger;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -96,7 +96,7 @@ namespace Minsk.CodeAnalysis
 					break;
 				case BoundNodeKind.ErrorExpression:
 					result = "#ERROR";
-					Logger.LogUnexpectedErrorExpression(typeof(Serializer));
+					Logger.Log("Unexpected use of Serializer. (Actually we have a ErrorExpression..)");
 					break;
 				case BoundNodeKind.FieldAccessExpression:
 					result = SerializeFieldAccessExpression((BoundFieldAccessExpression)expression);

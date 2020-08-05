@@ -23,9 +23,10 @@ style subListStyleNoMarker(element: List):
     element.fontsize = 12pt;
 endstyle
 
-style containeredCaptionedCode(element : Container):
-    element.child.applyStyle(captionedCode);
-endstyle
+//NOT USED
+//style containeredCaptionedCode(element : Container):
+//    element.child.applyStyle(captionedCode);
+//endstyle
 
 style captionedCode(element : Captioned):
     element.fontsize = 10pt;

@@ -82,7 +82,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="sldsrc\transsib\presentation.sld">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="somefile.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

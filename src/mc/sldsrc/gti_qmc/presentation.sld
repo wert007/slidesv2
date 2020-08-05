@@ -113,7 +113,7 @@ slide structListAndNode < withTitle:
     ~cCode.applyStyle(qmcLib.captionedCode);
     container.fill(~stack, ~cCode);
 endslide
-
+/*
 slide implementationOfPhaseIOverview < withTitle:
     step _1:
         setData('title', 'Implementierung von Phase I');
@@ -132,7 +132,7 @@ div/captionedStructCode:
     div/child_WrapItUp: 153..169 invisible
     p/caption: 'main.c'
 
-*/
+* /
 
     step _2:
         captionedStructCode.fill(new Captioned(code.codeblock(sourceCodeMainC, 125..134), 'main.c'));
@@ -141,6 +141,7 @@ div/captionedStructCode:
     step _WrapItUp:
         captionedStructCode.fill(new Captioned(code.codeblock(sourceCodeMainC, 153..169), 'main.c'));
 endslide
+*/
 /*
 //Replacement above!
 slide implementationOfPhaseIOverview1 < withTitle:

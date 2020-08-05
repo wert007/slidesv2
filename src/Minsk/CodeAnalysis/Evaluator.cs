@@ -7,7 +7,6 @@ using Minsk.CodeAnalysis.SlidesTypes;
 using Minsk.CodeAnalysis.Symbols;
 using Slides;
 using Slides.Code;
-using Slides.Debug;
 using Slides.MathExpressions;
 using SVGGroup = SVGLib.ContainerElements.Group;
 using Color = Slides.Color;
@@ -20,6 +19,7 @@ using Slides.Helpers;
 using System.IO;
 using SVGLib.Filters;
 using Slides.Styling;
+using SimpleLogger;
 
 namespace Minsk.CodeAnalysis
 {
@@ -196,6 +196,11 @@ namespace Minsk.CodeAnalysis
 
 			var styleCollector = new StyleCollector(node.BoundBody, node.Variable?.Name ?? "std", _variables);
 			var style = styleCollector.CollectFields();
+			//TODO(Structure): The Element class shouldn't have to keep track of the
+			// std style. It should be stored in the presentation. So you would have to
+			// initialize firstly the presentation and then add the elements and everything
+			// right now we do it the other way around. We collect the elements and everything 
+			// and then we create a presentation with them!
 			if(node.Variable == null)
 				Element.SetStdStyle((StdStyle)style);
 			_presentationBuilder.AddStyle(node.Variable ?? new VariableSymbol("std", true, _builtInTypes.LookSymbolUp(typeof(StdStyle)), false), style);
@@ -256,7 +261,7 @@ namespace Minsk.CodeAnalysis
 						break;
 					default:
 						if (!(value.Value is Element) && !(value.Value is TransitionSlide))
-							Logger.LogUnusedVariableInBlock(value.Key.Name, value.Value.GetType(), "transition " + name);
+							Logger.Log($"Unused variable{value.Key.Name} : {value.Value.GetType()} in transition {name}");
 						break;
 				}
 			}

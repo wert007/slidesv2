@@ -1,4 +1,5 @@
-﻿using Slides.Styling;
+﻿using SimpleLogger;
+using Slides.Styling;
 using System;
 using System.Collections.Generic;
 
@@ -18,7 +19,7 @@ namespace Slides.Elements
 					var name = substyle.Selector.Child.Name;
 					if (!_namedChildren.ContainsKey(name))
 					{
-						Console.WriteLine($"WARNING: Could not find a children named '{name}' for Element '{get_Id()}'.");
+						Logger.Log($"Could not find a children named '{name}' for Element '{get_Id()}'.");
 						continue;
 					}
 					var element = _namedChildren[name];

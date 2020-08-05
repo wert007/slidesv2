@@ -1,0 +1,33 @@
+<html>
+    <head>
+        <style>
+            * {position:absolute;}
+            body {
+                width: 100vw;
+                height: 100vh;
+                margin: 0;
+            }
+            .captioned {
+                position:absolute;
+                left: 50.00%;
+                top: 50.00%;
+                transform: translateY(-50%) translateX(-50%);
+                width: 40%;
+            }
+
+            .captioned * {
+                position: relative;
+            }
+
+            .captioned img {
+                width: 100%;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="captioned">
+                <img src="desert.jpg">
+                <p>Wüste.</p>
+        </div>
+    </body>
+</html>

@@ -8,6 +8,8 @@ namespace Slides.Styling
 	{
 		private readonly Dictionary<string, Substyle> _substyles = new Dictionary<string, Substyle>();
 
+		public int Count => _substyles.Count;
+
 		public void AddSubstyle(Substyle style)
 		{
 			_substyles.Add(style.Selector.ToString(), style);

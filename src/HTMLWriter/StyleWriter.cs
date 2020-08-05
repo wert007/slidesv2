@@ -1,7 +1,7 @@
-﻿using Slides;
+﻿using SimpleLogger;
+using Slides;
 using Slides.Code;
 using Slides.Data;
-using Slides.Debug;
 using Slides.Elements;
 using Slides.Helpers;
 using Slides.Styling;
@@ -79,6 +79,11 @@ namespace HTMLWriter
 
 		private static void WriteCustomStyle(CSSWriter writer, CustomStyle style)
 		{
+			if(style.Substyles.Count == 0)
+			{
+				Logger.Log($"Empty style {style.Name} found after evaluation.");
+				return;
+			}
 			writer.StartClass($"{style.Name}");
 			Transition toWrite = null;
 			foreach (var property in style.Substyles.GetRootCustomStyle().Properties)
@@ -203,10 +208,12 @@ namespace HTMLWriter
 			writer.WriteAttributeIfValue("color", parent.Attributes.color);
 			writer.WriteAttributeIfValue("font-size", parent.Attributes.fontsize);
 			writer.WriteAttributeIfValue("font-family", parent.Attributes.font);
-			if (parent.Attributes.padding != null)
+			var padding = parent.Attributes.get_ActualPadding();
+			if (padding != new Thickness())
 			{
-				writer.WriteAlternateThickness("margin", parent.Attributes.padding);
-				writer.WriteAttribute("height", 100 - parent.Attributes.padding.top.Value - parent.Attributes.padding.bottom.Value + "vh");
+				writer.WriteAttributeIfNotDefault("margin", padding, new Thickness());
+				//writer.WriteAttribute("height", new Unit(100, Unit.UnitKind.Percent) - padding.Vertical);
+				//writer.WriteAttribute("width", new Unit(100, Unit.UnitKind.Percent) - padding.Horizontal);
 			}
 			writer.EndSelector();
 		}
@@ -297,7 +304,7 @@ namespace HTMLWriter
 			var appliedStyles = element.get_AppliedStyles();
 			if (element.position == null)
 			{
-				if (parent != null && parent is Stack || parent is List)
+				if (parent != null && parent is Stack || parent is List || parent is Captioned)
 					writer.WriteAttribute("position", "relative");
 				else
 					writer.WriteAttribute("position", "absolute");
@@ -341,7 +348,7 @@ namespace HTMLWriter
 				}
 				else if (element.get_StyleHeight() == null)
 				{
-					writer.WriteAttribute("height", "fit-content");
+					//writer.WriteAttribute("height", "fit-content");
 				}
 				else
 					writer.WriteAttributeIfValue("height", element.get_StyleHeight());
@@ -351,7 +358,7 @@ namespace HTMLWriter
 					writer.WriteAttribute("width", unit100Percent - m.Horizontal);
 				else if (element.get_StyleWidth() == null)
 				{
-					writer.WriteAttribute("width", "fit-content");
+					//writer.WriteAttribute("width", "fit-content");
 				}
 				else
 					writer.WriteAttributeIfValue("width", element.get_StyleWidth());

@@ -75,8 +75,27 @@ namespace Slides.Elements
 					child.orientation = Orientation.RightStretch;
 					break;
 			}
-			//initHeight = get_InitialHeight();
-			//initWidth = get_InitialWidth();
+			if (CaptionPlacementIsVertical(captionPlacement))
+				_height = null;
+			else
+				_width = null;
+
+			//if(CaptionPlacementIsVertical(captionPlacement))
+			//{
+			//	if (_width != null)
+			//		child.width = _width;
+			//	//TODO: Find something more generic then image??
+			//	if (child is Image)
+			//		child.height = new Unit(100, Unit.UnitKind.Percent) - caption.height;
+			//}
+			//else
+			//{
+			//	if (_height != null)
+			//		child.height = _height;
+			//	//TODO: Find something more generic then image??
+			//	if (child is Image)
+			//		child.width = new Unit(100, Unit.UnitKind.Percent) - caption.width;
+			//}
 		}
 
 		protected override IEnumerable<Element> get_Children()
@@ -87,18 +106,44 @@ namespace Slides.Elements
 
 		internal override Unit get_InitialHeight()
 		{
+			//TODO: This is wrong! get_InitialHeight() should never(!) return null
+			// instead fiddle with get_StyleHeight() or NeedsInitialSizeCalculated!
+			if (CaptionPlacementIsVertical(captionPlacement)) return null;
+			var childHeight = child.height;
 			if (captionPlacement == CaptionPlacement.TopOutwards || captionPlacement == CaptionPlacement.BottomOutwards)
-				return child.height + caption.height;
+				return childHeight + caption.height;
 			else
-				return child.height;
+				return childHeight;
 		}
 
 		internal override Unit get_InitialWidth()
 		{
-			if(captionPlacement == CaptionPlacement.LeftOutwards || captionPlacement == CaptionPlacement.RightOutwards)
-				return child.width + caption.width;
+			if (!CaptionPlacementIsVertical(captionPlacement)) return null;
+			var childWidth = child.width;
+			if (captionPlacement == CaptionPlacement.LeftOutwards || captionPlacement == CaptionPlacement.RightOutwards)
+				return childWidth + caption.width;
 			else
-				return child.width;
+				return childWidth;
+		}
+
+
+		private bool CaptionPlacementIsVertical(CaptionPlacement captionPlacement)
+		{
+			switch (captionPlacement)
+			{
+				case CaptionPlacement.TopInwards:
+				case CaptionPlacement.BottomInwards:
+				case CaptionPlacement.TopOutwards:
+				case CaptionPlacement.BottomOutwards:
+					return true;
+				case CaptionPlacement.RightInwards:
+				case CaptionPlacement.LeftInwards:
+				case CaptionPlacement.RightOutwards:
+				case CaptionPlacement.LeftOutwards:
+					return false;
+				default:
+					throw new NotImplementedException();
+			}
 		}
 	}
 }

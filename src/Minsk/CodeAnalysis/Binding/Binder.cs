@@ -8,7 +8,6 @@ using Minsk.CodeAnalysis.Symbols;
 using Minsk.CodeAnalysis.Syntax;
 using Minsk.CodeAnalysis.Text;
 using Slides;
-using Slides.Debug;
 using Slides.MathExpressions;
 using SVGLib.GraphicsElements;
 using SVGGroup = SVGLib.ContainerElements.Group;
@@ -17,6 +16,7 @@ using SVGLib.ContainerElements;
 using System.Text;
 using Slides.Elements;
 using Slides.Styling;
+using SimpleLogger;
 
 namespace Minsk.CodeAnalysis.Binding
 {
@@ -304,7 +304,7 @@ namespace Minsk.CodeAnalysis.Binding
 					variableSymbol = facc.Field.Variable;
 					break;
 				default:
-					Logger.LogUnmatchedIfConditionVariableExtractment(boundCondition);
+					Logger.Log($"Unexpected '{boundCondition.Kind}' for if-statement with variable extraction.");
 					//TODO(Time): Add diagnostics for this case. Maybe. Let time decide.
 					//If we will never run into this, then we should add a diagnostics
 					//here.
@@ -1394,7 +1394,7 @@ namespace Minsk.CodeAnalysis.Binding
 			}
 			else
 			{
-				Logger.LogCannotTestImageFunction(pathExpression.Kind.ToString());
+				Logger.Log($"Can't test image function! ParameterExpression is of kind '{pathExpression.Kind}'.");
 
 			}
 		}

@@ -8,7 +8,6 @@ using Minsk.CodeAnalysis.Lowering;
 using Minsk.CodeAnalysis.SlidesTypes;
 using Minsk.CodeAnalysis.Symbols;
 using Minsk.CodeAnalysis.Syntax;
-using Slides.Debug;
 
 namespace Minsk.CodeAnalysis
 {

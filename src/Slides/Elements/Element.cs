@@ -334,25 +334,39 @@ namespace Slides.Elements
 		internal abstract Unit get_InitialWidth();
 		internal abstract Unit get_InitialHeight();
 
-		//TODO: should orientation be more important than width? idk
 		protected Unit get_ActualWidth()
+		{
+			var result = get_StatedWidth();
+			if (result != null) return result;
+			return get_InitialWidth();
+		}
+
+		//TODO: should orientation be more important than width? idk
+		internal Unit get_StatedWidth()
 		{
 			if (_width != null)
 				return _width;
 			var m = get_ActualMargin();
 			if (SlidesHelper.GetHorizontal(orientation) == Horizontal.Stretch && h_AllowsHorizontalStretching)
 				return new Unit(100, Unit.UnitKind.Percent) - m.Horizontal;
-			return get_InitialWidth();
+			return null;
 		}
 
 		protected Unit get_ActualHeight()
+		{
+			var result = get_StatedHeight();
+			if (result != null) return result;
+			return get_InitialHeight();
+		}
+
+		internal Unit get_StatedHeight()
 		{
 			if (_height != null)
 				return _height;
 			var m = get_ActualMargin();
 			if (SlidesHelper.GetVertical(orientation) == Vertical.Stretch && h_AllowsVerticalStretching)
 				return new Unit(100, Unit.UnitKind.Percent) - m.Vertical;
-			return get_InitialHeight();
+			return null;
 		}
 
 		private Thickness get_ActualMargin()
@@ -378,7 +392,7 @@ namespace Slides.Elements
 			return null;
 		}
 
-		private Thickness get_FieldAsThickness(string name)
+		protected Thickness get_FieldAsThickness(string name)
 		{
 			object result = get_Property(name);
 			foreach (var style in appliedStyles)

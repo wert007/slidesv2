@@ -59,6 +59,10 @@
       <Project>{6FE6F7CC-1626-4731-9B68-7236B5A4C94C}</Project>
       <Name>Minsk</Name>
     </ProjectReference>
+    <ProjectReference Include="..\SimpleLogger\SimpleLogger.csproj">
+      <Project>{6f72b942-d818-4071-a707-7df818a8a977}</Project>
+      <Name>SimpleLogger</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Slides\Slides.csproj">
       <Project>{297FD628-5222-45A4-BE79-B23C740442AD}</Project>
       <Name>Slides</Name>

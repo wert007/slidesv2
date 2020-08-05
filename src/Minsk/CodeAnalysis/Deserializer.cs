@@ -2,8 +2,8 @@
 using Minsk.CodeAnalysis.SlidesTypes;
 using Minsk.CodeAnalysis.Symbols;
 using Minsk.CodeAnalysis.Syntax;
+using SimpleLogger;
 using Slides;
-using Slides.Debug;
 using Slides.Elements;
 using Slides.Styling;
 using System;
@@ -152,7 +152,7 @@ namespace Minsk.CodeAnalysis
 				case BoundNodeKind.EnumExpression:
 					return DeserializeEnumExpression();
 				case BoundNodeKind.ErrorExpression:
-					Logger.LogUnexpectedErrorExpression(typeof(Deserializer));
+					Logger.Log("Unexpected use of Deserializer. (Actually we have a ErrorExpression..)");
 					return new BoundErrorExpression();
 				case BoundNodeKind.FieldAccessExpression:
 					return DeserializeFieldAccessExpression();
@@ -313,7 +313,7 @@ namespace Minsk.CodeAnalysis
 				if (reference.Name == name)
 					return reference;
 			}
-			Logger.LogUnknownLibrary(name, _referenced);
+			Logger.Log($"Unexpected use of Deserializer. (Actually no library named '{name}' found. Only {string.Join(", ", _referenced, null)} where referenced.)");
 			return new LibrarySymbol(name);
 		}
 
@@ -347,7 +347,7 @@ namespace Minsk.CodeAnalysis
 			{
 				return timeResult;
 			}
-			Logger.LogUnmatchedBoundNodeToken(token);
+			Logger.Log($"Unexpected use of Deserializer. (Actually unexpected token {token})");
 			return token;
 		}
 

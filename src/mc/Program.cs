@@ -4,8 +4,8 @@ using Minsk.CodeAnalysis.SlidesTypes;
 using Minsk.CodeAnalysis.Symbols;
 using Minsk.CodeAnalysis.Syntax;
 using Minsk.CodeAnalysis.Text;
+using SimpleLogger;
 using Slides;
-using Slides.Debug;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -51,8 +51,7 @@ namespace Minsk
 				PresentationWriter.Write(presentation, targetDirectory, true);
 			}
 
-			var level = LogLevel.All;
-			Logger.Flush(level);
+			Logger.Flush();
 
 			//BIG TODO: We loose a lot of time with our libraries.
 			//Soooo.... I think we should introduce binaries
@@ -65,9 +64,9 @@ namespace Minsk
 				Console.WriteLine($"It took {time.Value.ToString().PadLeft(4)}ms to {time.Key}.");
 			}
 			Console.WriteLine($"It took {result.Timewatch.GetTotal()}ms complete.");
-			Console.WriteLine("");
-			Console.WriteLine("Press enter to exit.");
-			Console.ReadLine();
+			//Console.WriteLine("");
+			//Console.WriteLine("Press enter to exit.");
+			//Console.ReadLine();
 		}
 	}
 }

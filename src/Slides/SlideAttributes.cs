@@ -1,4 +1,5 @@
-﻿using Slides.Styling;
+﻿using Slides.Elements;
+using Slides.Styling;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,6 +34,7 @@ namespace Slides
 			this.isVisible = isVisible;
 			padding = new Thickness();
 
+
 		}
 
 		public void applyStyle(CustomStyle style)
@@ -55,6 +57,15 @@ namespace Slides
 		public CustomStyle[] get_AppliedStyles()
 		{
 			return appliedStyles.ToArray();
+		}
+
+		public Thickness get_ActualPadding()
+		{
+			if (padding != new Thickness()) return padding;
+			var style = Element.StdStyle.GetStyle("slide");
+			if(style != null && style.HasProperty("padding"))
+				return (Thickness)style.GetValue("padding");
+			return new Thickness();
 		}
 	}
 }

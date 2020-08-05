@@ -1,7 +1,7 @@
 ﻿using ImageMagick;
 using Minsk.CodeAnalysis.Symbols;
+using SimpleLogger;
 using Slides;
-using Slides.Debug;
 using Slides.Elements;
 using System;
 using System.Globalization;
@@ -285,7 +285,7 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 				}
 				catch (Exception e)
 				{
-					Logger.LogConnectionProblems(url);
+					Logger.Log($"Cannot connect to '{url}'.");
 				}
 			}
 			return tmp;
