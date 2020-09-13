@@ -187,7 +187,7 @@ namespace Minsk.CodeAnalysis
 
 		public void ReportUndefinedEnumValue(TextSpan span, EnumTypeSymbol enumType, string memberName)
 		{
-			string[] mostSimiliarNames = SimiliarValues(enumType.Values, memberName);
+			var mostSimiliarNames = SimiliarValues(enumType.Values.Distinct().ToArray(), memberName);
 			var message = $"Enum '{enumType}' doesn't contain value named '{memberName}'. Maybe try {Join(mostSimiliarNames, "'", "'")}.";
 			Report(span, message, DiagnosticLevel.Error);
 		}
@@ -205,7 +205,7 @@ namespace Minsk.CodeAnalysis
 			var message = $"Field '{parent}.{name}' doesn't exist.";
 			if (parent is AdvancedTypeSymbol advanced)
 			{
-				var mostSimiliarOnes = SimiliarValues(advanced.Fields.Select(v => v.Name).ToArray(), name);
+				var mostSimiliarOnes = SimiliarValues(advanced.Fields.Select(v => v.Name).Distinct().ToArray(), name);
 				if(mostSimiliarOnes.Length > 0)
 					message += $" Maybe try {Join(mostSimiliarOnes, "'", "'")}.";
 			}
@@ -231,7 +231,7 @@ namespace Minsk.CodeAnalysis
 			var message = $"Function '{parent}.{name}' doesn't exist.";
 			if (parent is AdvancedTypeSymbol advanced)
 			{
-				var mostSimiliarOnes = SimiliarValues(advanced.Functions.Select(f => f.Name).ToArray(), name);
+				var mostSimiliarOnes = SimiliarValues(advanced.Functions.Select(f => f.Name).Distinct().ToArray(), name);
 				if (mostSimiliarOnes.Length > 0)
 					message += $" Maybe try {Join(mostSimiliarOnes, "'", "'")}.";
 			}
@@ -241,7 +241,7 @@ namespace Minsk.CodeAnalysis
 		public void ReportUndefinedFunction(TextSpan span, string name, LibrarySymbol library)
 		{
 			var message = $"Function '{library.Name}.{name} doesn't exist in '{library.Name}'.";
-			var mostSimiliarOnes = SimiliarValues(library.GlobalFunctions.Select(f => f.Name).ToArray(), name);
+			var mostSimiliarOnes = SimiliarValues(library.GlobalFunctions.Select(f => f.Name).Distinct().ToArray(), name);
 			if (mostSimiliarOnes.Length > 0)
 				message += $" Maybe try {Join(mostSimiliarOnes, "'", "'")}.";
 			Report(span, message, DiagnosticLevel.Error);

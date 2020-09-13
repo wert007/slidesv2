@@ -115,11 +115,13 @@ namespace Minsk.CodeAnalysis
 			Add(typeof(LibrarySymbol), CreateEmptySymbol("Library"));
 
 			Add(typeof(BorderStyle));
+			Add(typeof(BorderStyleQuadruple), isData: true);
 			Add(typeof(Direction));
 			Add(typeof(Time.TimeUnit));
 			Add(typeof(Time), isData: true);
 			Add(typeof(Thickness));
 			Add(typeof(Color), isData: true);
+			Add(typeof(ColorQuadruple), isData: true);
 			Add(typeof(Font), isData: true);
 			Add(typeof(ImageSource), isData: true);
 			Add(typeof(CSVFile), isData: true);
@@ -133,7 +135,7 @@ namespace Minsk.CodeAnalysis
 
 			Add(typeof(Filter), isData: true);
 
-			Add(typeof(FormattedString));
+			//Add(typeof(FormattedString));
 			
 			Add(typeof(SVGColor));
 			Add(typeof(SVGMatrix), isData: true);
@@ -419,7 +421,13 @@ namespace Minsk.CodeAnalysis
 				var parameter = new VariableSymbolCollection();
 				foreach (var para in method.GetParameters())
 				{
-					parameter.Add(new VariableSymbol(para.Name.ToVariableLower(), true, LookSymbolUp(para.ParameterType), false));
+					if (para.ParameterType == type)
+					{
+						todoList.Add(mname);
+						parameter.Add(new VariableSymbol(para.Name.ToVariableLower(), true, null, false));
+					}
+					else
+						parameter.Add(new VariableSymbol(para.Name.ToVariableLower(), true, LookSymbolUp(para.ParameterType), false));
 				}
 				parameter.Seal();
 				if (method.ReturnType != type)
@@ -435,11 +443,13 @@ namespace Minsk.CodeAnalysis
 					todoList.Add(mname);
 				}
 			}
+			/*
 			//TODO: Why do we have this? Isn't there already a applyStyle in Element?
 			if (typeof(Element).IsAssignableFrom(type))
 			{
 				functions.Add(new FunctionSymbol("applyStyle", new VariableSymbol("style", true, LookSymbolUp(typeof(Style)), false), PrimitiveTypeSymbol.Void));
 			}
+			*/
 			functions.Seal();
 			var parent = type.BaseType;
 			TypeSymbol parentSymbol = null;
@@ -453,8 +463,15 @@ namespace Minsk.CodeAnalysis
 					variable.Type = symbol;
 				if (functions.TryLookUp(todo, out FunctionSymbol[] function))
 					foreach (var f in function)
+					{
 						if (f.Type == null)
 							f.Type = symbol;
+						foreach (var p in f.Parameter)
+						{
+							if (p.Type == null)
+								p.Type = symbol;
+						}
+					}
 			}
 			foreach (var c in constructor)
 			{

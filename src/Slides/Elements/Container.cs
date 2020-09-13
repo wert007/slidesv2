@@ -21,17 +21,20 @@ namespace Slides.Elements
 
 		internal override Unit get_InitialHeight()
 		{
+			if (child == null) return new Unit();
 			return child.get_InitialHeight();
 		}
 
 		internal override Unit get_InitialWidth()
 		{
+			if (child == null) return new Unit();
 			return child.get_InitialWidth();
 		}
 
 		protected override IEnumerable<Element> get_Children()
 		{
-			yield return child;
+			if(child != null)
+				yield return child;
 		}
 	}
 }

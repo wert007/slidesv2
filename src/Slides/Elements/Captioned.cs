@@ -35,7 +35,6 @@ namespace Slides.Elements
 		public override ElementKind kind => ElementKind.Captioned;
 		public override bool h_AllowsHorizontalStretching => child.h_AllowsHorizontalStretching;
 		public override bool h_AllowsVerticalStretching => child.h_AllowsVerticalStretching;
-		protected override bool NeedsInitialSizeCalculated => true;
 
 		private CaptionPlacement _captionPlacement;
 
@@ -48,6 +47,23 @@ namespace Slides.Elements
 				_captionPlacement = value;
 				UpdateLayout();
 			}
+		}
+
+		protected override Unit get_UninitializedStyleHeight()
+		{
+			// Didn't really think about always returning null, but it seems to work?
+			//if (CaptionPlacementIsVertical(captionPlacement)) return null;
+			//return get_InitialHeight();
+			return null;
+		}
+
+		
+		protected override Unit get_UninitializedStyleWidth()
+		{
+			// Didn't really think about always returning null, but it seems to work?
+			//if (!CaptionPlacementIsVertical(captionPlacement)) return null;
+			//return get_InitialWidth();
+			return null;
 		}
 
 		protected override void UpdateLayout()
@@ -76,26 +92,17 @@ namespace Slides.Elements
 					break;
 			}
 			if (CaptionPlacementIsVertical(captionPlacement))
-				_height = null;
+			{
+				if (child is Image && _height != null)
+					child.height = new Unit(100, Unit.UnitKind.Percent) - caption.height;
+			//	_height = null;
+			}
 			else
-				_width = null;
-
-			//if(CaptionPlacementIsVertical(captionPlacement))
-			//{
-			//	if (_width != null)
-			//		child.width = _width;
-			//	//TODO: Find something more generic then image??
-			//	if (child is Image)
-			//		child.height = new Unit(100, Unit.UnitKind.Percent) - caption.height;
-			//}
-			//else
-			//{
-			//	if (_height != null)
-			//		child.height = _height;
-			//	//TODO: Find something more generic then image??
-			//	if (child is Image)
-			//		child.width = new Unit(100, Unit.UnitKind.Percent) - caption.width;
-			//}
+			{
+				if (child is Image && _width != null)
+					child.width = new Unit(100, Unit.UnitKind.Percent) - caption.width;
+			//	_width = null;
+			}
 		}
 
 		protected override IEnumerable<Element> get_Children()
@@ -106,9 +113,6 @@ namespace Slides.Elements
 
 		internal override Unit get_InitialHeight()
 		{
-			//TODO: This is wrong! get_InitialHeight() should never(!) return null
-			// instead fiddle with get_StyleHeight() or NeedsInitialSizeCalculated!
-			if (CaptionPlacementIsVertical(captionPlacement)) return null;
 			var childHeight = child.height;
 			if (captionPlacement == CaptionPlacement.TopOutwards || captionPlacement == CaptionPlacement.BottomOutwards)
 				return childHeight + caption.height;
@@ -118,8 +122,8 @@ namespace Slides.Elements
 
 		internal override Unit get_InitialWidth()
 		{
-			if (!CaptionPlacementIsVertical(captionPlacement)) return null;
 			var childWidth = child.width;
+			Console.WriteLine("ChildWidth is " + childWidth);
 			if (captionPlacement == CaptionPlacement.LeftOutwards || captionPlacement == CaptionPlacement.RightOutwards)
 				return childWidth + caption.width;
 			else

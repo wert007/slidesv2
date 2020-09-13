@@ -41,7 +41,7 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			return result;
 		}
 		public static bool contains(string hay, string needle) => hay.Contains(needle);
-		public static FormattedString fmt(string str) => FormattedString.FromString(str);
+		//public static FormattedString fmt(string str) => FormattedString.FromString(str);
 		public static string toTime(int time)
 		{
 			var result = new StringBuilder();

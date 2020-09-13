@@ -6,6 +6,7 @@ body {
 	margin-inline-start: 0;
 	margin-inline-end: 0;
 	overflow: hidden;
+	font-size: 19.60pt; /* equals 14pt in slides*/
 	/*line-height: 1.4em;*/
 }
 
@@ -22,6 +23,18 @@ table, table * {
 tr, tbody {
 	font-family: inherit;
 	font-size: inherit;
+}
+
+ul, ol {
+	/*Right now every element has its padding set to 0 (which is wrong)
+		but to rescue lists, we have to override the specific style of each
+		element with a !important here! (Might be temporary)
+	*/
+	padding-inline-start: revert !important;
+}
+
+.label-container * {
+	position: relative;
 }
 
 ul li, ol li {
@@ -58,7 +71,7 @@ span.italic {
 }
 
 .codeblock>pre {
-	margin: 0 !important;
+	margin: 0 !important; /*prism.css has a margin which we overwise couldn't override.*/
 }
 
 .slider {
@@ -116,6 +129,13 @@ svg#custom-filters {
 .slide {
 	height: 100vh;
 	width: 100vw;
+	position: absolute;
+}
+
+.slide-content {
+	height: 100%;
+	width: 100%;
+	position: relative;
 }
 
 .step {

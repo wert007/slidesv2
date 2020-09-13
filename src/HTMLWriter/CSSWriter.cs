@@ -105,7 +105,6 @@ namespace HTMLWriter
 				case "align":
 					return "text-align";
 				case "borderWidth":
-				case "borderThickness":
 					return "border-width";
 				case "borderColor":
 					return "border-color";
@@ -142,6 +141,27 @@ namespace HTMLWriter
 			{
 				case Color c:
 					_writer.Write(ToString(c));
+					break;
+				case ColorQuadruple colorQuadruple:
+					WriteValue(colorQuadruple.top);
+					_writer.Write(" ");
+					WriteValue(colorQuadruple.right);
+					_writer.Write(" ");
+					WriteValue(colorQuadruple.bottom);
+					_writer.Write(" ");
+					WriteValue(colorQuadruple.left);
+					break;
+				case BorderStyle borderStyle:
+					WriteBorderStyle(borderStyle);
+					break;
+				case BorderStyleQuadruple borderStyleQuadruple:
+					WriteValue(borderStyleQuadruple.top);
+					_writer.Write(" ");
+					WriteValue(borderStyleQuadruple.right);
+					_writer.Write(" ");
+					WriteValue(borderStyleQuadruple.bottom);
+					_writer.Write(" ");
+					WriteValue(borderStyleQuadruple.left);
 					break;
 				case Alignment a:
 					WriteAlignment(a);
@@ -247,11 +267,54 @@ namespace HTMLWriter
 			}
 		}
 
+		private void WriteBorderStyle(BorderStyle b)
+		{
+			switch (b)
+			{
+				case BorderStyle.Unset: //None is default value
+				case BorderStyle.None:
+					_writer.Write("none");
+					break;
+				case BorderStyle.Hidden:
+					_writer.Write("hidden");
+					break;
+				case BorderStyle.Dotted:
+					_writer.Write("dotted");
+					break;
+				case BorderStyle.Dashed:
+					_writer.Write("dashed");
+					break;
+				case BorderStyle.Solid:
+					_writer.Write("solid");
+					break;
+				case BorderStyle.Double:
+					_writer.Write("double");
+					break;
+				case BorderStyle.Groove:
+					_writer.Write("groove");
+					break;
+				case BorderStyle.Ridge:
+					_writer.Write("ridge");
+					break;
+				case BorderStyle.Inset:
+					_writer.Write("inset");
+					break;
+				case BorderStyle.Outset:
+					_writer.Write("outset");
+					break;
+				default:
+					throw new NotImplementedException(); ;
+			}
+		}
+
 		private void WriteAlignment(Alignment a)
 		{
 			switch (a)
 			{
 				case Alignment.Unset:
+					Logger.Log("Trying to write (Label-)Alignment.Unset.");
+					_writer.Write("unset");
+					break;
 				case Alignment.Left:
 					_writer.Write("left");
 					break;

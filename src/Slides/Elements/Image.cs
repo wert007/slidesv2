@@ -1,5 +1,6 @@
 ﻿using Slides.Data;
 using Slides.Helpers;
+using System;
 
 namespace Slides.Elements
 {
@@ -18,13 +19,22 @@ namespace Slides.Elements
 
 		public override ElementKind kind => ElementKind.Image;
 
-		protected override bool NeedsInitialSizeCalculated => h_parent == null;
+		protected override Unit get_UninitializedStyleHeight()
+		{
+			if (h_parent != null) return null;
+			return get_InitialHeight();
+		}
+		protected override Unit get_UninitializedStyleWidth()
+		{
+			if (h_parent != null) return null;
+			return get_InitialWidth();
+		}
 		internal override Unit get_InitialHeight()
 		{
 			Unit statedWidth = null;
 			if (_width != null)
 				statedWidth = _width;
-			var m = get_FieldAsThickness("margin") ?? new Thickness();
+			var m = get_ActualValue(nameof(margin)) as Thickness ?? new Thickness();
 			if (SlidesHelper.GetHorizontal(orientation) == Horizontal.Stretch && h_AllowsHorizontalStretching)
 				statedWidth = new Unit(100, Unit.UnitKind.Percent) - m.Horizontal;
 			if (h_parent != null)

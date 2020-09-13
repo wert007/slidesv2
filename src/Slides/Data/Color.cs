@@ -4,10 +4,13 @@ using System.Collections.Generic;
 
 namespace Slides
 {
+
 	[Serializable]
 	public class Color
 	{
 		public static readonly Color Transparent = new Color(0, 0, 0, 0);
+		internal static readonly Color Black = new Color(0, 0, 0, 255);
+
 		public byte R { get; }
 		public byte G { get; }
 		public byte B { get; }

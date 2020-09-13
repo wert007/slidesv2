@@ -19,6 +19,11 @@ namespace Slides
 	public class Unit
 	{
 		private static CultureInfo _usCulture = CultureInfo.CreateSpecificCulture("US-us");
+		internal static readonly Unit HundredPercent = new Unit(100, UnitKind.Percent);
+		internal static readonly Unit Thin   = new Unit(1, UnitKind.Pixel);
+		internal static readonly Unit Medium = new Unit(3, UnitKind.Pixel);
+		internal static readonly Unit Thick  = new Unit(5, UnitKind.Pixel);
+
 		public float Value { get; }
 		public UnitKind Kind { get; }
 

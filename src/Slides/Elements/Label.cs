@@ -10,7 +10,7 @@
 		public Label(string text)
 		{
 			this.text = text;
-			align = Alignment.Left;
+			align = Alignment.Unset;
 			fontsize = null;
 		}
 

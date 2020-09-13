@@ -333,3 +333,6 @@ ASALocalRun/
 # Local History for Visual Studio
 .localhistory/
 /src/mc/slides
+/src/mc/gti_qmc
+/src/mc/transsib
+/transsib/gfx

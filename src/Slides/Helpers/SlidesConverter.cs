@@ -81,5 +81,44 @@ namespace Slides.Helpers
 			}
 
 		}
+
+		public static ColorQuadruple ConvertToColorQuadruple(object value)
+		{
+			switch (value)
+			{
+				case ColorQuadruple q:
+					return q;
+				case Color c:
+					return new ColorQuadruple(c, c, c, c);
+				default:
+			throw new NotImplementedException();
+			}
+		}
+
+		public static BorderStyleQuadruple ConvertToBorderStyleQuadruple(object value)
+		{
+			switch (value)
+			{
+				case BorderStyleQuadruple q:
+					return q;
+				case BorderStyle b:
+					return new BorderStyleQuadruple(b, b, b, b);
+				default:
+					throw new NotImplementedException();
+			}
+		}
+
+		public static Thickness ConvertToThickness(object value)
+		{
+			switch (value)
+			{
+				case Thickness t:
+					return t;
+				case Unit u:
+					return new Thickness(u, u, u, u);
+				default:
+					throw new NotImplementedException();
+			}
+		}
 	}
 }

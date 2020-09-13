@@ -490,11 +490,13 @@ namespace Minsk.CodeAnalysis.Binding
 				{
 					_scope.TryDeclare(field, null);
 				}
+				//TODO: Incomplete!
 				_scope.TryDeclare(new VariableSymbol("Slide", false, _builtInTypes.LookSymbolUp(typeof(SlideAttributes)), false));
 				_scope.TryDeclare(new VariableSymbol("Label", false, _builtInTypes.LookSymbolUp(typeof(Label)), false));
 				_scope.TryDeclare(new VariableSymbol("Image", false, _builtInTypes.LookSymbolUp(typeof(Image)), false));
 				_scope.TryDeclare(new VariableSymbol("Table", false, _builtInTypes.LookSymbolUp(typeof(Table)), false));
 				_scope.TryDeclare(new VariableSymbol("List", false, _builtInTypes.LookSymbolUp(typeof(List)), false));
+				_scope.TryDeclare(new VariableSymbol("Captioned", false, _builtInTypes.LookSymbolUp(typeof(Captioned)), false));
 			}
 			_assignedVariables.Clear();
 			var boundBody = BindBlockStatement(syntax.Body);

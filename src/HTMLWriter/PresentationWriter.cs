@@ -277,10 +277,12 @@ namespace HTMLWriter
 			StyleWriter.WriteSlide(_cssWriter, slide);
 			_htmlWriter.PushAttribute("data-transition-id", _stdTransition);
 			_htmlWriter.StartTag("section", id: slide.Name, classes: "slide");
+			_htmlWriter.StartTag("div", classes: "slide-content");
 			foreach (var step in slide.Steps)
 			{
 				WriteStep(slide, step);
 			}
+			_htmlWriter.EndTag();
 			if (slide.Parent != null)
 				Write(slide, slide.Parent);
 			_htmlWriter.EndTag();
@@ -676,8 +678,10 @@ namespace HTMLWriter
 			var id = $"{parentName}-{element.name}";
 			if (string.IsNullOrEmpty(element.name))
 				id = null;
+			_htmlWriter.StartTag("div", classes: "label-container", useNewLine: false);
 			_htmlWriter.StartTag("p", id: id, classes: "label " + optionalFieldName + " " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)), useNewLine: false);
 			WriteFormattedText(element.text);
+			_htmlWriter.EndTag(useNewLine: false);
 			_htmlWriter.EndTag();
 		}
 
@@ -722,10 +726,8 @@ namespace HTMLWriter
 
 		private static void WriteFormattedText(string text)
 		{
-			text = FormattedString.Convert(text);
+			text = FormattedString.Convert(text).ToHTML();
 			var span = new StringBuilder();
-			var useItalics = false;
-			var useBolds = false;
 			for (int i = 0; i < text.Length; i++)
 			{
 				var prev = '\0';
@@ -736,36 +738,6 @@ namespace HTMLWriter
 					next = text[i + 1];
 				switch (character)
 				{
-					case '_':
-						if (next == '_')
-						{
-							_htmlWriter.Write(span.ToString());
-							if (useItalics)
-								_htmlWriter.EndTag(false);
-							else  //Smartass move. Either you need to end the old tag or start a new one.
-								_htmlWriter.StartTag("span", classes: "italic", useNewLine: false);
-							useItalics = !useItalics;
-							span.Clear();
-							i++;
-						}
-						else
-							span.Append(character);
-						break;
-					case '*':
-						if (next == '*')
-						{
-							_htmlWriter.Write(span.ToString());
-							if (useBolds)
-								_htmlWriter.EndTag(false);
-							else  //Smartass move. Either you need to end the old tag or start a new one.
-								_htmlWriter.StartTag("span", classes: "bold", useNewLine: false);
-							useBolds = !useBolds;
-							span.Clear();
-							i++;
-						}
-						else
-							span.Append(character);
-						break;
 					case '\\':
 						i++;
 						switch (next)
@@ -817,8 +789,6 @@ namespace HTMLWriter
 			}
 
 			_htmlWriter.Write(span.ToString());
-			if (useItalics)
-				_htmlWriter.EndTag(false);
 		}
 
 		private static void WriteBoxElement(string parentName, BoxElement element, string optionalFieldName)

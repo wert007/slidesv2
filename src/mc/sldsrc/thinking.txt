@@ -1,0 +1,61 @@
+Bold
+Italic
+Underline
+Strikethrough
+Font-size
+Font color
+Center text
+Left align
+Right align
+Quote
+Quote (named)
+Link
+Link (named)
+List
+List item
+Code
+
+
+================================================
+Grammar:
+
+TAG:       [TAGNAME(=ATTRIBUTE)?]CONTENT[/TAGNAME]
+TAGNAME:   ascii*
+ATTRIBUTE: .(except ' ',']')*|".*"
+CONTENT:   .*(TAG .*)?
+
+
+[b](http://github.com)[/b]
+
+
+Done
+[i]italic[/i]
+[size=40px]font-size[/size]
+[color=#f00]font-color[/color]
+[b]bold [/b]
+[u]underline[/u]
+[s]strikethrough[/s]
+[center]center-text[/center]
+[left]left-text[/left]
+[right]right-text[/right]
+[quote]quote[/quote]
+[quote="someone"]quote by someone[/quote]
+[url]example.com[/url]
+[url=example.com]example[/url]
+[code]actually not monospaced, but we can use [b][/code]
+[list]
+[*]item one
+[*]item two
+[/list]
+[list=1]
+[*]item one
+[*]item two
+[/list]
+[list=i]
+[*]item one
+[*]item two
+[/list]
+[list=a]
+[*]item one
+[*]item two
+[/list]

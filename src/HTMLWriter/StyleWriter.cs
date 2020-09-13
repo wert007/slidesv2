@@ -22,6 +22,7 @@ namespace HTMLWriter
 			foreach (var property in substyle.Properties)
 			{
 				//if (property.IsNonCSS) continue;
+				if (substyle.Selector.Name == "slide" && property.Key == "padding") continue;
 				writer.WriteAttribute(CSSWriter.ToCssAttribute(property.Key), property.Value);
 			}
 			writer.EndSelector();
@@ -197,6 +198,14 @@ namespace HTMLWriter
 			writer.WriteAttributeIfValue("font-size", slide.Attributes.fontsize);
 			writer.WriteAttributeIfValue("font-family", slide.Attributes.font);
 			writer.EndId();
+
+			writer.StartSelector($"#{slide.Name}>.slide-content");
+			var padding = slide.Attributes.get_ActualPadding();
+			var fullSize = new Unit(100, Unit.UnitKind.Percent);
+			writer.WriteAttributeIfNotDefault("margin", padding, new Thickness());
+			writer.WriteAttributeIfNotDefault("width", fullSize - padding.Horizontal, fullSize);
+			writer.WriteAttributeIfNotDefault("height", fullSize - padding.Vertical, fullSize);
+			writer.EndSelector();
 		}
 
 		public static void WriteStep(CSSWriter writer, Step step, Slide parent)
@@ -208,13 +217,6 @@ namespace HTMLWriter
 			writer.WriteAttributeIfValue("color", parent.Attributes.color);
 			writer.WriteAttributeIfValue("font-size", parent.Attributes.fontsize);
 			writer.WriteAttributeIfValue("font-family", parent.Attributes.font);
-			var padding = parent.Attributes.get_ActualPadding();
-			if (padding != new Thickness())
-			{
-				writer.WriteAttributeIfNotDefault("margin", padding, new Thickness());
-				//writer.WriteAttribute("height", new Unit(100, Unit.UnitKind.Percent) - padding.Vertical);
-				//writer.WriteAttribute("width", new Unit(100, Unit.UnitKind.Percent) - padding.Horizontal);
-			}
 			writer.EndSelector();
 		}
 
@@ -224,11 +226,11 @@ namespace HTMLWriter
 				return;
 			var id = $"{parentName}-{element.name}";
 			writer.StartId($"{id}");
-			WriteBrush(writer, element.background);
-			var properties = new string[] { "borderColor", "borderStyle", "borderThickness", "color", "filter", "padding" };
+			WriteBrush(writer, element.h_Background);
+			var properties = new string[] { "borderColor", "borderStyle", "borderWidth", "color", "filter", "padding" };
 			foreach (var prop in properties)
 			{
-				writer.WriteAttributeIfValue(CSSWriter.ToCssAttribute(prop), element.get_Property(prop));
+				writer.WriteAttributeIfValue(CSSWriter.ToCssAttribute(prop), element.get_ActualField(prop));
 			}
 			WriteOrientation(writer, element, parent);
 
@@ -247,7 +249,7 @@ namespace HTMLWriter
 					switch (e)
 					{
 						case Label l:
-							writer.WriteAttribute("text-align", l.align);
+							writer.WriteAttributeIfNotDefault("text-align", l.align, Alignment.Unset);
 							break;
 						case List list:
 							writer.WriteAttributeIfNotDefault("list-style-type", list.markerType, List.ListMarkerType.Disk);
@@ -273,7 +275,7 @@ namespace HTMLWriter
 				if (!listCustomMarker.isOrdered && listCustomMarker.get_TextMarker() != null)
 				{
 					writer.StartId($"{id} li", "before");
-					writer.WriteAttribute("content", $"\"{FormattedString.Convert(listCustomMarker.get_TextMarker())}\"");
+					writer.WriteAttribute("content", $"\"{FormattedString.Convert(listCustomMarker.get_TextMarker()).ToHTML()}\"");
 					writer.WriteAttribute("left", "0");
 					writer.WriteAttribute("position", "absolute");
 					writer.EndSelector();
@@ -301,12 +303,11 @@ namespace HTMLWriter
 		//In CSS and in Slides. 
 		private static void WriteOrientation(CSSWriter writer, Element element, Element parent = null)
 		{
-			var appliedStyles = element.get_AppliedStyles();
-			if (element.position == null)
+			if (string.IsNullOrEmpty(element.position))
 			{
-				if (parent != null && parent is Stack || parent is List || parent is Captioned)
+				if (parent != null && parent is Stack || parent?.kind == ElementKind.List || parent?.kind == ElementKind.Captioned)
 					writer.WriteAttribute("position", "relative");
-				else
+				else if(element.kind != ElementKind.Label)
 					writer.WriteAttribute("position", "absolute");
 			}
 			else
@@ -327,15 +328,6 @@ namespace HTMLWriter
 
 			var unit100Percent = new Unit(100, Unit.UnitKind.Percent);
 			var orientation = element.orientation;
-			//as far as I know, this should be handled in element already
-			//if (element.get_Property("orientation") == null)
-			//{
-			//	foreach (var style in appliedStyles)
-			//	{
-			//		if (style.ModifiedFields.ContainsKey("orientation"))
-			//			orientation = (Orientation)style.ModifiedFields["orientation"];
-			//	}
-			//}
 			var hasHorizontalStretch = SlidesHelper.GetHorizontal(orientation) == Horizontal.Stretch && element.h_AllowsHorizontalStretching;
 			var hasVerticalStretch = SlidesHelper.GetVertical(orientation) == Vertical.Stretch && element.h_AllowsVerticalStretching;
 

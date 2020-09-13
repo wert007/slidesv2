@@ -5,24 +5,70 @@ using Slides.Transforms;
 using SVGLib.Filters;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Security.Policy;
 using System.Text;
 
 namespace Slides.Elements
 {
 	public abstract class Element : IFilterInput
 	{
+		public ColorQuadruple h_BorderColor { get; private set; }
+		public Thickness h_BorderWidth { get; private set; }
+		public Brush h_Background { get; private set; }
+		public Color h_Color { get; private set; }
+		public Filter h_Filter { get; private set; }
+		public Thickness h_Margin { get; private set; }
+		public Thickness h_Padding { get; private set; }
+		public Unit h_Width { get; private set; }
+		public Unit h_Height { get; private set; }
+		public bool? h_IsVisible { get; private set; }
+
+
 		//Maybe temporary. Could be that we need to support all css attributes. 
 		//If that happens we should think about something a little smarter..
 		//
 		//Actually. That should NEVER happen!
-		public string position { get; set; } = null;
+		public string position { get; set; } = "";
 
-		public Color borderColor { get; set; }
-		public Thickness borderThickness { get; set; }
-		public BorderStyle borderStyle { get; set; }
-		public Brush background { get; set; }
-		public Color color { get; set; }
-		public Filter filter { get; set; }
+		public ColorQuadruple borderColor
+		{
+			get
+			{
+				if(h_BorderColor == null)
+					h_BorderColor = new ColorQuadruple(color, color, color, color);
+				return h_BorderColor;
+			}
+
+			set => h_BorderColor = value;
+		}
+		public Thickness borderWidth
+		{
+			get
+			{
+				if(h_BorderWidth == null)
+					h_BorderWidth = new Thickness(Unit.Medium, Unit.Medium, Unit.Medium, Unit.Medium);
+				return h_BorderWidth;
+			}
+
+			set => h_BorderWidth = value;
+		}
+		public BorderStyleQuadruple borderStyle { get; set; }
+		public Brush background { get => h_Background ?? new Brush(Color.Transparent); set => h_Background = value; }
+		public Color color
+		{
+			get
+			{
+				if (h_Color == null) return h_parent?.color ?? Color.Black;
+				return h_Color;
+			}
+			set => h_Color = value;
+		}
+		public Filter n_filter
+		{
+			get => h_Filter ?? h_parent?.n_filter;
+			set => h_Filter = value;
+		}
 		private Orientation _orientation;
 		public Orientation orientation
 		{
@@ -32,99 +78,30 @@ namespace Slides.Elements
 				UpdateLayout();
 			}
 		}
-		public Thickness margin { get; set; }
-		public Thickness padding { get; set; }
-		public Thickness marginAndPadding => margin + padding;
-		public ParentElement h_parent { get; set; }
-		public virtual Unit top
+		//NOTE: The getter on those two is a little bit wrong.
+		//		  you don't want to set the margin to initialized if 
+		//      you read from it.. but we have to because the user
+		//      may change the returned value, and they should change
+		//      h_Margin and not some newly created object!
+		public Thickness margin
 		{
-			get
-			{
-				var m = get_ActualMargin();
-				switch (orientation)
-				{
-					case Orientation.LeftTop:
-					case Orientation.StretchTop:
-					case Orientation.CenterTop:
-					case Orientation.RightTop:
-						return m.top;
-					case Orientation.LeftCenter:
-					case Orientation.StretchCenter:
-					case Orientation.Center:
-					case Orientation.RightCenter:
-						return new Unit(50, Unit.UnitKind.Percent) - get_ActualHeight() * 0.5f;
-					case Orientation.LeftStretch:
-					case Orientation.Stretch:
-					case Orientation.CenterStretch:
-					case Orientation.RightStretch:
-						return m.top;
-					case Orientation.LeftBottom:
-					case Orientation.StretchBottom:
-					case Orientation.CenterBottom:
-					case Orientation.RightBottom:
-						return new Unit(100, Unit.UnitKind.Percent) - get_ActualHeight();
-					default:
-						throw new NotImplementedException();
-				}
-			}
+			get { if (h_Margin == null) h_Margin = new Thickness(); return h_Margin; }
+			set => h_Margin = value;
 		}
-		public virtual Unit left
+		public Thickness padding
 		{
-			get
-			{
-				var m = get_ActualMargin();
-				switch (orientation)
-				{
-					case Orientation.LeftTop:
-					case Orientation.LeftCenter:
-					case Orientation.LeftStretch:
-					case Orientation.LeftBottom:
-						return m.left;
-					case Orientation.CenterTop:
-					case Orientation.Center:
-					case Orientation.CenterStretch:
-					case Orientation.CenterBottom:
-						return new Unit(50, Unit.UnitKind.Percent) - get_ActualWidth() * 0.5f;
-					case Orientation.StretchTop:
-					case Orientation.StretchCenter:
-					case Orientation.Stretch:
-					case Orientation.StretchBottom:
-						return m.left;
-					case Orientation.RightTop:
-					case Orientation.RightCenter:
-					case Orientation.RightStretch:
-					case Orientation.RightBottom:
-						return new Unit(100, Unit.UnitKind.Percent) - get_ActualWidth();
-					default:
-						throw new NotImplementedException();
-				}
-			}
+			get { if (h_Padding == null) h_Padding = new Thickness(); return h_Padding; }
+			set => h_Padding = value;
 		}
-		public virtual Unit bottom
-		{
-			get { return margin.bottom; }
-		}
-		public virtual Unit right
-		{
-			get { return margin.right; }
-		}
-		public Unit rightSide
-		{
-			get { return left + get_ActualWidth(); }
-		}
-		public Unit bottomSide
-		{
-			get { return top + get_ActualHeight(); }
-		}
-
 
 		public Unit width
 		{
 			get
 			{
+				var paddingHorizontal = (get_ActualValue("padding") as Thickness)?.Horizontal ?? new Unit();
 				if (_width != null)
-					return _width;
-				return get_ActualWidth();
+					return _width + paddingHorizontal;
+				return get_ActualWidth() + paddingHorizontal;
 			}
 			set
 			{
@@ -136,9 +113,10 @@ namespace Slides.Elements
 		{
 			get
 			{
+				var paddingVertical = (get_ActualValue("padding") as Thickness)?.Vertical ?? new Unit();
 				if (_height != null)
-					return _height;
-				return get_ActualHeight();
+					return _height + paddingVertical;
+				return get_ActualHeight() + paddingVertical;
 			}
 			set
 			{
@@ -148,13 +126,109 @@ namespace Slides.Elements
 		}
 		protected Unit _width = null;
 		protected Unit _height = null;
-		public string name { get; set; }
-		public bool isVisible { get; set; }
+
+		public bool isVisible
+		{
+			get => h_IsVisible ?? h_parent == null || h_parent.isVisible;
+			set => h_IsVisible = value;
+		}
 		public CustomStyle hover { get; set; }
+
+		public Thickness marginAndPadding => margin + padding;
+		public ParentElement h_parent { get; set; }
+		public virtual Unit top
+		{
+			get
+			{
+				var m = get_ActualValue(nameof(margin)) as Thickness ?? new Thickness();
+				var verticalOrientation = SlidesHelper.GetVertical(orientation);
+				switch (verticalOrientation)
+				{
+					case Vertical.Top:
+					case Vertical.Stretch:
+						return m.top;
+					case Vertical.Center:
+						return (Unit.HundredPercent - m.bottom + m.top - height) * 0.5f;
+					case Vertical.Bottom:
+						return Unit.HundredPercent - height - m.bottom;
+					default:
+						throw new Exception();
+				}
+			}
+		}
+		public virtual Unit left
+		{
+			get
+			{
+				var m = get_ActualValue(nameof(margin)) as Thickness ?? new Thickness();
+				var horizontalOrientation = SlidesHelper.GetHorizontal(orientation);
+				switch (horizontalOrientation)
+				{
+					case Horizontal.Left:
+					case Horizontal.Stretch:
+						return m.left;
+					case Horizontal.Center:
+						return (Unit.HundredPercent - m.right + m.left - width) * 0.5f;
+					case Horizontal.Right:
+						return Unit.HundredPercent - width - margin.right;
+					default:
+						throw new Exception();
+				}
+			}
+		}
+		public virtual Unit bottom
+		{
+			get
+			{
+				var m = get_ActualValue(nameof(margin)) as Thickness ?? new Thickness();
+				var verticalOrientation = SlidesHelper.GetVertical(orientation);
+				switch (verticalOrientation)
+				{
+					case Vertical.Bottom:
+					case Vertical.Stretch:
+						return m.bottom;
+					case Vertical.Center:
+						return (Unit.HundredPercent - m.top + m.bottom - height) * 0.5f;
+					case Vertical.Top:
+						return Unit.HundredPercent - height - m.top;
+					default:
+						throw new Exception();
+				}
+			}
+		}
+		public virtual Unit right
+		{
+			get
+			{
+				var m = get_ActualValue(nameof(margin)) as Thickness ?? new Thickness();
+				var horizontalOrientation = SlidesHelper.GetHorizontal(orientation);
+				switch (horizontalOrientation)
+				{
+					case Horizontal.Right:
+					case Horizontal.Stretch:
+						return m.right;
+					case Horizontal.Center:
+						return (Unit.HundredPercent - m.left + m.right - width) * 0.5f;
+					case Horizontal.Left:
+						return Unit.HundredPercent - width - margin.left;
+					default:
+						throw new Exception();
+				}
+			}
+		}
+		public Unit rightSide
+		{
+			get { return left + get_ActualWidth() + padding.Horizontal; }
+		}
+		public Unit bottomSide
+		{
+			get { return top + get_ActualHeight() + padding.Vertical; }
+		}
+
+		public string name { get; set; }
 		public abstract ElementKind kind { get; }
 		public virtual bool h_AllowsVerticalStretching { get; } = true;
 		public virtual bool h_AllowsHorizontalStretching { get; } = true;
-		protected virtual bool NeedsInitialSizeCalculated { get; } = false;
 
 		private Stack<Style> appliedStyles;
 
@@ -172,14 +246,14 @@ namespace Slides.Elements
 		public Element()
 		{
 			borderColor = null;
-			borderThickness = new Thickness();
-			borderStyle = BorderStyle.Unset;
+			borderWidth = null;
+			borderStyle = new BorderStyleQuadruple();
 			background = null;
-			color = new Color(0, 0, 0, 0);
+			color = null;
 			_orientation = Orientation.LeftTop;
-			margin = new Thickness();
-			padding = new Thickness();
-			isVisible = true;
+			margin = null;
+			padding = null;
+			h_IsVisible = null;
 			appliedStyles = new Stack<Style>();
 
 			_width = null;
@@ -282,54 +356,93 @@ namespace Slides.Elements
 			return _transforms.ToArray();
 		}
 
-		/// <summary>
-		/// Gets the elements property.
-		/// Return null if the name couldn't be matched to any property.
-		/// </summary>
-		/// <param name="name">Must be the element property name.</param>
-		/// <returns></returns>
-		public object get_Property(string name)
-		{
-			object styleValue = null;
-			if (StdStyle != null)
-				foreach (var field in StdStyle.GetMainStyle().Properties)
-					if (field.Key == name)
-						styleValue = field.Value;
-			foreach (var style in appliedStyles)
-				foreach (var field in style.GetMainStyle().Properties)
-					if (field.Key == name)
-						styleValue = field.Value;
-			switch (name)
-			{
-				case "borderColor":
-					return borderColor ?? styleValue;
-				case "borderThickness":
-					if (borderThickness == new Thickness()) return styleValue;
-					return borderThickness;
-				case "borderStyle":
-					if (borderStyle == BorderStyle.Unset) return styleValue;
-					return borderStyle;
-				case "background":
-					return background ?? styleValue;
-				case "color":
-					if (color.Equals(Color.Transparent))
-						return styleValue;
-					return color;
-				case "orientation":
-					//TODO: Shouldn't we return the style value? And not null? And why do we check the Stylevalue?
-					if (orientation == Orientation.LeftTop && styleValue != null) return null;
-					return orientation;
-				case "margin":
-					if (margin == new Thickness()) return styleValue;
-					return margin;
-				case "padding":
-					if (padding == new Thickness()) return styleValue;
-					return padding;
-				case "filter": return filter ?? styleValue;
-				default:
-					return styleValue;
-			}
-		}
+		///// <summary>
+		///// Gets the elements property.
+		///// Return null if the name couldn't be matched to any property.
+		///// </summary>
+		///// <param name="name">Must be the element property name.</param>
+		///// <returns></returns>
+		//public object get_Property(string name)
+		//{
+		//	object styleValue = null;
+		//	if (StdStyle != null)
+		//	{
+		//		foreach (var field in StdStyle.GetMainStyle().Properties)
+		//			if (field.Key == name)
+		//				styleValue = field.Value;
+
+		//		//This all is dead weight. 
+		//		//We look for the name of the Class. So in the case of a captioned
+		//		//we look for Captioned.Label but actually we would need
+		//		//Captioned.caption.
+		//		//
+		//		//So either the label 'caption' needs to know that it is a caption
+		//		//or the Captioned must look for such styles and notify the caption! 
+		//		var curParent = h_parent;
+		//		var parentClassNames = new List<string>();
+		//		parentClassNames.Add(GetType().Name);
+		//		while (curParent != null)
+		//		{
+		//			parentClassNames.Add(curParent.GetType().Name);
+		//			curParent = curParent.h_parent;
+		//		}
+		//		parentClassNames.Reverse();
+		//		foreach (var substyle in StdStyle.Substyles.GetIterator())
+		//		{
+		//			if (substyle.Selector.Kind == SelectorKind.Type && substyle.Selector.Name == parentClassNames[0].ToLower())
+		//			{
+		//				var currentSelector = substyle.Selector;
+		//				var index = 0;
+		//				while (currentSelector != null)
+		//				{
+		//					if (index >= parentClassNames.Count)
+		//						break;
+		//					if (currentSelector.Name != parentClassNames[index].ToLower())
+		//						break;
+		//					index++;
+		//					currentSelector = currentSelector.Child;
+		//				}
+		//				//We found something!
+		//				if (currentSelector == null && index == parentClassNames.Count && substyle.HasProperty(name))
+		//					styleValue = substyle.GetValue(name);
+		//			}
+		//		}
+		//	}
+		//	foreach (var style in appliedStyles)
+		//		foreach (var field in style.GetMainStyle().Properties)
+		//			if (field.Key == name)
+		//				styleValue = field.Value;
+		//	switch (name)
+		//	{
+		//		case "borderColor":
+		//			return borderColor ?? styleValue;
+		//		case "borderWidth":
+		//			if (borderWidth == new Thickness()) return styleValue;
+		//			return borderWidth;
+		//		case "borderStyle":
+		//			if (borderStyle == BorderStyle.Unset) return styleValue;
+		//			return borderStyle;
+		//		case "background":
+		//			return background ?? styleValue;
+		//		case "color":
+		//			if (color.Equals(Color.Transparent))
+		//				return styleValue;
+		//			return color;
+		//		case "orientation":
+		//			//TODO: Shouldn't we return the style value? And not null? And why do we check the Stylevalue?
+		//			if (orientation == Orientation.LeftTop && styleValue != null) return null;
+		//			return orientation;
+		//		case "margin":
+		//			if (margin == new Thickness()) return styleValue ?? new Thickness();
+		//			return margin;
+		//		case "padding":
+		//			if (padding == new Thickness()) return styleValue ?? new Thickness();
+		//			return padding;
+		//		case "filter": return n_filter ?? styleValue;
+		//		default:
+		//			return styleValue;
+		//	}
+		//}
 
 		internal abstract Unit get_InitialWidth();
 		internal abstract Unit get_InitialHeight();
@@ -346,9 +459,9 @@ namespace Slides.Elements
 		{
 			if (_width != null)
 				return _width;
-			var m = get_ActualMargin();
+			var m = get_ActualValue(nameof(margin)) as Thickness ?? new Thickness();
 			if (SlidesHelper.GetHorizontal(orientation) == Horizontal.Stretch && h_AllowsHorizontalStretching)
-				return new Unit(100, Unit.UnitKind.Percent) - m.Horizontal;
+				return new Unit(100, Unit.UnitKind.Percent) - m.Horizontal - padding.Horizontal;
 			return null;
 		}
 
@@ -363,46 +476,82 @@ namespace Slides.Elements
 		{
 			if (_height != null)
 				return _height;
-			var m = get_ActualMargin();
+			var m = get_ActualValue(nameof(margin)) as Thickness ?? new Thickness();
 			if (SlidesHelper.GetVertical(orientation) == Vertical.Stretch && h_AllowsVerticalStretching)
-				return new Unit(100, Unit.UnitKind.Percent) - m.Vertical;
+				return new Unit(100, Unit.UnitKind.Percent) - m.Vertical - padding.Vertical;
 			return null;
-		}
-
-		private Thickness get_ActualMargin()
-		{
-			return get_FieldAsThickness("margin") ?? h_parent?.get_ActualMargin() ?? new Thickness();
 		}
 
 		public Unit get_StyleWidth()
 		{
 			if (_width != null)
 				return _width;
-			if (NeedsInitialSizeCalculated)
-				return get_InitialWidth();
-			return null;
+			return get_UninitializedStyleWidth();
 		}
 
 		public Unit get_StyleHeight()
 		{
 			if (_height != null)
 				return _height;
-			if (NeedsInitialSizeCalculated)
-				return get_InitialHeight();
+			return get_UninitializedStyleHeight();
+		}
+
+		public object get_ActualValue(string name)
+		{
+			var result = get_ActualField(name);
+			if (result != null) return result;
+			foreach (var style in appliedStyles)
+			{
+				if (!style.GetMainStyle().HasProperty(name)) continue;
+				result = style.GetMainStyle().GetValue(name);
+				if (result != null) return result;
+			}
+			if (h_parent != null)
+				result = h_parent.get_ActualValue(name);
+			if (result != null) return result;
+			//TODO: How do we look up shit in the std-Style?
 			return null;
 		}
 
-		protected Thickness get_FieldAsThickness(string name)
+		public object get_ActualField(string name)
 		{
-			object result = get_Property(name);
-			foreach (var style in appliedStyles)
+			switch (name)
 			{
-				if (result != null) break;
-				if (style.Substyles.GetRootCustomStyle().HasProperty(name))
-					result = style.Substyles.GetRootCustomStyle().Properties[name];
+				case nameof(position):
+					return string.IsNullOrEmpty(position) ? null : position;
+				case nameof(borderColor):
+					return h_BorderColor;
+				case nameof(borderWidth):
+					return h_BorderWidth;
+				case nameof(borderStyle):
+					return borderStyle.h_IsUnset ? null : borderStyle;
+				case nameof(background):
+					return h_Background;
+				case nameof(color):
+					return h_Color;
+				case "filter": //todo: idrk..
+				case nameof(n_filter):
+					return h_Filter;
+				case nameof(orientation):
+					return orientation;
+				case nameof(margin):
+					return h_Margin;
+				case nameof(padding):
+					return h_Padding;
+				case nameof(width):
+					return h_Width;
+				case nameof(height):
+					return h_Height;
+				case nameof(isVisible):
+					return h_IsVisible;
+				default:
+					throw new Exception();
 			}
-			return result as Thickness;
 		}
+
+		protected virtual Unit get_UninitializedStyleHeight() => null;
+		protected virtual Unit get_UninitializedStyleWidth() => null;
+
 		public void set_Step(Step step) => this.step = step;
 		public Step get_Step() => step;
 		public void set_SlideStyle(SlideAttributes slide) => slideStyle = slide;

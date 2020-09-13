@@ -27,7 +27,6 @@ namespace Slides.Elements
 
 		public override Unit top => _top;
 		public override Unit left => _left;
-		protected override bool NeedsInitialSizeCalculated => true;
 
 		public void set_Top(Unit t) => _top = t;
 		public void set_Left(Unit l) => _left = l;
@@ -49,6 +48,8 @@ namespace Slides.Elements
 		internal Unit get_UserDefinedHeight() => _height;
 		internal Unit get_UserDefinedWidth() => _width;
 
+		protected override Unit get_UninitializedStyleHeight() => get_InitialHeight();
+		protected override Unit get_UninitializedStyleWidth() => get_InitialWidth();
 
 		protected override void UpdateLayout()
 		{

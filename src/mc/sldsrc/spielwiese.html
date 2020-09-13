@@ -1,33 +1,60 @@
 <html>
-    <head>
-        <style>
-            * {position:absolute;}
-            body {
-                width: 100vw;
-                height: 100vh;
-                margin: 0;
-            }
-            .captioned {
-                position:absolute;
-                left: 50.00%;
-                top: 50.00%;
-                transform: translateY(-50%) translateX(-50%);
-                width: 40%;
-            }
 
-            .captioned * {
-                position: relative;
-            }
+<head>
+    <style>
+        * {
+            position: relative;
+            box-sizing: border-box;
+        }
 
-            .captioned img {
-                width: 100%;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="captioned">
-                <img src="desert.jpg">
-                <p>Wüste.</p>
+        body {
+            width: 100vw;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .demoWrapper {
+            padding: 10%;
+            background: chartreuse;
+            
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-height: 100%;
+            max-width: 100%;
+        }
+
+        /* div {
+            width: 100%;
+            padding-bottom: 30%;
+            padding-top: 30%;
+            background: gold;
+            position: relative;
+        } */
+
+        #center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+    </style>
+</head>
+
+<body>
+    <div style="background:red; filter:grayscale(70%)">
+        <strong>looooooooooool <em>du nase</strong>-enB&auml;r</em>
+        <div style="background:blue; filter:grayscale(70%)">
+        Helloooooo
         </div>
-    </body>
+    </div>
+    
+    <!-- <div class="demoWrapper">
+        <div></div>
+        <span id="center">Hello World from the middle</span>
+        <span>Other thing</span>
+    </div> -->
+</body>
+
 </html>

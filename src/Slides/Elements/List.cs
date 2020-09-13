@@ -67,6 +67,11 @@ namespace Slides.Elements
 			add(0, listItem);
 		}
 
+		public void add(List subList)
+		{
+			add(0, subList);
+		}
+
 		public void add(int level, string listItem)
 		{
 			if (level != 0)
@@ -79,6 +84,17 @@ namespace Slides.Elements
 				addChild(level, new Label(listItem));
 		}
 
+		public void add(int level, List subList)
+		{
+			if (level != 0)
+			{
+				var newSubList = new List();
+				newSubList.add(level - 1, subList);
+				addChild(level, newSubList);
+			}
+			else
+				addChild(level, subList);
+		}
 
 		public void add(string[] subList)
 		{

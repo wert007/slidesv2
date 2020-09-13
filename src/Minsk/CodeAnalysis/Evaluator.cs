@@ -617,13 +617,13 @@ namespace Minsk.CodeAnalysis
 						element.padding = (Thickness)variable.Value;
 						break;
 					case "borderColor":
-						element.borderColor = SlidesConverter.ConvertToColor(variable.Value);
+						element.borderColor = SlidesConverter.ConvertToColorQuadruple(variable.Value);
 						break;
 					case "borderStyle":
-						element.borderStyle = (BorderStyle)variable.Value;
+						element.borderStyle = SlidesConverter.ConvertToBorderStyleQuadruple(variable.Value);
 						break;
-					case "borderThickness":
-						element.borderThickness = (Thickness)variable.Value;
+					case "borderWidth":
+						element.borderWidth =  SlidesConverter.ConvertToThickness(variable.Value);
 						break;
 				}
 			}

@@ -9,7 +9,6 @@ import gfont('Quicksand') as quicksand;
 //Cleanup:
 // - clean up htmlWriter.PushAttribute
 // - clean up SVGWriter to use StyleWriter in a way.
-// - Maybe rename borderThickness to borderWidth?
 // - JSInsertions:
 //    - Multiple Sliders on one page => unique function names for each slide
 //    - Think of a better name then jsinsertion. 
@@ -58,6 +57,8 @@ import gfont('Quicksand') as quicksand;
 // - Virtual Machine. Mostly to serialize Libraries. And because it is interesting
 // - Advanced SVGSupport?
 //		- SVGParser. Incomplete but working. Needs testing
+//        Like completely incomplete. If you want to parse something, you 
+//        probably have to teach it something about it as of now..
 //
 //		- PathOperations. (Intersection/Union/Divide)
 //		  As good as it's going to be.  

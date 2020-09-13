@@ -62,8 +62,10 @@ namespace Slides.Elements
 		//But a container in a container? That's a lil bit strange..
 		protected override IEnumerable<Element> get_Children()
 		{
-			yield return childA.child;
-			yield return childB.child;
+			if(childA != null)
+				yield return childA.child;
+			if(childB != null)
+				yield return childB.child;
 		}
 	}
 }

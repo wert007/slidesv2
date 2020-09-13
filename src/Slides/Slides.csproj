@@ -55,6 +55,8 @@
     <Compile Include="Data\Alignment.cs" />
     <Compile Include="AnimationCall.cs" />
     <Compile Include="Data\BorderStyle.cs" />
+    <Compile Include="Data\BorderStyleQuadruple.cs" />
+    <Compile Include="Data\ColorQuadruple.cs" />
     <Compile Include="Data\FormattedString.cs" />
     <Compile Include="Elements\BoxElement.cs" />
     <Compile Include="Data\Brush.cs" />
@@ -97,6 +99,7 @@
     <Compile Include="Data\Orientation.cs" />
     <Compile Include="Math\MathFormula.cs" />
     <Compile Include="Math\MathPlot.cs" />
+    <Compile Include="OptionalValue.cs" />
     <Compile Include="Presentation.cs" />
     <Compile Include="PresentationFlags.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
