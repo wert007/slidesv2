@@ -307,7 +307,7 @@ namespace HTMLWriter
 			{
 				if (parent != null && parent is Stack || parent?.kind == ElementKind.List || parent?.kind == ElementKind.Captioned)
 					writer.WriteAttribute("position", "relative");
-				else if(element.kind != ElementKind.Label)
+				else //if(element.kind != ElementKind.Label)
 					writer.WriteAttribute("position", "absolute");
 			}
 			else

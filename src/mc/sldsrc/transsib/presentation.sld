@@ -38,7 +38,7 @@ group ListWithCaptioned(bulletPoints: string[], captioned : Captioned):
 endgroup
 
 slide introduction:
-    let labelErrors = new Label('[*]list item zero [LiSt=I][*]list item one[*]list item two[/lIsT]');
+    // let labelErrors = new Label('[*]ignore this please[/*]');
     let stampSrc = image('gfx\\stamp.jpg');
     let ~stamp = new Image(stampSrc);
     let captionedStamp = new Captioned(~stamp, 'Russische Briefmarke | liveinternet.ru'); 
@@ -173,7 +173,7 @@ slide climate:
         'leichtere und biegbarere Schienen als üblich wegen Permafrostboden',
     ];
     let map = new Image(image('gfx\\diercke_page148.png'));
-    map.stretching = ImageStretching.Cover;
+    // map.clipPat = clipRect(0, 0, 0.5f, 0);
     let ~innerCaptioned = new Captioned(~map, 'Diercke Atlas Seite 148 | Abb. 1');
     ~innerCaptioned.borderColor.bottom = black;
     ~innerCaptioned.borderWidth.bottom = 5px;

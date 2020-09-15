@@ -423,9 +423,9 @@ namespace Minsk.CodeAnalysis.Syntax
 			{
 				if (Current == '\0')
 					break;
-				if (Current == '\'' && Peek(-1) != '\\')
+				if (Current == '\'' && !(Peek(-1) == '\\' && (!replaceBackSlash && Peek(-2) != '\\')))
 					break;
-				if (Current == '{' && Peek(1) != '{')
+				if (_isAdvancedString && Current == '{' && Peek(1) != '{')
 					break;
 				_position++;
 			}

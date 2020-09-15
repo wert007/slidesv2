@@ -12,22 +12,18 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 
 	public static class Loader
 	{
-		private static EvaluationResult CouldnotFindFile(string path)
-		{
-			var diagnostics = new DiagnosticBag(path);
-			diagnostics.ReportPresentationDoesNotExist(path);
-			return new EvaluationResult(diagnostics.ToArray(), null, new TimeWatcher());
-		}
-
+		
 		public static Compilation LoadCompilationFromFile(string directory, string fileName, bool offlineView)
 		{
 			var path = Path.Combine(directory, fileName);
-			Console.WriteLine($"Loading {path}...");
+			// Should we support writing and not writing here??
+			// Should this be done by the logger???
+			//Console.WriteLine($"Loading {path}...");
 			string fileContent;
 			if (!File.Exists(path))
 			{
 				Console.WriteLine($"{path} doesn't exist. Exiting...");
-				Environment.Exit(1);
+				throw new ArgumentException(nameof(fileName));
 			}
 			using (FileStream fs = new FileStream(path, FileMode.Open))
 			using (StreamReader reader = new StreamReader(fs))
@@ -71,8 +67,7 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			var result = compilation.Evaluate(variables, timewatch);
 			timewatch.Pop();
 			timewatch.Record("evaluate program");
-			DiagnosticBag.OutputToConsole(result.Diagnostics, syntaxTree.Text, 100);
-			Console.WriteLine();
+			DiagnosticBag.OutputToConsole(result.Diagnostics, syntaxTree.Text, 10);
 			return new EvaluationResult(result.Diagnostics, result.Value, timewatch);
 
 		}

@@ -7,6 +7,11 @@ using System.Text;
 
 namespace Slides
 {
+	//TODO: What do we do with inline text-align?! 
+	//	     as of now, [left][right[center][justify] are not supported!!
+
+	//TODO: SecurityCheck() should we allow javascript: links?
+	//      Maybe with a compiler-flag?
 	public class FormattedString
 	{
 		private Tag[] Tags { get; }
@@ -52,7 +57,7 @@ namespace Slides
 				var lookahead = i + 1 < text.Length ? text[i + 1] : '\0';
 				if (cur == '[' && lookahead != '/')
 				{
-					i = ParseOpenTag(text, i, textBuilder, openTags, foundTags, ref tagParsingActive);
+					ParseOpenTag(text, ref i, textBuilder, openTags, foundTags, ref tagParsingActive);
 				}
 				else if (cur == '[' && lookahead == '/')
 				{
@@ -61,24 +66,65 @@ namespace Slides
 				else if (cur == '_' && lookahead == '_')
 				{
 					var looktwoahead = i + 2 < text.Length ? text[i + 2] : '\0';
-					if(looktwoahead == '_')
+					if (looktwoahead == '_')
 					{
-						openTags.Add(new Tag(i, textBuilder.Length, "u", null));
+						if (tagParsingActive)
+						{
+							if (openTags.Any(t => t.Name.ToLower() == "u"))
+								CloseTag(textBuilder, openTags, foundTags, openTags.First(t => t.Name.ToLower() == "u"));
+							else
+								openTags.Add(new Tag(i, textBuilder.Length, "u", null));
+						}
+						else
+							textBuilder.Append("___");
 						i++;
 					}
 					else
-						openTags.Add(new Tag(i, textBuilder.Length, "i", null));
+					{
+						if (tagParsingActive)
+						{
+							if (openTags.Any(t => t.Name.ToLower() == "i"))
+								CloseTag(textBuilder, openTags, foundTags, openTags.First(t => t.Name.ToLower() == "i"));
+							else
+								openTags.Add(new Tag(i, textBuilder.Length, "i", null));
+						}
+						else
+							textBuilder.Append("__");
+					}
+
 					i++;
 				}
 				else if (cur == '*' && lookahead == '*')
 				{
-					openTags.Add(new Tag(i, textBuilder.Length, "b", null));
+					if (tagParsingActive)
+					{
+						if (openTags.Any(t => t.Name.ToLower() == "b"))
+							CloseTag(textBuilder, openTags, foundTags, openTags.First(t => t.Name.ToLower() == "b"));
+						else
+							openTags.Add(new Tag(i, textBuilder.Length, "b", null));
+					}
+					else
+						textBuilder.Append("**");
 					i++;
 				}
 				else if (cur == '~' && lookahead == '~')
 				{
-					openTags.Add(new Tag(i, textBuilder.Length, "s", null));
+					if (tagParsingActive)
+					{
+						if (openTags.Any(t => t.Name.ToLower() == "s"))
+							CloseTag(textBuilder, openTags, foundTags, openTags.First(t => t.Name.ToLower() == "s"));
+						else
+							openTags.Add(new Tag(i, textBuilder.Length, "s", null));
+					}
+					else
+						textBuilder.Append("~~");
 					i++;
+				}
+				else if (cur == '{')
+				{
+					if (tagParsingActive)
+						ParseMarkdownLink(text, ref i, textBuilder, foundTags);
+					else textBuilder.Append("{");
 				}
 				else
 				{
@@ -93,24 +139,87 @@ namespace Slides
 			{
 				RevertOpenTag(textBuilder, foundTags, remainingTag);
 			}
-
 			return new FormattedString(foundTags.OrderBy(t => t.OriginalPosition).ToArray(), textBuilder.ToString());
 		}
 
+		private static bool SecurityCheck(Tag tag)
+		{
+			switch (tag.Name)
+			{
+				case "color":
+				case "bgcolor":
+				case "size":
+					return !tag.Attribute.Contains(";");
+				case "url":
+					return !tag.Attribute?.StartsWith("javascript:") ?? true;
+				default:
+					return true;
+			}
+		}
 
-		private static int ParseOpenTag(string text, int i, StringBuilder textBuilder, List<Tag> openTags, List<Tag> foundTags, ref bool tagParsingActive)
+		private static void ParseMarkdownLink(string text, ref int i, StringBuilder textBuilder, List<Tag> foundTags)
+		{
+			var linkArgumentBuilder = new StringBuilder();
+			if (text[i] != '{')
+			{
+				textBuilder.Append("{");
+				return;
+			}
+			i++;
+			int j;
+			for (j = i; j < text.Length; j++)
+			{
+				if (text[j] == '}') break;
+				linkArgumentBuilder.Append(text[j]);
+			}
+			j++;
+			if (j >= text.Length)
+			{
+				textBuilder.Append("{");
+				i--;
+				return;
+			}
+			var linkText = linkArgumentBuilder.ToString();
+			linkArgumentBuilder.Clear();
+			if (text[j] != '(')
+			{
+				textBuilder.Append("{");
+				i--;
+				return;
+			}
+			j++;
+			for (; j < text.Length; j++)
+			{
+				if (text[j] == ')') break;
+				linkArgumentBuilder.Append(text[j]);
+			}
+			if (j == text.Length)
+			{
+				textBuilder.Append("{");
+				i--;
+				return;
+			}
+			var linkTarget = linkArgumentBuilder.ToString();
+			textBuilder.Append(linkText);
+			var tag = new Tag(i - 1, textBuilder.Length - linkText.Length, "url", linkTarget);
+			tag.Length = linkText.Length;
+			if (tag.Length > 0)
+				foundTags.Add(tag);
+			i = j;
+		}
+
+		private static bool ParseOpenTag(string text, ref int i, StringBuilder textBuilder, List<Tag> openTags, List<Tag> foundTags, ref bool tagParsingActive)
 		{
 			var tagnameBuilder = new StringBuilder();
 			var failTextBuilder = new StringBuilder();
 			var originalPosition = i;
 			failTextBuilder.Append(text[i]);
 			i++;
-			if(i >= text.Length)
+			if (i >= text.Length)
 			{
 				textBuilder.Append(failTextBuilder.ToString());
-				return i;
+				return false;
 			}
-			failTextBuilder.Append(text[i]);
 			for (; i < text.Length; i++)
 			{
 				failTextBuilder.Append(text[i]);
@@ -122,13 +231,13 @@ namespace Slides
 			if (!IsValidTagname(tagname) || text[i] != ']' && text[i] != '=')
 			{
 				textBuilder.Append(failTextBuilder.ToString());
-				return i;
+				return false;
 			}
 			string attribute = null;
 			bool isInsideQuotes = false;
 			if (text[i] == '=')
 			{
-				failTextBuilder.Append(text[i]);
+				//failTextBuilder.Append(text[i]);
 				i++;
 				tagnameBuilder.Clear();
 				isInsideQuotes = text[i] == '"';
@@ -140,7 +249,7 @@ namespace Slides
 				for (; i < text.Length; i++)
 				{
 					failTextBuilder.Append(text[i]);
-					if (!isInsideQuotes && (text[i] == ' ' || text[i] == ']'))
+					if (!isInsideQuotes && (text[i] == ' ' || text[i] == ']' || text[i] == '"'))
 						break;
 					if (isInsideQuotes && text[i] == '"') break;
 					tagnameBuilder.Append(text[i]);
@@ -156,7 +265,7 @@ namespace Slides
 					else
 					{
 						textBuilder.Append(failTextBuilder);
-						return i;
+						return false;
 					}
 				}
 				else if (!isInsideQuotes && text[i] == ']')
@@ -166,7 +275,7 @@ namespace Slides
 				else
 				{
 					textBuilder.Append(failTextBuilder);
-					return i;
+					return false;
 				}
 			}
 			if (tagParsingActive)
@@ -180,21 +289,27 @@ namespace Slides
 				else if (tagname == "*" && openTags.Any(t => t.Name == "*"))
 				{
 					var lastStarTag = openTags.First(t => t.Name == "*");
-					openTags.Remove(lastStarTag);
-					foundTags.Add(lastStarTag);
-					lastStarTag.Length = textBuilder.Length - lastStarTag.TextPosition;
+					CloseTag(textBuilder, openTags, foundTags, lastStarTag);
 				}
-
-				openTags.Add(new Tag(originalPosition, textBuilder.Length, tagname, attribute));
-				if (tagname.ToLower() == "code")
-					tagParsingActive = !tagParsingActive;
+				var tag = new Tag(originalPosition, textBuilder.Length, tagname, attribute);
+				if (SecurityCheck(tag))
+				{
+					openTags.Add(tag);
+					if (tagname.ToLower() == "code")
+						tagParsingActive = !tagParsingActive;
+					return true;
+				}
+				else
+				{
+					textBuilder.Append(failTextBuilder);
+					return false;
+				}
 			}
 			else
 			{
 				textBuilder.Append(failTextBuilder);
-				return i;
+				return false;
 			}
-			return i;
 		}
 
 		private static void RevertOpenTag(StringBuilder textBuilder, List<Tag> foundTags, Tag remainingTag)
@@ -251,15 +366,36 @@ namespace Slides
 				if (tagname.ToLower() == "list" && openTags.Any(t => t.Name == "*"))
 				{
 					var lastStarTag = openTags.First(t => t.Name == "*");
-					openTags.Remove(lastStarTag);
-					foundTags.Add(lastStarTag);
-					lastStarTag.Length = textBuilder.Length - lastStarTag.TextPosition;
+					CloseTag(textBuilder, openTags, foundTags, lastStarTag);
 				}
-				openTags.Remove(matchingTag);
-				foundTags.Add(matchingTag);
-				matchingTag.Length = textBuilder.Length - matchingTag.TextPosition;
+				CloseTag(textBuilder, openTags, foundTags, matchingTag);
 			}
 			return i;
+		}
+
+		private static void CloseTag(StringBuilder textBuilder, List<Tag> openTags, List<Tag> foundTags, Tag tag)
+		{
+			if (!SecurityCheck(tag, textBuilder.ToString()))
+			{
+				textBuilder.Append("[/");
+				textBuilder.Append(tag.Name);
+				textBuilder.Append("]");
+				return;
+			}
+				openTags.Remove(tag);
+			tag.Length = textBuilder.Length - tag.TextPosition;
+			if (tag.Length > 0)
+				foundTags.Add(tag);
+		}
+
+		private static bool SecurityCheck(Tag tag, string text)
+		{
+			if(tag.Name.ToLower() =="url")
+			{
+				var link = text.Substring(tag.TextPosition);
+				return !link.StartsWith("javascript:");
+			}
+			return true;
 		}
 
 		private static bool IsValidTagname(string tagname)
@@ -270,17 +406,20 @@ namespace Slides
 				case "i":
 				case "s":
 				case "u":
-				case "left":
-				case "center":
-				case "right":
+				//case "left":
+				//case "center":
+				//case "right":
 				case "justify":
 				case "size":
 				case "color":
+				case "bgcolor":
 				case "quote":
 				case "url":
 				case "code":
 				case "list":
 				case "*":
+				case "sup":
+				case "sub":
 					return true;
 				default:
 					return false;
@@ -291,6 +430,9 @@ namespace Slides
 		{
 			var result = new StringBuilder();
 			var activeStyles = new Dictionary<Tag, string>();
+
+			//if (Tags.Any(t => t.Name == "list"))
+			//	result.Append("<div class=\"labelContainer\">");
 			for (int i = 0; i < Text.Length; i++)
 			{
 				foreach (var tag in Tags.Where(t => t.TextPosition == i))
@@ -306,6 +448,9 @@ namespace Slides
 					activeStyles.Remove(tag);
 				}
 			}
+
+			//if (Tags.Any(t => t.Name == "list"))
+			//	result.Append("</div>");
 			return result.ToString();
 		}
 
@@ -313,11 +458,12 @@ namespace Slides
 		{
 			switch (tag.Name.ToLower())
 			{
-				case "left":
-				case "center":
-				case "right":
+				//case "left":
+				//case "center":
+				//case "right":
 				case "justify":
 				case "color":
+				case "bgcolor":
 				case "size":
 					return true;
 				default:
@@ -329,16 +475,18 @@ namespace Slides
 		{
 			switch (tag.Name.ToLower())
 			{
-				case "left":
-					return "text-align: left;";
-				case "center":
-					return "text-align: center;";
-				case "right":
-					return "text-align: right;";
-				case "justify":
-					return "text-align: justify;";
+				//case "left":
+				//	return "text-align: left;";
+				//case "center":
+				//	return "text-align: center;";
+				//case "right":
+				//	return "text-align: right;";
+				//case "justify":
+				//	return "text-align: justify;";
 				case "color":
 					return $"color: {tag.Attribute};";
+				case "bgcolor":
+					return $"background-color: {tag.Attribute};";
 				case "size":
 					return $"font-size: {tag.Attribute};";
 				default:
@@ -378,8 +526,8 @@ namespace Slides
 					return "<del>";
 				case "code":
 					if (enumerable.Any())
-						return $"<pre style=\"{string.Join("", enumerable)}\">";
-					return "<pre>";
+						return $"<pre style=\"display: inline-block;{string.Join("", enumerable)}\">";
+					return "<pre style=\"display: inline-block;\">";
 				case "list":
 					switch (tag.Attribute)
 					{
@@ -402,11 +550,20 @@ namespace Slides
 					if (enumerable.Any())
 						return $"<li style=\"{string.Join("", enumerable)}\">";
 					return "<li>";
-				case "left":
-				case "center":
-				case "right":
-				case "justify":
+				case "sup":
+					if (enumerable.Any())
+						return $"<sup style=\"{string.Join("", enumerable)}\">";
+					return "<sup>";
+				case "sub":
+					if (enumerable.Any())
+						return $"<sub style=\"{string.Join("", enumerable)}\">";
+					return "<sub>";
+				//case "left":
+				//case "center":
+				//case "right":
+				//case "justify":
 				case "color":
+				case "bgcolor":
 				case "size":
 					if (enumerable.Any())
 						return $"<span style=\"{string.Join("", enumerable)}\">";
@@ -437,13 +594,29 @@ namespace Slides
 				case "code":
 					return "</pre>";
 				case "list":
-					return "</ul>";
+					switch (tag.Attribute)
+					{
+						case "1":
+						case "i":
+						case "I":
+						case "a":
+						case "A":
+							return "</ol>";
+						case null:
+						default:
+							return "</ul>";
+					}
 				case "*":
 					return "</li>";
-				case "left":
-				case "center":
-				case "right":
+				case "sup":
+					return "</sup>";
+				case "sub":
+					return "</sub>";
+				//case "left":
+				//case "center":
+				//case "right":
 				case "color":
+				case "bgcolor":
 				case "size":
 					return "</span>";
 				default: throw new Exception();
@@ -495,7 +668,7 @@ namespace Slides
 							default:
 								result.Append(character);
 								result.Append(next);
-								i++;
+								//i++;
 								break;
 						}
 						break;

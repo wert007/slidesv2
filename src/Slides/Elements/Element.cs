@@ -69,10 +69,11 @@ namespace Slides.Elements
 			get => h_Filter ?? h_parent?.n_filter;
 			set => h_Filter = value;
 		}
-		private Orientation _orientation;
+		private Orientation? _orientation;
 		public Orientation orientation
 		{
-			get => _orientation; set
+			get => _orientation ?? (Orientation?)StdStyle?.GetMainStyle().GetValue(nameof(orientation)) ?? Orientation.LeftTop;
+			set
 			{
 				_orientation = value;
 				UpdateLayout();
@@ -250,7 +251,7 @@ namespace Slides.Elements
 			borderStyle = new BorderStyleQuadruple();
 			background = null;
 			color = null;
-			_orientation = Orientation.LeftTop;
+			//_orientation = Orientation.LeftTop;
 			margin = null;
 			padding = null;
 			h_IsVisible = null;

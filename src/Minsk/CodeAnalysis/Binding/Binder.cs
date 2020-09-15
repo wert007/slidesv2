@@ -488,8 +488,9 @@ namespace Minsk.CodeAnalysis.Binding
 			{
 				foreach (var field in (_builtInTypes.LookSymbolUp(typeof(SlideAttributes)) as AdvancedTypeSymbol).Fields)
 				{
-					_scope.TryDeclare(field, null);
+					_scope.TryDeclare(field);
 				}
+				_scope.TryDeclare(new VariableSymbol(nameof(Element.orientation), false, _builtInTypes.LookSymbolUp(typeof(Orientation)), false));
 				//TODO: Incomplete!
 				_scope.TryDeclare(new VariableSymbol("Slide", false, _builtInTypes.LookSymbolUp(typeof(SlideAttributes)), false));
 				_scope.TryDeclare(new VariableSymbol("Label", false, _builtInTypes.LookSymbolUp(typeof(Label)), false));

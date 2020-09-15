@@ -35,11 +35,11 @@ namespace Minsk.CodeAnalysis
 			var lineNumber = lineIndex + 1;
 			var character = Span.Start - line.Start + 1;
 
-			Console.WriteLine();
+			Console.Error.WriteLine();
 
 			Console.ForegroundColor = color;
-			Console.Write($"{File} ({lineNumber}, {character}): ");
-			Console.WriteLine(Message);
+			Console.Error.Write($"{File} ({lineNumber}, {character}): ");
+			Console.Error.WriteLine(Message);
 			Console.ResetColor();
 
 			var prefixSpan = TextSpan.FromBounds(line.Start, Span.Start);
@@ -49,16 +49,16 @@ namespace Minsk.CodeAnalysis
 			var error = text.ToString(Span);
 			var suffix = text.ToString(suffixSpan);
 
-			Console.Write("    ");
-			Console.Write(prefix);
+			Console.Error.Write("    ");
+			Console.Error.Write(prefix);
 
 			Console.ForegroundColor = color;
-			Console.Write(error);
+			Console.Error.Write(error);
 			Console.ResetColor();
 
-			Console.Write(suffix);
+			Console.Error.Write(suffix);
 
-			Console.WriteLine();
+			Console.Error.WriteLine();
 		}
 	}
 }

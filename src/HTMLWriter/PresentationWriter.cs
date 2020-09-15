@@ -678,10 +678,10 @@ namespace HTMLWriter
 			var id = $"{parentName}-{element.name}";
 			if (string.IsNullOrEmpty(element.name))
 				id = null;
-			_htmlWriter.StartTag("div", classes: "label-container", useNewLine: false);
-			_htmlWriter.StartTag("p", id: id, classes: "label " + optionalFieldName + " " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)), useNewLine: false);
+			//_htmlWriter.StartTag("div", classes: "label-container", useNewLine: false);
+			_htmlWriter.StartTag("div", id: id, classes: "label " + optionalFieldName + " " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)), useNewLine: false);
 			WriteFormattedText(element.text);
-			_htmlWriter.EndTag(useNewLine: false);
+			//_htmlWriter.EndTag(useNewLine: false);
 			_htmlWriter.EndTag();
 		}
 
@@ -739,7 +739,7 @@ namespace HTMLWriter
 				switch (character)
 				{
 					case '\\':
-						i++;
+								i++;
 						switch (next)
 						{
 							case 'n':

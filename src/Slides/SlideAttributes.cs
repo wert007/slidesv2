@@ -62,7 +62,7 @@ namespace Slides
 		public Thickness get_ActualPadding()
 		{
 			if (padding != new Thickness()) return padding;
-			var style = Element.StdStyle.GetStyle("slide");
+			var style = Element.StdStyle?.GetStyle("slide");
 			if(style != null && style.HasProperty("padding"))
 				return (Thickness)style.GetValue("padding");
 			return new Thickness();

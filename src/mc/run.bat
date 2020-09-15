@@ -1,4 +1,8 @@
 @echo off
+
+call docs.cmd
+if ERRORLEVEL 1 goto:tests_failed
+
 setlocal
 ::%~p1
 REM Set a string with an arbitrary number of substrings separated by semi colons
@@ -25,5 +29,10 @@ REM Now strip off the leading substring
 )
 
 :END
-dotnet .\bin\Debug\netcoreapp2.1\mc.dll %1 %last_directory%
+dotnet .\bin\Debug\netcoreapp2.1\mc.dll %1 %last_directory% %2 %3 %4 %5
+goto:eof
 endlocal
+
+
+:tests_failed
+echo a test failed. pls check before running again!
