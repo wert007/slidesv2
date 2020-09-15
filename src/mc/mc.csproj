@@ -90,6 +90,9 @@
     <None Update="sldsrc\transsib\gfx\stamp.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="sldsrc\transsib\gfx\train_stop.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="sldsrc\transsib\gfx\transsib-map.gif">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

@@ -104,8 +104,8 @@ namespace Minsk.CodeAnalysis
 			Add(typeof(Unit.UnitKind));
 			Add(typeof(UnitPair));
 			Add(typeof(UnitAddition));
-			Add(typeof(Range), isData:true);
-			Add(typeof(MathFormula), isData: true);
+			Add(typeof(Range));
+			Add(typeof(MathFormula));
 
 			Add(typeof(Style), CreateEmptySymbol("Style"));
 			Add(typeof(CustomStyle), CreateEmptySymbol("Style"));
@@ -115,17 +115,17 @@ namespace Minsk.CodeAnalysis
 			Add(typeof(LibrarySymbol), CreateEmptySymbol("Library"));
 
 			Add(typeof(BorderStyle));
-			Add(typeof(BorderStyleQuadruple), isData: true);
+			Add(typeof(BorderStyleQuadruple));
 			Add(typeof(Direction));
 			Add(typeof(Time.TimeUnit));
-			Add(typeof(Time), isData: true);
+			Add(typeof(Time));
 			Add(typeof(Thickness));
-			Add(typeof(Color), isData: true);
-			Add(typeof(ColorQuadruple), isData: true);
-			Add(typeof(Font), isData: true);
-			Add(typeof(ImageSource), isData: true);
-			Add(typeof(CSVFile), isData: true);
-			Add(typeof(Matrix), isData: true);
+			Add(typeof(Color));
+			Add(typeof(ColorQuadruple));
+			Add(typeof(Font));
+			Add(typeof(ImageSource));
+			Add(typeof(CSVFile));
+			Add(typeof(Matrix));
 			Add(typeof(Horizontal));
 			Add(typeof(Vertical));
 			Add(typeof(Orientation));
@@ -133,45 +133,45 @@ namespace Minsk.CodeAnalysis
 			Add(typeof(Brush.BrushMode));
 			Add(typeof(Brush), new TypeSymbol[] { LookSymbolUp(typeof(Color)), LookSymbolUp(typeof(ImageSource)) });
 
-			Add(typeof(Filter), isData: true);
+			Add(typeof(Filter));
 
 			//Add(typeof(FormattedString));
 			
 			Add(typeof(SVGColor));
-			Add(typeof(SVGMatrix), isData: true);
+			Add(typeof(SVGMatrix));
 
 			Add(typeof(IFilterInput), CreateEmptySymbol("FilterInput"));
 			var implementsIFilterInput = new TypeSymbol[] { LookSymbolUp(typeof(IFilterInput)) };
-			Add(typeof(SVGFilter), isData: true, canBeCastedTo: implementsIFilterInput);
-			Add(typeof(EdgeMode), isData: true);
-			Add(typeof(ColorMatrixType), isData: true);
-			Add(typeof(GaussianBlurFilter), isData: true);
-			Add(typeof(ColorMatrixFilter), isData: true);
-			Add(typeof(ConvolveMatrixFilter), isData: true);
-			Add(typeof(ComponentTransferType), isData: true);
-			Add(typeof(ComponentTransferFilterChild), isData: true);
-			Add(typeof(ComponentTransferFilter), isData: true);
-			Add(typeof(MorphologyOperator), isData: true);
-			Add(typeof(MorphologyFilter), isData: true);
-			Add(typeof(FloodFilter), isData: true);
-			Add(typeof(StitchTiles), isData: true);
-			Add(typeof(TurbulenceType), isData: true);
-			Add(typeof(TurbulenceFilter), isData: true);
-			Add(typeof(Light), isData: true);
-			Add(typeof(PointLight), isData: true);
-			Add(typeof(DistantLight), isData: true);
-			Add(typeof(SpotLight), isData: true);
-			Add(typeof(DiffuseLightingFilter), isData: true);
-			Add(typeof(SpecularLightingFilter), isData: true);
-			Add(typeof(BlendMode), isData: true);
-			Add(typeof(BlendFilter), isData: true);
-			Add(typeof(CompositeOperator), isData: true);
-			Add(typeof(CompositeFilter), isData: true);
-			Add(typeof(DisplacementMapChannelSelector), isData: true);
-			Add(typeof(DisplacementMapFilter), isData: true);
-			Add(typeof(MergeFilter), isData: true);
-			Add(typeof(OffsetFilter), isData: true);
-			Add(typeof(TileFilter), isData: true);
+			Add(typeof(SVGFilter), canBeCastedTo: implementsIFilterInput);
+			Add(typeof(EdgeMode));
+			Add(typeof(ColorMatrixType));
+			Add(typeof(GaussianBlurFilter));
+			Add(typeof(ColorMatrixFilter));
+			Add(typeof(ConvolveMatrixFilter));
+			Add(typeof(ComponentTransferType));
+			Add(typeof(ComponentTransferFilterChild));
+			Add(typeof(ComponentTransferFilter));
+			Add(typeof(MorphologyOperator));
+			Add(typeof(MorphologyFilter));
+			Add(typeof(FloodFilter));
+			Add(typeof(StitchTiles));
+			Add(typeof(TurbulenceType));
+			Add(typeof(TurbulenceFilter));
+			Add(typeof(Light));
+			Add(typeof(PointLight));
+			Add(typeof(DistantLight));
+			Add(typeof(SpotLight));
+			Add(typeof(DiffuseLightingFilter));
+			Add(typeof(SpecularLightingFilter));
+			Add(typeof(BlendMode));
+			Add(typeof(BlendFilter));
+			Add(typeof(CompositeOperator));
+			Add(typeof(CompositeFilter));
+			Add(typeof(DisplacementMapChannelSelector));
+			Add(typeof(DisplacementMapFilter));
+			Add(typeof(MergeFilter));
+			Add(typeof(OffsetFilter));
+			Add(typeof(TileFilter));
 
 //			Add(typeof(ParentElement), CreateEmptySymbol(nameof(ParentElement)));
 			Add(typeof(Element), canBeCastedTo: implementsIFilterInput);
@@ -203,8 +203,8 @@ namespace Minsk.CodeAnalysis
 			Add(typeof(CodeBlock));
 
 			Add(typeof(TransitionCall), CreateEmptySymbol("TransitionCall"));
-			Add(typeof(TransitionSlide), isData: true);
-			Add(typeof(Transition), isData: false);
+			Add(typeof(TransitionSlide));
+			Add(typeof(Transition));
 
 			Add(typeof(Chart));
 			Add(typeof(LineChart));
@@ -247,8 +247,8 @@ namespace Minsk.CodeAnalysis
 
 			Add(typeof(CodeHighlighter));
 			Add(typeof(Github.File), CreateEmptySymbol("GithubFile"));
-			Add(typeof(GitFile), isData:true);
-			Add(typeof(GitRepository), isData:true);
+			Add(typeof(GitFile));
+			Add(typeof(GitRepository));
 		}
 
 		private TypeSymbol CreateSVGShapePlaceholder()
@@ -282,8 +282,8 @@ namespace Minsk.CodeAnalysis
 		{
 			var functions = new FunctionSymbolCollection();
 			var parameters = new VariableSymbolCollection();
-			parameters.Add(new VariableSymbol("element", false, LookSymbolUp(typeof(Element)), false));
-			parameters.Add(new VariableSymbol("time", true, LookSymbolUp(typeof(Time)), false));
+			parameters.Add(new VariableSymbol("element", false, LookSymbolUp(typeof(Element))));
+			parameters.Add(new VariableSymbol("time", true, LookSymbolUp(typeof(Time))));
 			parameters.Seal();
 			functions.Add(new FunctionSymbol("play", parameters, PrimitiveTypeSymbol.Void));
 			functions.Seal();
@@ -293,12 +293,11 @@ namespace Minsk.CodeAnalysis
 		private TypeSymbol CreateEmptySymbol(string name, bool isData = false)
 		{
 			var result = new AdvancedTypeSymbol(name, VariableSymbolCollection.Empty, FunctionSymbolCollection.Empty);
-			result.SetData(isData);
 			return result;
 		}
 
 
-		private void Add(Type type, TypeSymbol[] canBeCastedTo = null, bool isData = false, string name = null)
+		private void Add(Type type, TypeSymbol[] canBeCastedTo = null, string name = null)
 		{
 			TypeSymbol symbol;
 			if (name == null)
@@ -306,7 +305,6 @@ namespace Minsk.CodeAnalysis
 			if (!type.IsEnum)
 			{
 				symbol = CreateAdvancedType(type, name, canBeCastedTo);
-				((AdvancedTypeSymbol)symbol).SetData(isData);
 			}
 			else
 			{
@@ -363,8 +361,7 @@ namespace Minsk.CodeAnalysis
 				{
 					todoList.Add(fieldName);
 				}
-				var toAdd = new VariableSymbol(fieldName, field.IsInitOnly, fieldType, false);
-				toAdd.NeedsDataFlag = false;
+				var toAdd = new VariableSymbol(fieldName, field.IsInitOnly, fieldType);
 				fields.Add(toAdd);
 			}
 			foreach (var prop in type.GetProperties())
@@ -385,8 +382,7 @@ namespace Minsk.CodeAnalysis
 				{
 					todoList.Add(propName);
 				}
-				var toAdd = new VariableSymbol(propName, !prop.CanWrite, propertyType, false);
-				toAdd.NeedsDataFlag = false;
+				var toAdd = new VariableSymbol(propName, !prop.CanWrite, propertyType);
 				fields.Add(toAdd);
 			}
 			fields.Seal();
@@ -396,7 +392,7 @@ namespace Minsk.CodeAnalysis
 				var parameter = new VariableSymbolCollection();
 				foreach (var para in typeConstructor.GetParameters())
 				{
-					parameter.Add(new VariableSymbol(para.Name.ToVariableLower(), true, LookSymbolUp(para.ParameterType), false));
+					parameter.Add(new VariableSymbol(para.Name.ToVariableLower(), true, LookSymbolUp(para.ParameterType)));
 				}
 				parameter.Seal();
 				constructor.Add(new FunctionSymbol("constructor", parameter, null));
@@ -424,10 +420,10 @@ namespace Minsk.CodeAnalysis
 					if (para.ParameterType == type)
 					{
 						todoList.Add(mname);
-						parameter.Add(new VariableSymbol(para.Name.ToVariableLower(), true, null, false));
+						parameter.Add(new VariableSymbol(para.Name.ToVariableLower(), true, null));
 					}
 					else
-						parameter.Add(new VariableSymbol(para.Name.ToVariableLower(), true, LookSymbolUp(para.ParameterType), false));
+						parameter.Add(new VariableSymbol(para.Name.ToVariableLower(), true, LookSymbolUp(para.ParameterType)));
 				}
 				parameter.Seal();
 				if (method.ReturnType != type)

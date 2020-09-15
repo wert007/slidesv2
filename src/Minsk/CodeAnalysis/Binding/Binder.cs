@@ -66,16 +66,16 @@ namespace Minsk.CodeAnalysis.Binding
 				};
 			_diagnostics = new DiagnosticBag(fileName);
 
-			_builtInConstants.Add("totalTime", new VariableSymbol("totalTime", true, PrimitiveTypeSymbol.Integer, false));    //	_builtInConstants.Add("elapsedTime", new VariableSymbol("elapsedTime", true, _builtInTypes.LookSymbolUp(typeof(float)), false));
+			_builtInConstants.Add("totalTime", new VariableSymbol("totalTime", true, PrimitiveTypeSymbol.Integer));    //	_builtInConstants.Add("elapsedTime", new VariableSymbol("elapsedTime", true, _builtInTypes.LookSymbolUp(typeof(float)), false));
 
-			_builtInConstants.Add("seperator", new VariableSymbol("seperator", true, _builtInTypes.LookSymbolUp(typeof(LibrarySymbol)), false));
-			_builtInConstants.Add("code", new VariableSymbol("code", true, _builtInTypes.LookSymbolUp(typeof(LibrarySymbol)), false));
-			_builtInConstants.Add("qr", new VariableSymbol("qr", true, _builtInTypes.LookSymbolUp(typeof(LibrarySymbol)), false));
+			_builtInConstants.Add("seperator", new VariableSymbol("seperator", true, _builtInTypes.LookSymbolUp(typeof(LibrarySymbol))));
+			_builtInConstants.Add("code", new VariableSymbol("code", true, _builtInTypes.LookSymbolUp(typeof(LibrarySymbol))));
+			_builtInConstants.Add("qr", new VariableSymbol("qr", true, _builtInTypes.LookSymbolUp(typeof(LibrarySymbol))));
 
-			_builtInConstants.Add("auto", new VariableSymbol("auto", true, _builtInTypes.LookSymbolUp(typeof(Unit)), false));
+			_builtInConstants.Add("auto", new VariableSymbol("auto", true, _builtInTypes.LookSymbolUp(typeof(Unit))));
 			foreach (var color in Color.GetStaticColors())
 			{
-				_builtInConstants.Add(color.Key, new VariableSymbol(color.Key, true, _builtInTypes.LookSymbolUp(typeof(Color)), false));
+				_builtInConstants.Add(color.Key, new VariableSymbol(color.Key, true, _builtInTypes.LookSymbolUp(typeof(Color))));
 			}
 
 			OfflineView = offlineView;
@@ -236,7 +236,7 @@ namespace Minsk.CodeAnalysis.Binding
 			if (initializer.Type != _builtInTypes.LookSymbolUp(typeof(Font)) && initializer.Type != libraryType)
 				_diagnostics.ReportCannotConvert(syntax.Initializer.Span, initializer.Type, new TypeSymbol[] { _builtInTypes.LookSymbolUp(typeof(Font)), libraryType });
 
-			var variable = new VariableSymbol(name, false, initializer.Type, initializer.Type.IsData);
+			var variable = new VariableSymbol(name, false, initializer.Type);
 
 			TextSpan? span = syntax.Identifier.Span;
 
@@ -332,14 +332,14 @@ namespace Minsk.CodeAnalysis.Binding
 			var name = syntax.Identifier.Text;
 			_scope.TryLookup(name, out TypeSymbol customType);
 			var result = new BoundStructStatement(customType);
-			Declarations[new VariableSymbol(name, true, customType, false)] = result;
+			Declarations[new VariableSymbol(name, true, customType)] = result;
 			return result;
 		}
 
 		private BoundStatement BindLibraryStatement(LibraryStatementSyntax syntax)
 		{
 			var name = syntax.Identifier.Text;
-			var variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(LibrarySymbol)), false);
+			var variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(LibrarySymbol)));
 			_flags.IsLibrary(name);
 
 			if (!_scope.TryDeclare(variable, null))
@@ -490,14 +490,14 @@ namespace Minsk.CodeAnalysis.Binding
 				{
 					_scope.TryDeclare(field);
 				}
-				_scope.TryDeclare(new VariableSymbol(nameof(Element.orientation), false, _builtInTypes.LookSymbolUp(typeof(Orientation)), false));
+				_scope.TryDeclare(new VariableSymbol(nameof(Element.orientation), false, _builtInTypes.LookSymbolUp(typeof(Orientation))));
 				//TODO: Incomplete!
-				_scope.TryDeclare(new VariableSymbol("Slide", false, _builtInTypes.LookSymbolUp(typeof(SlideAttributes)), false));
-				_scope.TryDeclare(new VariableSymbol("Label", false, _builtInTypes.LookSymbolUp(typeof(Label)), false));
-				_scope.TryDeclare(new VariableSymbol("Image", false, _builtInTypes.LookSymbolUp(typeof(Image)), false));
-				_scope.TryDeclare(new VariableSymbol("Table", false, _builtInTypes.LookSymbolUp(typeof(Table)), false));
-				_scope.TryDeclare(new VariableSymbol("List", false, _builtInTypes.LookSymbolUp(typeof(List)), false));
-				_scope.TryDeclare(new VariableSymbol("Captioned", false, _builtInTypes.LookSymbolUp(typeof(Captioned)), false));
+				_scope.TryDeclare(new VariableSymbol("Slide", false, _builtInTypes.LookSymbolUp(typeof(SlideAttributes))));
+				_scope.TryDeclare(new VariableSymbol("Label", false, _builtInTypes.LookSymbolUp(typeof(Label))));
+				_scope.TryDeclare(new VariableSymbol("Image", false, _builtInTypes.LookSymbolUp(typeof(Image))));
+				_scope.TryDeclare(new VariableSymbol("Table", false, _builtInTypes.LookSymbolUp(typeof(Table))));
+				_scope.TryDeclare(new VariableSymbol("List", false, _builtInTypes.LookSymbolUp(typeof(List))));
+				_scope.TryDeclare(new VariableSymbol("Captioned", false, _builtInTypes.LookSymbolUp(typeof(Captioned))));
 			}
 			_assignedVariables.Clear();
 			var boundBody = BindBlockStatement(syntax.Body);
@@ -593,7 +593,7 @@ namespace Minsk.CodeAnalysis.Binding
 				if (field.Name == "name") continue;
 				_scope.Declare(field, true);
 			}
-			_scope.TryDeclare(new VariableSymbol("fontsize", false, _builtInTypes.LookSymbolUp(typeof(Unit)), false), null);
+			_scope.TryDeclare(new VariableSymbol("fontsize", false, _builtInTypes.LookSymbolUp(typeof(Unit))), null);
 			foreach (var function in ((AdvancedTypeSymbol)_builtInTypes.LookSymbolUp(typeof(Element))).Functions)
 			{
 				_scope.TryDeclare(function);
@@ -613,7 +613,7 @@ namespace Minsk.CodeAnalysis.Binding
 			_scope.TryLookup(name, out TypeSymbol type);
 
 			var result = new BoundGroupStatement(type, boundParameters, boundBody);
-			Declarations[new VariableSymbol(name, true, type, false)] = result;
+			Declarations[new VariableSymbol(name, true, type)] = result;
 			return result;
 		}
 
@@ -647,7 +647,7 @@ namespace Minsk.CodeAnalysis.Binding
 			_scope.TryLookup(name, out TypeSymbol type);
 
 			var result = new BoundSVGStatement((AdvancedTypeSymbol)type, boundParameters, boundBody);
-			Declarations[new VariableSymbol(name, true, type, false)] = result;
+			Declarations[new VariableSymbol(name, true, type)] = result;
 			return result;
 		}
 
@@ -659,7 +659,7 @@ namespace Minsk.CodeAnalysis.Binding
 				var span = scope.GetDeclarationSpan(unusedVariable);
 				if (span == null)
 					throw new Exception();
-				if (unusedVariable.IsVisible && !unusedVariable.NeedsDataFlag)
+				if (unusedVariable.IsVisible && unusedVariable.Type.CanBeConvertedTo(_builtInTypes.LookSymbolUp(typeof(Element))))
 					continue;
 				_diagnostics.ReportUnusedVariable(unusedVariable, span.Value);
 			}
@@ -673,7 +673,7 @@ namespace Minsk.CodeAnalysis.Binding
 			_scope.TryLookup(name, true, out VariableSymbol variable);
 			_scope = new BoundScope(_scope);
 			var parameter = BindParameterStatement(syntax.ParameterStatement.ParameterStatement, _builtInTypes.LookSymbolUp(typeof(SlideAttributes)), false);
-			_scope.TryDeclare(new VariableSymbol("slideCount", true, PrimitiveTypeSymbol.Integer, false));
+			_scope.TryDeclare(new VariableSymbol("slideCount", true, PrimitiveTypeSymbol.Integer));
 			var body = BindBlockStatement(syntax.Body);
 			_scope = _scope.Parent;
 			var result = new BoundTemplateStatement(variable, parameter, body);
@@ -723,7 +723,7 @@ namespace Minsk.CodeAnalysis.Binding
 			VariableSymbol variable = null;
 			if (name != null)
 			{
-				variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(Step)), false);
+				variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(Step)));
 				if (!_scope.TryDeclare(variable))
 				{
 					_diagnostics.ReportVariableAlreadyDeclared(TextSpan.FromBounds(statement.StepKeyword.Span.Start, statement.ColonToken.Span.End), name);
@@ -1131,7 +1131,7 @@ namespace Minsk.CodeAnalysis.Binding
 					_diagnostics.ReportUndefinedStyle(variableExpression.Span, variableExpression.Identifier.Text, library);
 					return new BoundErrorExpression();
 				}
-				return new BoundVariableExpression(new VariableSymbol(style.Name, true, _builtInTypes.LookSymbolUp(typeof(StdStyle)), false));
+				return new BoundVariableExpression(new VariableSymbol(style.Name, true, _builtInTypes.LookSymbolUp(typeof(StdStyle))));
 			}
 			else if (syntax.Member.Kind == SyntaxKind.FunctionExpression)
 			{
@@ -1146,7 +1146,7 @@ namespace Minsk.CodeAnalysis.Binding
 		{
 			var name = syntax.Identifier.Text;
 			var varType = PrimitiveTypeSymbol.Error;
-			var variable = new VariableSymbol(name, false, varType, varType.IsData);
+			var variable = new VariableSymbol(name, false, varType);
 
 			if (!parent.TryLookUpField(name, out var targetVariable) &&
 				!_builtInConstants.TryGetValue(name, out targetVariable))
@@ -1179,7 +1179,7 @@ namespace Minsk.CodeAnalysis.Binding
 			var varType = type;
 			if (varType == null)
 				varType = PrimitiveTypeSymbol.Error;
-			var variable = new VariableSymbol(name, false, varType, varType.IsData);
+			var variable = new VariableSymbol(name, false, varType);
 
 			if (declare)
 			{
@@ -1215,7 +1215,7 @@ namespace Minsk.CodeAnalysis.Binding
 
 			if (syntax.PreTildeToken != null)
 			{
-				if (varType.IsData)
+				if(!varType.CanBeConvertedTo(_builtInTypes.LookSymbolUp(typeof(Element))))
 					_diagnostics.ReportCannotBeInvisible(syntax.Span, varType);
 				else
 					variable.IsVisible = false;
@@ -1480,7 +1480,7 @@ namespace Minsk.CodeAnalysis.Binding
 					variable = ((BoundFieldAccessExpression)boundLValue).Field.Variable;
 					break;
 				case BoundNodeKind.ArrayAccessExpression:
-					variable = new VariableSymbol("#arrayAccess", false, PrimitiveTypeSymbol.Error, false);
+					variable = new VariableSymbol("#arrayAccess", false, PrimitiveTypeSymbol.Error);
 					break;
 				default:
 					throw new NotImplementedException();
@@ -1569,7 +1569,7 @@ namespace Minsk.CodeAnalysis.Binding
 			var fields = new VariableSymbolCollection();
 			foreach (var v in variableNames)
 			{
-				fields.Add(new VariableSymbol(v, false, new NoneableTypeSymbol(PrimitiveTypeSymbol.Float), false));
+				fields.Add(new VariableSymbol(v, false, new NoneableTypeSymbol(PrimitiveTypeSymbol.Float)));
 			}
 			fields.Seal();
 			//TODO: Ambiguos Name
@@ -1579,7 +1579,6 @@ namespace Minsk.CodeAnalysis.Binding
 			//Like a MathPlot expects 1 unknown. 
 			//
 			var type = new AdvancedTypeSymbol("MathFormula", fields, FunctionSymbolCollection.Empty, FunctionSymbolCollection.Empty, _builtInTypes.LookSymbolUp(typeof(MathFormula)));
-			type.SetData(true);
 			return new BoundMathExpression(formula.Expression, type);
 		}
 

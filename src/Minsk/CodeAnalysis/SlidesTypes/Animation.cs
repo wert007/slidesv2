@@ -16,14 +16,8 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			TimeParameter = timeParameter;
 			Cases = cases;
 		}
-		public static VariableSymbol DoneSymbol { get; } = new VariableSymbol("done", true, PrimitiveTypeSymbol.Float, false)
-		{
-			NeedsDataFlag = false
-		};
-		public static VariableSymbol InitSymbol { get; } = new VariableSymbol("init", true, PrimitiveTypeSymbol.Float, false)
-		{
-			NeedsDataFlag = false
-		};
+		public static VariableSymbol DoneSymbol { get; } = new VariableSymbol("done", true, PrimitiveTypeSymbol.Float);
+		public static VariableSymbol InitSymbol { get; } = new VariableSymbol("init", true, PrimitiveTypeSymbol.Float);
 		public VariableSymbol Variable { get; }
 		public VariableSymbol ElementParameter { get; }
 		public VariableSymbol TimeParameter { get; }

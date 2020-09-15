@@ -19,7 +19,7 @@ namespace Slides
 	public class Unit
 	{
 		private static CultureInfo _usCulture = CultureInfo.CreateSpecificCulture("US-us");
-		internal static readonly Unit HundredPercent = new Unit(100, UnitKind.Percent);
+		public static readonly Unit HundredPercent = new Unit(100, UnitKind.Percent);
 		internal static readonly Unit Thin   = new Unit(1, UnitKind.Pixel);
 		internal static readonly Unit Medium = new Unit(3, UnitKind.Pixel);
 		internal static readonly Unit Thick  = new Unit(5, UnitKind.Pixel);
@@ -157,6 +157,26 @@ namespace Slides
 			if (!maxA.IsRelative() && maxB.IsRelative()) return b;
 			if (maxA.Kind == maxB.Kind) return maxA.Value > maxB.Value ? a : b;
 			throw new Exception();
+		}
+
+		public virtual int h_ToPixel(int referenceSize)
+		{
+			switch (Kind)
+			{
+				case UnitKind.VerticalPercent:
+				case UnitKind.Percent:
+				case UnitKind.HorizontalPercent:
+					return (int)Math.Round(referenceSize * Value * 0.01f);
+				case UnitKind.Pixel:
+					return (int)Math.Round(Value);
+				case UnitKind.Subtraction:
+				case UnitKind.Addition:
+				case UnitKind.CharacterWidth:
+				case UnitKind.Point:
+				case UnitKind.Auto:
+				default:
+					throw new Exception();
+			}
 		}
 
 		public static Unit operator *(float a, Unit b)

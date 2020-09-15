@@ -47,7 +47,7 @@ namespace HTMLWriter
 				var targetFile = Path.Combine(targetDirectory, referencedFile);
 				if (!File.Exists(targetFile))
 				{
-					Directory.CreateDirectory(Path.Combine(targetDirectory, Directory.GetParent(referencedFile).Name));
+					Directory.CreateDirectory(Path.Combine(targetDirectory, Path.GetDirectoryName(referencedFile)));
 					File.Copy(Path.Combine(CompilationFlags.Directory, referencedFile), targetFile);
 				}
 				else if (alwaysCopyEverything)
@@ -815,7 +815,7 @@ namespace HTMLWriter
 
 		private static void WriteImage(string parentName, Image element, string optionalFieldName)
 		{
-			_htmlWriter.PushAttribute("src", element.source.Path);
+			_htmlWriter.PushAttribute("src", element.source.h_Path);
 			if (element.alt != string.Empty)
 				_htmlWriter.PushAttribute("alt", element.alt);
 			var id = $"{parentName}-{element.name}";

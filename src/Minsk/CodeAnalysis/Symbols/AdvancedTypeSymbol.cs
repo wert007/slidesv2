@@ -34,9 +34,7 @@ namespace Minsk.CodeAnalysis.Symbols
 		}
 
 
-		private bool _isData = false;
 		public override TypeType Type => TypeType.Advanced;
-		public override bool IsData => _isData;
 		public override bool AllowsNone => false;
 		public override bool HasDefaultValue => false;
 		public override object DefaultValue => null;
@@ -101,11 +99,6 @@ namespace Minsk.CodeAnalysis.Symbols
 			if (Parent == null)
 				return false;
 			return Parent.CanBeConvertedTo(to);
-		}
-
-		internal void SetData(bool isData)
-		{
-			_isData = isData;
 		}
 	}
 }

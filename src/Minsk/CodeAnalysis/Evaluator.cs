@@ -23,6 +23,10 @@ using SimpleLogger;
 
 namespace Minsk.CodeAnalysis
 {
+	internal class ReferenceTracker
+	{
+		public string Reference { get; set; }
+	}
 	internal sealed class Evaluator : StatementEvaluator
 	{
 		//TODO: Clean up presentation flags
@@ -56,8 +60,8 @@ namespace Minsk.CodeAnalysis
 					&& declaration.Key.IsVisible)
 					_slideCount++;
 			}
-			_constants.Add(new VariableSymbol("slideCount", true, PrimitiveTypeSymbol.Integer, false), _slideCount);
-			_constants.Add(new VariableSymbol("totalTime", true, PrimitiveTypeSymbol.Integer, false), 0);
+			_constants.Add(new VariableSymbol("slideCount", true, PrimitiveTypeSymbol.Integer), _slideCount);
+			_constants.Add(new VariableSymbol("totalTime", true, PrimitiveTypeSymbol.Integer), 0);
 			//TODO: This needs to be calculated in js!
 			//_variables.Add(new VariableSymbol("elapsedTime", true, _builtInTypes.LookSymbolUp(typeof(float)), false), 5);
 		}
@@ -203,7 +207,7 @@ namespace Minsk.CodeAnalysis
 			// and then we create a presentation with them!
 			if(node.Variable == null)
 				Element.SetStdStyle((StdStyle)style);
-			_presentationBuilder.AddStyle(node.Variable ?? new VariableSymbol("std", true, _builtInTypes.LookSymbolUp(typeof(StdStyle)), false), style);
+			_presentationBuilder.AddStyle(node.Variable ?? new VariableSymbol("std", true, _builtInTypes.LookSymbolUp(typeof(StdStyle))), style);
 			_variables = _variables.Pop(out var _);
 		}
 
@@ -276,7 +280,7 @@ namespace Minsk.CodeAnalysis
 			_presentationBuilder.AddCustomType(data);
 			//TODO(Minor): Maybe we don't need to collect data statements because they declare a type
 			//and not a variable.
-			_declarations.Remove(new VariableSymbol(node.Type.Name, true, node.Type, false));
+			_declarations.Remove(new VariableSymbol(node.Type.Name, true, node.Type));
 		}
 
 		protected override void EvaluateGroupStatement(BoundGroupStatement node)
@@ -289,7 +293,7 @@ namespace Minsk.CodeAnalysis
 
 			var group = new BodySymbol(node.Type, node.Body);
 			_presentationBuilder.AddCustomType(group);
-			_declarations.Remove(new VariableSymbol(node.Type.Name, true, node.Type, false));
+			_declarations.Remove(new VariableSymbol(node.Type.Name, true, node.Type));
 		}
 
 		protected override void EvaluateSVGStatement(BoundSVGStatement node)
@@ -302,7 +306,7 @@ namespace Minsk.CodeAnalysis
 
 			var group = new BodySymbol(node.Type, node.Body);
 			_presentationBuilder.AddCustomType(group);
-			_declarations.Remove(new VariableSymbol(node.Type.Name, true, node.Type, false));
+			_declarations.Remove(new VariableSymbol(node.Type.Name, true, node.Type));
 		}
 
 		protected override void EvaluateTemplateStatement(BoundTemplateStatement node)
@@ -769,7 +773,7 @@ namespace Minsk.CodeAnalysis
 			if (optionalVariableSymbol != null)
 			{
 				var type = ((ArrayTypeSymbol)optionalVariableSymbol.Type).Child;
-				TryAddChildren(new VariableSymbol($"{optionalVariableSymbol.Name}#{index}", optionalVariableSymbol.IsReadOnly, type, optionalVariableSymbol.NeedsDataFlag), value);
+				TryAddChildren(new VariableSymbol($"{optionalVariableSymbol.Name}#{index}", optionalVariableSymbol.IsReadOnly, type), value);
 			}
 		}
 

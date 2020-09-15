@@ -21,11 +21,11 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			var globalVariables = new VariableValueCollection(null);
 			var globalFunctions = new FunctionSymbol[]
 			{
-				new FunctionSymbol("urlQRCode", new VariableSymbol("data", true, PrimitiveTypeSymbol.String, false), _builtInTypes.LookSymbolUp(typeof(SVGTag))),
+				new FunctionSymbol("urlQRCode", new VariableSymbol("data", true, PrimitiveTypeSymbol.String), _builtInTypes.LookSymbolUp(typeof(SVGTag))),
 				new FunctionSymbol("urlQRCode", new VariableSymbolCollection() {
-					new VariableSymbol("data", true, PrimitiveTypeSymbol.String, false),
-					new VariableSymbol("dark", true, _builtInTypes.LookSymbolUp(typeof(Color)), false),
-					new VariableSymbol("light", true, _builtInTypes.LookSymbolUp(typeof(Color)), false),
+					new VariableSymbol("data", true, PrimitiveTypeSymbol.String),
+					new VariableSymbol("dark", true, _builtInTypes.LookSymbolUp(typeof(Color))),
+					new VariableSymbol("light", true, _builtInTypes.LookSymbolUp(typeof(Color))),
 				}, _builtInTypes.LookSymbolUp(typeof(SVGTag)))
 			};
 			var globalFunctionReflections = new string[]

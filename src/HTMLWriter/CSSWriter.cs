@@ -167,7 +167,7 @@ namespace HTMLWriter
 					WriteAlignment(a);
 					break;
 				case ImageSource i:
-					_writer.Write($"url(\"{i.Path.Replace('\\', '/')}\")");
+					_writer.Write($"url(\"{i.h_Path.Replace('\\', '/')}\")");
 					break;
 				case ImageStretching stretching:
 					WriteImageStretching(stretching);
@@ -368,7 +368,7 @@ namespace HTMLWriter
 					//	return ToString(a);
 					throw new NotImplementedException();
 				case ImageSource i:
-					return $"url(\"{i.Path.Replace('\\', '/')}\")";
+					return $"url(\"{i.h_Path.Replace('\\', '/')}\")";
 				case UnitAddition unitAddition:
 					return $"calc({unitAddition})";
 				case UnitSubtraction unitSubtraction:

@@ -40,7 +40,7 @@ namespace Minsk.CodeAnalysis
 		}
 		internal BodySymbol(TypeSymbol symbol, BoundBlockStatement body)
 		{
-			var variable = new VariableSymbol(symbol.Name, true, symbol, symbol.IsData);
+			var variable = new VariableSymbol(symbol.Name, true, symbol);
 			Symbol = variable;
 			Body = body;
 		}

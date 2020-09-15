@@ -14,7 +14,6 @@ namespace Minsk.CodeAnalysis.Symbols
 
 		public override TypeType Type => TypeType.Enum;
 
-		public override bool IsData => true;
 		public override bool AllowsNone => false;
 
 		public override bool HasDefaultValue => true;

@@ -75,7 +75,7 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			var builtInTypes = BuiltInTypes.Instance;
 			var globalFunctions = new FunctionSymbol[]
 			{
-				new FunctionSymbol("vertical", new VariableSymbol("width", true, builtInTypes.LookSymbolUp(typeof(Unit)), false), builtInTypes.LookSymbolUp(typeof(SplittedContainer))),
+				new FunctionSymbol("vertical", new VariableSymbol("width", true, builtInTypes.LookSymbolUp(typeof(Unit))), builtInTypes.LookSymbolUp(typeof(SplittedContainer))),
 			};
 			var globalFunctionsReflections = new string[]
 			{

@@ -30,7 +30,6 @@ namespace Minsk.CodeAnalysis.Symbols
 		public string Name { get; }
 		public uint Id { get; }
 		public abstract TypeType Type { get; }
-		public abstract bool IsData { get; }
 		public abstract bool AllowsNone { get; }
 		public abstract bool HasDefaultValue { get; }
 		public abstract object DefaultValue { get; }

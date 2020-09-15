@@ -7,13 +7,13 @@ namespace Slides
 	{
 		public ImageSource(string path)
 		{
-			Path = path;
+			h_Path = path;
 		}
 
-		public string Path { get; }
-		public float width { get; set; }
-		public float height { get; set; }
-		public float aspectRatio => width / height;
+		public string h_Path { get; }
+		public int width { get; set; }
+		public int height { get; set; }
+		public float aspectRatio => (float)width / height;
 
 	}
 }

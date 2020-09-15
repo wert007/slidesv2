@@ -32,7 +32,6 @@ namespace Minsk.CodeAnalysis.Symbols
 
 		public readonly static TypeSymbol Object = new PrimitiveTypeSymbol(PrimitiveType.Object, "object");
 
-		public override bool IsData => true;
 		public override bool AllowsNone => PrimitiveType == PrimitiveType.Void;
 		public override bool HasDefaultValue => PrimitiveType != PrimitiveType.Object;
 		public override object DefaultValue

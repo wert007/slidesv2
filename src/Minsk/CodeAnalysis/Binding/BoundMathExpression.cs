@@ -12,7 +12,7 @@ namespace Minsk.CodeAnalysis.Binding
 			Fields = new VariableSymbol[type.Fields.Count];
 			for (int i = 0; i < Fields.Length; i++)
 			{
-				Fields[i] = new VariableSymbol(type.Fields[i].Name, type.Fields[i].IsReadOnly, type.Fields[i].Type, type.Fields[i].NeedsDataFlag);
+				Fields[i] = new VariableSymbol(type.Fields[i].Name, type.Fields[i].IsReadOnly, type.Fields[i].Type);
 			}
 		}
 

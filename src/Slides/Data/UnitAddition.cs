@@ -30,7 +30,10 @@ namespace Slides
 			return new UnitAddition(A, B - u);
 		}
 
-
+		public override int h_ToPixel(int referenceSize)
+		{
+			return A.h_ToPixel(referenceSize) + B.h_ToPixel(referenceSize);
+		}
 
 		public static UnitAddition operator *(float a, UnitAddition b) => new UnitAddition(b.A * a, b.B * a);
 		public static UnitAddition operator *(UnitAddition a, float b) => b * a;
@@ -54,6 +57,10 @@ namespace Slides
 		public Unit B { get; }
 		internal override Unit GetMaxComponent() => Max(A, B);
 
+		public override int h_ToPixel(int referenceSize)
+		{
+			return A.h_ToPixel(referenceSize) - B.h_ToPixel(referenceSize);
+		}
 
 		public static UnitSubtraction operator *(float a, UnitSubtraction b) => new UnitSubtraction(b.A * a, b.B * a);
 		public static UnitSubtraction operator *(UnitSubtraction a, float b) => b * a;

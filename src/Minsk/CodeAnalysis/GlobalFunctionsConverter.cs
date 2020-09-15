@@ -55,7 +55,7 @@ namespace Minsk.CodeAnalysis
 			var parameters = new VariableSymbolCollection();
 			foreach (var parameter in function.GetParameters())
 			{
-				var parameterSymbol = new VariableSymbol(parameter.Name, true, _typeConverter.LookSymbolUp(parameter.ParameterType), false);
+				var parameterSymbol = new VariableSymbol(parameter.Name, true, _typeConverter.LookSymbolUp(parameter.ParameterType));
 				parameters.Add(parameterSymbol);
 			}
 			parameters.Seal();

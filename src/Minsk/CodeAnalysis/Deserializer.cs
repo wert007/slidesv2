@@ -436,14 +436,14 @@ namespace Minsk.CodeAnalysis
 		{
 			ConsumeStatementHeader();
 			var identifier = ConsumeToken();
-			var variable = new VariableSymbol(identifier, true, _builtInTypes.LookSymbolUp(typeof(AnimationSymbol)), false);
+			var variable = new VariableSymbol(identifier, true, _builtInTypes.LookSymbolUp(typeof(AnimationSymbol)));
 			ConsumeToken(); //<
 			var elementIdentifier = ConsumeToken();
-			var elementVariable = new VariableSymbol(elementIdentifier, false, _builtInTypes.LookSymbolUp(typeof(Element)), false);
+			var elementVariable = new VariableSymbol(elementIdentifier, false, _builtInTypes.LookSymbolUp(typeof(Element)));
 			var element = new BoundParameterStatement(elementVariable, null);
 			ConsumeToken(); //<
 			var timeIdentifier = ConsumeToken();
-			var timeVariable = new VariableSymbol(timeIdentifier, true, _builtInTypes.LookSymbolUp(typeof(Time)), false);
+			var timeVariable = new VariableSymbol(timeIdentifier, true, _builtInTypes.LookSymbolUp(typeof(Time)));
 			var time = new BoundParameterStatement(timeVariable, null);
 			ConsumeToken(); //:
 			var body = new List<BoundCaseStatement>();
@@ -501,7 +501,7 @@ namespace Minsk.CodeAnalysis
 		{
 			ConsumeStatementHeader();
 			var identifier = ConsumeToken();
-			var variable = new VariableSymbol(identifier, true, _builtInTypes.LookSymbolUp(typeof(Filter)), false);
+			var variable = new VariableSymbol(identifier, true, _builtInTypes.LookSymbolUp(typeof(Filter)));
 			ConsumeToken(); // <
 			var parameter = DeserializeParameterBlockStatement();
 			ConsumeToken(); //:
@@ -547,7 +547,7 @@ namespace Minsk.CodeAnalysis
 			{
 				template = DeserializeTemplateStatement();
 			}
-			var variable = new VariableSymbol(identifier, true, _builtInTypes.LookSymbolUp(typeof(SlideAttributes)), false);
+			var variable = new VariableSymbol(identifier, true, _builtInTypes.LookSymbolUp(typeof(SlideAttributes)));
 			var statements = new List<BoundStepStatement>();
 			ConsumeToken(); //:
 			while (PeekToken() != ";")
@@ -562,7 +562,7 @@ namespace Minsk.CodeAnalysis
 		{
 			ConsumeToken(); //<
 			var identifier = ConsumeToken();
-			return new VariableSymbol(identifier, true, _builtInTypes.LookSymbolUp(typeof(Template)), false);
+			return new VariableSymbol(identifier, true, _builtInTypes.LookSymbolUp(typeof(Template)));
 		}
 
 		private BoundStepStatement DeserializeStepStatement()
@@ -573,7 +573,7 @@ namespace Minsk.CodeAnalysis
 				name = null;
 			VariableSymbol variable = null;
 			if (name != null)
-				variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(Step)), false);
+				variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(Step)));
 			ConsumeToken(); //:
 			var body = DeserializeStatement();
 			ConsumeStatementTail();
@@ -590,7 +590,7 @@ namespace Minsk.CodeAnalysis
 			{
 				ConsumeToken(); //<
 				boundParameter = DeserializeParameterStatement();
-				variable = new VariableSymbol(identifier, true, _builtInTypes.LookSymbolUp(typeof(StdStyle)), false);
+				variable = new VariableSymbol(identifier, true, _builtInTypes.LookSymbolUp(typeof(StdStyle)));
 			}
 			ConsumeToken(); //:
 			var boundBody = DeserializeBlockStatement();
@@ -649,7 +649,7 @@ namespace Minsk.CodeAnalysis
 		{
 			ConsumeStatementHeader();
 			var name = ConsumeToken();
-			var variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(Transition)), false);
+			var variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(Transition)));
 			ConsumeToken(); //<
 			var boundParameters = DeserializeParameterBlockStatement();
 			ConsumeToken(); //:
@@ -688,7 +688,7 @@ namespace Minsk.CodeAnalysis
 			}
 			ConsumeToken(); //:
 			var type = DeserializeTypeSymbol();
-			return new VariableSymbol(identifier, isReadonly, type, type.IsData)
+			return new VariableSymbol(identifier, isReadonly, type)
 			{
 				IsVisible = isVisible
 			};

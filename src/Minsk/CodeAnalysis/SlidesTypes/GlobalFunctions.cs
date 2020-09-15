@@ -15,6 +15,8 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 
 	public static class GlobalFunctions
 	{
+		internal static ReferenceTracker Tracker { get; private set; }
+
 		public static string join(string seperator, object[] array)
 		{
 			return string.Join(seperator, array);
@@ -135,11 +137,34 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 		{
 			var result = new ImageSource(fileName);
 			var path = Path.Combine(CompilationFlags.Directory, fileName);
+			Tracker.Reference = fileName;
 			using (var image = new MagickImage(path))
 			{
 				result.width = image.BaseWidth;
 				result.height = image.BaseHeight;
 			}
+			return result;
+		}
+
+		public static ImageSource crop(ImageSource source, Unit top, Unit right, Unit bottom, Unit left)
+		{
+			var path = source.h_Path;
+			var y = top.h_ToPixel(source.height);
+			var x = left.h_ToPixel(source.width);
+			var width = (Unit.HundredPercent - right).h_ToPixel(source.width);
+			var height = (Unit.HundredPercent - bottom).h_ToPixel(source.height);
+			using (var image = new MagickImage(Path.Combine(CompilationFlags.Directory, path)))
+			{
+				path = Path.Combine(Path.GetDirectoryName(path), ".generated", Path.GetFileNameWithoutExtension(path) + "_resized" + Path.GetExtension(path));
+				Directory.CreateDirectory(Path.Combine(CompilationFlags.Directory, Path.GetDirectoryName(path)));
+				Tracker.Reference = path;
+				image.Crop(new MagickGeometry(x, y, width, height));
+				using (var fs = new FileStream(Path.Combine(CompilationFlags.Directory, path), FileMode.OpenOrCreate))
+					image.Write(fs);
+			}
+			var result = new ImageSource(path);
+			result.width = width;
+			result.height = height;
 			return result;
 		}
 		/*
@@ -289,6 +314,11 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 				}
 			}
 			return tmp;
+		}
+
+		internal static void Set_BackDump(ReferenceTracker tracker)
+		{
+			Tracker = tracker;
 		}
 	}
 }

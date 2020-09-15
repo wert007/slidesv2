@@ -166,21 +166,34 @@ slide problems:
     let content = new Titled('Probleme des Baus', ~child);
 endslide
 
-slide climate:
+#define climateContent!(%e%: Element)
     let bulletPoints = [
         'teilweise - 40°C während den Bauarbeiten [b]ohne[/b] feste Unterkunft',
         'Permafrostboden im Bereich der [i]Amur-Strecke[/i]',
         'leichtere und biegbarere Schienen als üblich wegen Permafrostboden',
     ];
-    let map = new Image(image('gfx\\diercke_page148.png'));
-    // map.clipPat = clipRect(0, 0, 0.5f, 0);
-    let ~innerCaptioned = new Captioned(~map, 'Diercke Atlas Seite 148 | Abb. 1');
+    let ~child = new ListWithCaptioned(bulletPoints, %e%);
+    let content = new Titled('Klima', ~child);
+#end
+
+
+
+slide climate:
+    let mapSrc = crop(image('gfx\\diercke_page148.png'), 0, 0, 50%, 0);
+    let ~innerCaptioned = new Captioned(new Image(mapSrc), 'Diercke Atlas Seite 148 | Abb. 1');
     ~innerCaptioned.borderColor.bottom = black;
     ~innerCaptioned.borderWidth.bottom = 5px;
     ~innerCaptioned.borderStyle.bottom = BorderStyle.Solid;
     ~innerCaptioned.caption.align = Alignment.Left;
     let ~captioned = new Captioned(~innerCaptioned, 'Legende (Durchschnittstemperaturen): [list][*]- 45°C bei Werchojansk [*]- 10°C bei Moskau[/list]');
     ~captioned.caption.align = Alignment.Left;
-    let ~child = new ListWithCaptioned(bulletPoints, ~captioned);
-    let content = new Titled('Klima', ~child);
+    climateSlide!(~captioned)
+endslide
+
+slide climate2:
+    let ~captioned = new Captioned(new Image(image('gfx\\train_stop.jpg')), '-40°C in Mogotscha');
+    ~captioned.caption.align = Alignment.Right;
+    climateSlide!(~captioned)
+    // let ~child = new ListWithCaptioned(bulletPoints, ~captioned);
+    // let content = new Titled('Klima', ~child);
 endslide

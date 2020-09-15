@@ -29,14 +29,14 @@ namespace Minsk.CodeAnalysis.Symbols
 					function = new FunctionSymbol[]
 					{
 						new FunctionSymbol("getSafe",
-							new VariableSymbol("index", true, PrimitiveTypeSymbol.Integer, false),
+							new VariableSymbol("index", true, PrimitiveTypeSymbol.Integer),
 							Child.Type == TypeType.Noneable ? Child : new NoneableTypeSymbol(Child))
 					};
 					return true;
 				case "getLoop":
 					function = new FunctionSymbol[]
 					{
-						new FunctionSymbol("getLoop", new VariableSymbol("index", true, PrimitiveTypeSymbol.Integer, false), Child)
+						new FunctionSymbol("getLoop", new VariableSymbol("index", true, PrimitiveTypeSymbol.Integer), Child)
 					};
 					return true;
 				default:
@@ -46,7 +46,6 @@ namespace Minsk.CodeAnalysis.Symbols
 
 		public override TypeType Type => TypeType.Array;
 
-		public override bool IsData => Child.IsData;
 
 		public override bool AllowsNone => false;
 

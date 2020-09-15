@@ -108,7 +108,7 @@ namespace Minsk.CodeAnalysis.Binding
 
 			if (!_scope.TryDeclare(type))
 				_diagnostics.ReportTypeAlreadyDeclared(syntax.Identifier.Span, name);
-			_declarations.Add(new VariableSymbol(name, true, type, false), null);
+			_declarations.Add(new VariableSymbol(name, true, type), null);
 		}
 		private void CollectSVGStatementDeclarations(SVGStatementSyntax syntax)
 		{
@@ -126,7 +126,7 @@ namespace Minsk.CodeAnalysis.Binding
 
 			if (!_scope.TryDeclare(type))
 				_diagnostics.ReportTypeAlreadyDeclared(syntax.Identifier.Span, name);
-			_declarations.Add(new VariableSymbol(name, true, type, false), null);
+			_declarations.Add(new VariableSymbol(name, true, type), null);
 		}
 
 		private void CollectStructStatementDeclarations(StructStatementSyntax syntax)
@@ -141,14 +141,13 @@ namespace Minsk.CodeAnalysis.Binding
 			constructor.Seal();
 
 			var customType = new AdvancedTypeSymbol(name, fieldVariables, fields.Select(p => p.Initializer).ToArray(), constructor, FunctionSymbolCollection.Empty, null, new TypeSymbol[0]);
-			customType.SetData(true);
 			for (int i = 0; i < constructor.Count; i++)
 				constructor[i].Type = customType;
 
 			if (!_scope.TryDeclare(customType))
 				_diagnostics.ReportTypeAlreadyDeclared(syntax.Identifier.Span, name);
 
-			_declarations.Add(new VariableSymbol(name, true, customType, false), null);
+			_declarations.Add(new VariableSymbol(name, true, customType), null);
 		}
 
 		private void CollectStyleStatementDeclarations(StyleStatementSyntax syntax)
@@ -157,7 +156,7 @@ namespace Minsk.CodeAnalysis.Binding
 			VariableSymbol variable = null;
 			if (syntax.Identifier.Kind != SyntaxKind.StdKeyword)
 			{
-				variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(StdStyle)), true);
+				variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(StdStyle)));
 				TextSpan? span = null;
 				//TODO: How to use Flags right here and in the binder and in the evaluator.
 				//if (!_flags.IsLibrarySymbol)
@@ -176,7 +175,7 @@ namespace Minsk.CodeAnalysis.Binding
 		private void CollectTransitionStatmentDeclarations(TransitionStatementSyntax syntax)
 		{
 			var name = syntax.Identifier.Text;
-			var variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(Transition)), false);
+			var variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(Transition)));
 
 			if (!_scope.TryDeclare(variable, syntax.Identifier.Span))
 				_diagnostics.ReportVariableAlreadyDeclared(syntax.Identifier.Span, name);
@@ -187,7 +186,7 @@ namespace Minsk.CodeAnalysis.Binding
 		private void CollectFilterStatementDeclarations(FilterStatementSyntax syntax)
 		{
 			var name = syntax.Identifier.Text;
-			var variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(Filter)), true);
+			var variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(Filter)));
 
 			if (!_scope.TryDeclare(variable, syntax.Identifier.Span))
 				_diagnostics.ReportVariableAlreadyDeclared(syntax.Identifier.Span, name);
@@ -198,7 +197,7 @@ namespace Minsk.CodeAnalysis.Binding
 		private void CollectAnimationStatementDeclarations(AnimationStatementSyntax syntax)
 		{
 			var name = syntax.Identifier.Text;
-			var variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(AnimationSymbol)), false);
+			var variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(AnimationSymbol)));
 
 			if (!_scope.TryDeclare(variable, syntax.Identifier.Span))
 				_diagnostics.ReportVariableAlreadyDeclared(syntax.Identifier.Span, name);
@@ -209,7 +208,7 @@ namespace Minsk.CodeAnalysis.Binding
 		private void CollectTemplateStatementDeclarations(TemplateStatementSyntax syntax)
 		{
 			var name = syntax.Identifier.Text;
-			var variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(Template)), false);
+			var variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(Template)));
 
 			if (!_scope.TryDeclare(variable, null))
 				_diagnostics.ReportVariableAlreadyDeclared(syntax.Identifier.Span, name);
@@ -221,7 +220,7 @@ namespace Minsk.CodeAnalysis.Binding
 		{
 			var name = syntax.Identifier.Text;
 			var isVisible = syntax.PretildeToken == null;
-			var variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(SlideAttributes)), false);
+			var variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(SlideAttributes)));
 			variable.IsVisible = isVisible;
 
 			if (!_scope.TryDeclare(variable, null))

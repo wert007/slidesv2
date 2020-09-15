@@ -47,19 +47,18 @@ namespace Minsk.CodeAnalysis
 				var type = ((ArrayTypeSymbol)variable.Type).Child;
 				for (int i = 0; i < array.Length; i++)
 				{
-					TryAddGroupChildren(array[i], new VariableSymbol($"{variable.Name}#{i}", variable.IsReadOnly, type, variable.NeedsDataFlag));
+					TryAddGroupChildren(array[i], new VariableSymbol($"{variable.Name}#{i}", variable.IsReadOnly, type));
 				}
 			}
-			if (variable.IsVisible && !variable.Type.IsData)
-				if (value is Element element && element.isVisible)
-					_children[variable] = element;
+			if (variable.IsVisible && value is Element element && element.isVisible)
+				_children[variable] = element;
 		}
 
 		private void TryAddSVGGroupChildren(object value, VariableSymbol variable)
 		{
 			if (!(value is SVGGraphicsElement || value is object[]))
 				return;
-			if (variable.IsVisible && !variable.Type.IsData)
+			if (variable.IsVisible)
 			{
 				if (variable.Type.Type != TypeType.Array && value is SVGGraphicsElement element && element.IsVisible)
 					_svgChildren[variable] = element;
@@ -70,7 +69,7 @@ namespace Minsk.CodeAnalysis
 						if (e is SVGGraphicsElement elementArr && elementArr.IsVisible)
 						{
 							var t = ((ArrayTypeSymbol)variable.Type).Child;
-							var variableArray = new VariableSymbol($"{variable.Name}#{i}", variable.IsReadOnly, t, variable.NeedsDataFlag);
+							var variableArray = new VariableSymbol($"{variable.Name}#{i}", variable.IsReadOnly, t);
 							_svgChildren.Add(variableArray, elementArr);
 						}
 					}

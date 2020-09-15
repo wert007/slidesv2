@@ -23,12 +23,12 @@ namespace Minsk.CodeAnalysis
 		{
 			_root = root;
 
-			_constants.Add(new VariableSymbol("seperator", true, _builtInTypes.LookSymbolUp(typeof(LibrarySymbol)), false), Library.Seperator);
-			_constants.Add(new VariableSymbol("code", true, _builtInTypes.LookSymbolUp(typeof(LibrarySymbol)), false), Library.Code);
-			_constants.Add(new VariableSymbol("auto", true, _builtInTypes.LookSymbolUp(typeof(Unit)), false), new Unit(0, Unit.UnitKind.Auto));
+			_constants.Add(new VariableSymbol("seperator", true, _builtInTypes.LookSymbolUp(typeof(LibrarySymbol))), Library.Seperator);
+			_constants.Add(new VariableSymbol("code", true, _builtInTypes.LookSymbolUp(typeof(LibrarySymbol))), Library.Code);
+			_constants.Add(new VariableSymbol("auto", true, _builtInTypes.LookSymbolUp(typeof(Unit))), new Unit(0, Unit.UnitKind.Auto));
 			foreach (var color in Color.GetStaticColors())
 			{
-				_constants.Add(new VariableSymbol(color.Key, true, _builtInTypes.LookSymbolUp(typeof(Color)), false), color.Value);
+				_constants.Add(new VariableSymbol(color.Key, true, _builtInTypes.LookSymbolUp(typeof(Color))), color.Value);
 			}
 		}
 
@@ -373,12 +373,13 @@ namespace Minsk.CodeAnalysis
 			{
 				method = GlobalFunctionsConverter.Instance.LookMethodInfoUp(function);
 			}
-			if (function.Name == "image")
-			{
-				var fileName = args[0].ToString();
-				AddReferencedFile(fileName);
-			}
-			return MethodInvoke(method, null, args);
+			var tracker = new ReferenceTracker();
+			GlobalFunctions.Set_BackDump(tracker);
+			var result =MethodInvoke(method, null, args);
+			GlobalFunctions.Set_BackDump(null);
+			if (tracker.Reference != null)
+				AddReferencedFile(tracker.Reference);
+			return result;
 		}
 
 		protected virtual object EvaluateNativeFunction(string name, object[] args) => null;

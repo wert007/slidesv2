@@ -11,7 +11,7 @@ namespace Minsk.CodeAnalysis.Binding
 		private readonly Stack<BoundExpression> _usedAnonymFor = new Stack<BoundExpression>();
 		protected override BoundExpression RewriteAnonymForExpression(BoundAnonymForExpression node)
 		{
-			var variable = new VariableSymbol("#anonymFor", false, PrimitiveTypeSymbol.Integer, false);
+			var variable = new VariableSymbol("#anonymFor", false, PrimitiveTypeSymbol.Integer);
 			return RewriteExpression(new BoundVariableExpression(variable));
 		}
 		protected override BoundExpression RewriteArrayAccessExpression(BoundArrayAccessExpression node)
@@ -51,7 +51,7 @@ namespace Minsk.CodeAnalysis.Binding
 						initializer,
 					}, null);
 				}
-				var iteratorVariable = new VariableSymbol("#anonymFor", false, PrimitiveTypeSymbol.Integer, false);
+				var iteratorVariable = new VariableSymbol("#anonymFor", false, PrimitiveTypeSymbol.Integer);
 				var op = BoundBinaryOperator.Bind(Syntax.SyntaxKind.PeriodPeriodToken, PrimitiveTypeSymbol.Integer, PrimitiveTypeSymbol.Integer);
 				var collection = new BoundBinaryExpression(new BoundLiteralExpression(0), op, initializer);
 				var body = new BoundBlockStatement(new BoundStatement[]

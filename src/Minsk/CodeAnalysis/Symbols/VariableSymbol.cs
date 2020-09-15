@@ -6,22 +6,18 @@ namespace Minsk.CodeAnalysis.Symbols
 	[Serializable]
 	public sealed class VariableSymbol
 	{
-		public VariableSymbol(string name, bool isReadOnly, TypeSymbol type, bool needsDataFlag, int arrayIndicesCount = 0)
+		public VariableSymbol(string name, bool isReadOnly, TypeSymbol type)
 		{
 			Name = name;
 			IsReadOnly = isReadOnly;
 			Type = type;
 			IsVisible = true;
-			NeedsDataFlag = needsDataFlag;
-			ArrayIndicesCount = arrayIndicesCount;
 		}
 
 		public string Name { get; }
 		public bool IsReadOnly { get; }
 		public TypeSymbol Type { get; internal set; }
 		public bool IsVisible { get; internal set; }
-		public bool NeedsDataFlag { get; internal set; }
-		public int ArrayIndicesCount { get; }
 
 		private bool _hasValue;
 		public bool HasValue
@@ -52,7 +48,6 @@ namespace Minsk.CodeAnalysis.Symbols
 			hashCode = hashCode * -1521134295 + IsReadOnly.GetHashCode();
 			hashCode = hashCode * -1521134295 + EqualityComparer<TypeSymbol>.Default.GetHashCode(Type);
 			hashCode = hashCode * -1521134295 + IsVisible.GetHashCode();
-			hashCode = hashCode * -1521134295 + NeedsDataFlag.GetHashCode();
 			return hashCode;
 		}
 
