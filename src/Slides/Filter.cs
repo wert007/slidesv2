@@ -1,4 +1,5 @@
-﻿using SVGLib.Filters;
+﻿using Slides.Data;
+using SVGLib.Filters;
 using System;
 
 namespace Slides

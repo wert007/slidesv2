@@ -1,4 +1,6 @@
-﻿namespace Slides.Elements
+﻿using Slides.Data;
+
+namespace Slides.Elements
 {
 
 	public class Label : TextElement

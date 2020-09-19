@@ -1,4 +1,6 @@
-﻿namespace Slides.Elements
+﻿using Slides.Data;
+
+namespace Slides.Elements
 {
 	public abstract class Chart : Element
 	{

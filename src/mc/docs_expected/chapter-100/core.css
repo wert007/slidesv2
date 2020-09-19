@@ -139,10 +139,11 @@ svg#custom-filters {
 }
 
 .step {
-	height: -webkit-fill-available;
+	height: 100%;
 	position: absolute;
-	width: -webkit-fill-available;
+	width: 100%;
 }
+
 .step:empty {
 	pointer-events: none;
 }

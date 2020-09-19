@@ -227,7 +227,8 @@ namespace HTMLWriter
 			var id = $"{parentName}-{element.name}";
 			writer.StartId($"{id}");
 			WriteBrush(writer, element.h_Background);
-			var properties = new string[] { "borderColor", "borderStyle", "borderWidth", "color", "filter", "padding" };
+			WriteBorder(writer, element.border);
+			var properties = new string[] { "color", "filter", "padding" };
 			foreach (var prop in properties)
 			{
 				writer.WriteAttributeIfValue(CSSWriter.ToCssAttribute(prop), element.get_ActualField(prop));
@@ -492,6 +493,21 @@ namespace HTMLWriter
 					break;
 				default:
 					throw new Exception();
+			}
+		}
+
+		private static void WriteBorder(CSSWriter writer, Border border)
+		{
+			if(border.get_AllEqual())
+			{
+				writer.WriteAttributeIfNotDefault("border", border.top, new BorderLine());
+			}
+			else
+			{
+				writer.WriteAttributeIfNotDefault("border-top", border.top, new BorderLine());
+				writer.WriteAttributeIfNotDefault("border-right", border.right, new BorderLine());
+				writer.WriteAttributeIfNotDefault("border-bottom", border.bottom, new BorderLine());
+				writer.WriteAttributeIfNotDefault("border-left", border.left, new BorderLine());
 			}
 		}
 

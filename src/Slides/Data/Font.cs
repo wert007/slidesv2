@@ -4,7 +4,7 @@ using System.Drawing;
 using System.Drawing.Text;
 using System.IO;
 
-namespace Slides
+namespace Slides.Data
 {
 	[Serializable]
 	public class Font

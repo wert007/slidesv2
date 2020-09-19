@@ -13,8 +13,6 @@ namespace Slides.Elements
 {
 	public abstract class Element : IFilterInput
 	{
-		public ColorQuadruple h_BorderColor { get; private set; }
-		public Thickness h_BorderWidth { get; private set; }
 		public Brush h_Background { get; private set; }
 		public Color h_Color { get; private set; }
 		public Filter h_Filter { get; private set; }
@@ -31,29 +29,7 @@ namespace Slides.Elements
 		//Actually. That should NEVER happen!
 		public string position { get; set; } = "";
 
-		public ColorQuadruple borderColor
-		{
-			get
-			{
-				if(h_BorderColor == null)
-					h_BorderColor = new ColorQuadruple(color, color, color, color);
-				return h_BorderColor;
-			}
-
-			set => h_BorderColor = value;
-		}
-		public Thickness borderWidth
-		{
-			get
-			{
-				if(h_BorderWidth == null)
-					h_BorderWidth = new Thickness(Unit.Medium, Unit.Medium, Unit.Medium, Unit.Medium);
-				return h_BorderWidth;
-			}
-
-			set => h_BorderWidth = value;
-		}
-		public BorderStyleQuadruple borderStyle { get; set; }
+		public Border border { get; set; }
 		public Brush background { get => h_Background ?? new Brush(Color.Transparent); set => h_Background = value; }
 		public Color color
 		{
@@ -246,9 +222,7 @@ namespace Slides.Elements
 		public string get_Id() => $"{h_parent?.get_Id() ?? step.get_Id()}-{name}";
 		public Element()
 		{
-			borderColor = null;
-			borderWidth = null;
-			borderStyle = new BorderStyleQuadruple();
+			border = new Border();
 			background = null;
 			color = null;
 			//_orientation = Orientation.LeftTop;
@@ -520,12 +494,8 @@ namespace Slides.Elements
 			{
 				case nameof(position):
 					return string.IsNullOrEmpty(position) ? null : position;
-				case nameof(borderColor):
-					return h_BorderColor;
-				case nameof(borderWidth):
-					return h_BorderWidth;
-				case nameof(borderStyle):
-					return borderStyle.h_IsUnset ? null : borderStyle;
+				case nameof(border):
+					return border;
 				case nameof(background):
 					return h_Background;
 				case nameof(color):

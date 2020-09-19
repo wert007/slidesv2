@@ -17,6 +17,7 @@ using System.Text;
 using Slides.Elements;
 using Slides.Styling;
 using SimpleLogger;
+using Slides.Data;
 
 namespace Minsk.CodeAnalysis.Binding
 {

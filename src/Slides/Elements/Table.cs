@@ -1,4 +1,5 @@
-﻿using Slides.Styling;
+﻿using Slides.Data;
+using Slides.Styling;
 using System;
 using System.Collections.Generic;
 using System.Linq;

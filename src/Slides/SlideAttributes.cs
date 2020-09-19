@@ -1,4 +1,5 @@
-﻿using Slides.Elements;
+﻿using Slides.Data;
+using Slides.Elements;
 using Slides.Styling;
 using System;
 using System.Collections.Generic;
@@ -19,9 +20,7 @@ namespace Slides
 		public Unit fontsize { get; set; }
 		public Thickness padding { get; set; }
 		public Transition transition { get; set; }
-		public BorderStyle borderStyle { get; set; }
-		public Color borderColor { get; set; }
-		public Thickness borderWidth { get; set; }
+		public Border border { get; set; }
 		public Filter n_filter { get; set; }
 
 		private HashSet<CustomStyle> appliedStyles = new HashSet<CustomStyle>();
@@ -33,7 +32,7 @@ namespace Slides
 			this.index = index;
 			this.isVisible = isVisible;
 			padding = new Thickness();
-
+			border = new Border();
 
 		}
 

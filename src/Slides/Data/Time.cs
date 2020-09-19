@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Globalization;
 
-namespace Slides
+namespace Slides.Data
 {
 	[Serializable]
 	public class Time

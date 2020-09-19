@@ -2,19 +2,8 @@
 using System.Collections.Generic;
 using System.Globalization;
 
-namespace Slides
+namespace Slides.Data
 {
-	public class UnitPair
-	{
-		public UnitPair(Unit x, Unit y)
-		{
-			X = x;
-			Y = y;
-		}
-
-		public Unit X { get; }
-		public Unit Y { get; }
-	}
 	[Serializable]
 	public class Unit
 	{
@@ -52,6 +41,12 @@ namespace Slides
 		{
 			Value = 0;
 			Kind = UnitKind.Pixel;
+		}
+
+		public Unit(Unit unit)
+		{
+			Value = unit.Value;
+			Kind = unit.Kind;
 		}
 
 		public override string ToString()

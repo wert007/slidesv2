@@ -9,7 +9,7 @@ using Slides;
 using Slides.Code;
 using Slides.MathExpressions;
 using SVGGroup = SVGLib.ContainerElements.Group;
-using Color = Slides.Color;
+using Color = Slides.Data.Color;
 using SVGLib.GraphicsElements;
 using SVGLib;
 using SVGLib.ContainerElements;
@@ -20,6 +20,7 @@ using System.IO;
 using SVGLib.Filters;
 using Slides.Styling;
 using SimpleLogger;
+using Slides.Data;
 
 namespace Minsk.CodeAnalysis
 {
@@ -620,14 +621,8 @@ namespace Minsk.CodeAnalysis
 					case "padding":
 						element.padding = (Thickness)variable.Value;
 						break;
-					case "borderColor":
-						element.borderColor = SlidesConverter.ConvertToColorQuadruple(variable.Value);
-						break;
-					case "borderStyle":
-						element.borderStyle = SlidesConverter.ConvertToBorderStyleQuadruple(variable.Value);
-						break;
-					case "borderWidth":
-						element.borderWidth =  SlidesConverter.ConvertToThickness(variable.Value);
+					case "border":
+						element.border = SlidesConverter.ConvertToBorder(variable.Value);
 						break;
 				}
 			}

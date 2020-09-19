@@ -2,6 +2,7 @@ using System;
 using Minsk.CodeAnalysis.Symbols;
 using Minsk.CodeAnalysis.Syntax;
 using Slides;
+using Slides.Data;
 
 namespace Minsk.CodeAnalysis.Binding
 {

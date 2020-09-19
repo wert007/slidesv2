@@ -49,7 +49,7 @@ namespace Minsk.CodeAnalysis.Symbols
 					case PrimitiveType.Float:
 						return 0f;
 					case PrimitiveType.Unit:
-						return new Slides.Unit();
+						return new Slides.Data.Unit();
 					case PrimitiveType.Void:
 					case PrimitiveType.Error:
 					case PrimitiveType.Undefined:

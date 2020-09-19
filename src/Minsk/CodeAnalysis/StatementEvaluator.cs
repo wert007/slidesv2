@@ -4,6 +4,7 @@ using Minsk.CodeAnalysis.Binding;
 using Minsk.CodeAnalysis.SlidesTypes;
 using Minsk.CodeAnalysis.Symbols;
 using Slides;
+using Slides.Data;
 using Slides.Elements;
 using Slides.MathExpressions;
 

@@ -1,4 +1,5 @@
 ﻿using Slides;
+using Slides.Data;
 using SVGLib.Filters;
 using SVGLib.Filters.Lights;
 

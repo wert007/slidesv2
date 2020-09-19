@@ -3,7 +3,7 @@ using System.Text;
 using SVGMatrix = SVGLib.Datatypes.Matrix;
 
 
-namespace Slides
+namespace Slides.Data
 {
 	[Serializable]
 	public class Matrix

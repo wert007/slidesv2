@@ -1,6 +1,7 @@
 ﻿using Minsk.CodeAnalysis;
 using Slides;
 using Slides.Code;
+using Slides.Data;
 using Slides.Elements;
 using Slides.Elements.SVG;
 using Slides.Helpers;

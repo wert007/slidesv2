@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Slides.Data;
+using System.Collections.Generic;
 
 namespace Slides.Elements
 {

@@ -54,10 +54,12 @@
     <Compile Include="Code\GitRepository.cs" />
     <Compile Include="Data\Alignment.cs" />
     <Compile Include="AnimationCall.cs" />
+    <Compile Include="Data\Border.cs" />
+    <Compile Include="Data\BorderLine.cs" />
     <Compile Include="Data\BorderStyle.cs" />
-    <Compile Include="Data\BorderStyleQuadruple.cs" />
-    <Compile Include="Data\ColorQuadruple.cs" />
     <Compile Include="Data\FormattedString.cs" />
+    <Compile Include="Data\UnitPair.cs" />
+    <Compile Include="Data\UnitSubtraction.cs" />
     <Compile Include="Elements\BoxElement.cs" />
     <Compile Include="Data\Brush.cs" />
     <Compile Include="CaseCall.cs" />
@@ -69,7 +71,6 @@
     <Compile Include="Data\CSVFile.cs" />
     <Compile Include="Data\Direction.cs" />
     <Compile Include="Data\Range.cs" />
-    <Compile Include="Data\VariableType.cs" />
     <Compile Include="Data\Vector2.cs" />
     <Compile Include="Elements\Element.cs" />
     <Compile Include="Elements\ElementKind.cs" />

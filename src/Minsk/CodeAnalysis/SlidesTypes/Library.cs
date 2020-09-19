@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Minsk.CodeAnalysis.Symbols;
 using Slides;
+using Slides.Data;
 using Slides.Elements;
 using Slides.Styling;
 

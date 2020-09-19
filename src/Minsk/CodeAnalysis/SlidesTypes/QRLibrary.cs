@@ -1,6 +1,7 @@
 ﻿using Minsk.CodeAnalysis.Symbols;
 using QRCoder;
 using Slides;
+using Slides.Data;
 using Slides.Styling;
 using SVGLib.ContainerElements;
 using SVGLib.Parsing;

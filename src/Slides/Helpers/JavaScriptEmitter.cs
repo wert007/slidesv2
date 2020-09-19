@@ -1,4 +1,5 @@
-﻿using Slides.Elements;
+﻿using Slides.Data;
+using Slides.Elements;
 using Slides.MathExpressions;
 using System;
 using System.CodeDom.Compiler;

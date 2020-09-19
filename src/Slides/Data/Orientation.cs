@@ -1,4 +1,4 @@
-﻿namespace Slides
+﻿namespace Slides.Data
 {
 	public enum Orientation
 	{

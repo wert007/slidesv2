@@ -166,34 +166,57 @@ slide problems:
     let content = new Titled('Probleme des Baus', ~child);
 endslide
 
-#define climateContent!(%e%: Element)
-    let bulletPoints = [
-        'teilweise - 40°C während den Bauarbeiten [b]ohne[/b] feste Unterkunft',
-        'Permafrostboden im Bereich der [i]Amur-Strecke[/i]',
-        'leichtere und biegbarere Schienen als üblich wegen Permafrostboden',
-    ];
-    let ~child = new ListWithCaptioned(bulletPoints, %e%);
-    let content = new Titled('Klima', ~child);
-#end
+// #def lol gray
+// #define climateContent!(%e%: Element)
+//     %e%.background = lol!;
+//     let ~child = new ListWithCaptioned(bulletPoints, %e%);
+//     let content = new Titled('Klima', ~child);
+// #end
+
+// #macro
+// for _ in 0..5:
+//     let s = new Slide();
+//     s.add(new Label('Hello World'));
+// endfor
+// #macroend
+
+/*
+Border : BorderSide:
+    top: BorderSide
+    right: BorderSide
+    bottom: BorderSide
+    left: BorderSide
+
+    //image: BorderImage
+
+BorderSide:
+    color: Color
+    width: Unit
+    style: BorderStyle
+
+*/
 
 
+const climateBulletPoints = [
+    'teilweise - 40°C während den Bauarbeiten [b]ohne[/b] feste Unterkunft',
+    'Permafrostboden im Bereich der [i]Amur-Strecke[/i]',
+    'leichtere und biegbarere Schienen als üblich wegen Permafrostboden',
+];
 
 slide climate:
     let mapSrc = crop(image('gfx\\diercke_page148.png'), 0, 0, 50%, 0);
     let ~innerCaptioned = new Captioned(new Image(mapSrc), 'Diercke Atlas Seite 148 | Abb. 1');
-    ~innerCaptioned.borderColor.bottom = black;
-    ~innerCaptioned.borderWidth.bottom = 5px;
-    ~innerCaptioned.borderStyle.bottom = BorderStyle.Solid;
+    ~innerCaptioned.border.bottom = border(5px, BorderStyle.Solid, black);
     ~innerCaptioned.caption.align = Alignment.Left;
     let ~captioned = new Captioned(~innerCaptioned, 'Legende (Durchschnittstemperaturen): [list][*]- 45°C bei Werchojansk [*]- 10°C bei Moskau[/list]');
     ~captioned.caption.align = Alignment.Left;
-    climateSlide!(~captioned)
+    let ~child = new ListWithCaptioned(climateBulletPoints, ~captioned);
+    let content = new Titled('Klima', ~child);
 endslide
 
 slide climate2:
     let ~captioned = new Captioned(new Image(image('gfx\\train_stop.jpg')), '-40°C in Mogotscha');
     ~captioned.caption.align = Alignment.Right;
-    climateSlide!(~captioned)
-    // let ~child = new ListWithCaptioned(bulletPoints, ~captioned);
-    // let content = new Titled('Klima', ~child);
+    let ~child = new ListWithCaptioned(climateBulletPoints, ~captioned);
+    let content = new Titled('Klima', ~child);
 endslide

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using Slides;
+using Slides.Data;
 using Slides.Helpers;
 
 namespace HTMLWriter

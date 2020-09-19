@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Slides
+namespace Slides.Data
 {
 	[Serializable]
 	public class Brush

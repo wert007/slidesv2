@@ -1,4 +1,6 @@
-﻿namespace Slides.Transforms
+﻿using Slides.Data;
+
+namespace Slides.Transforms
 {
 	public class SingleValueTransform : Transform
 	{

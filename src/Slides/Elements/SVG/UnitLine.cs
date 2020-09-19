@@ -1,4 +1,6 @@
-﻿using SVGLib.Datatypes;
+﻿using Slides.Data;
+using Color = Slides.Data.Color;
+using SVGLib.Datatypes;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Drawing;
 
-namespace Slides
+namespace Slides.Data
 {
 	[Serializable]
 	public struct Vector2

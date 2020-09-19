@@ -4,6 +4,7 @@ using Minsk.CodeAnalysis.Symbols;
 using Minsk.CodeAnalysis.Syntax;
 using SimpleLogger;
 using Slides;
+using Slides.Data;
 using Slides.Elements;
 using Slides.Styling;
 using System;

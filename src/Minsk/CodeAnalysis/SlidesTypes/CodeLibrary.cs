@@ -5,6 +5,7 @@ using Github;
 using Minsk.CodeAnalysis.Symbols;
 using Slides;
 using Slides.Code;
+using Slides.Data;
 using Slides.Styling;
 
 namespace Minsk.CodeAnalysis.SlidesTypes

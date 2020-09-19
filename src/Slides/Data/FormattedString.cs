@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Slides
+namespace Slides.Data
 {
 	//TODO: What do we do with inline text-align?! 
 	//	     as of now, [left][right[center][justify] are not supported!!

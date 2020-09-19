@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Slides.Data;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -82,32 +83,6 @@ namespace Slides.Helpers
 
 		}
 
-		public static ColorQuadruple ConvertToColorQuadruple(object value)
-		{
-			switch (value)
-			{
-				case ColorQuadruple q:
-					return q;
-				case Color c:
-					return new ColorQuadruple(c, c, c, c);
-				default:
-			throw new NotImplementedException();
-			}
-		}
-
-		public static BorderStyleQuadruple ConvertToBorderStyleQuadruple(object value)
-		{
-			switch (value)
-			{
-				case BorderStyleQuadruple q:
-					return q;
-				case BorderStyle b:
-					return new BorderStyleQuadruple(b, b, b, b);
-				default:
-					throw new NotImplementedException();
-			}
-		}
-
 		public static Thickness ConvertToThickness(object value)
 		{
 			switch (value)
@@ -116,6 +91,19 @@ namespace Slides.Helpers
 					return t;
 				case Unit u:
 					return new Thickness(u, u, u, u);
+				default:
+					throw new NotImplementedException();
+			}
+		}
+
+		public static Border ConvertToBorder(object value)
+		{
+			switch (value)
+			{
+				case Border b:
+					return b;
+				case BorderLine line:
+					return new Border(line);
 				default:
 					throw new NotImplementedException();
 			}

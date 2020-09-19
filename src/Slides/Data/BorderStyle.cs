@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace Slides
+namespace Slides.Data
 {
 	public enum BorderStyle
 	{

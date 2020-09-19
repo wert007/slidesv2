@@ -1,4 +1,5 @@
 ﻿using Slides;
+using Slides.Data;
 
 namespace Minsk.CodeAnalysis.SlidesTypes
 {

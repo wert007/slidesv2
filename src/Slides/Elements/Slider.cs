@@ -1,4 +1,5 @@
-﻿using Slides.MathExpressions;
+﻿using Slides.Data;
+using Slides.MathExpressions;
 using System;
 using System.Collections.Generic;
 

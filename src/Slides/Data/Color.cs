@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Slides
+namespace Slides.Data
 {
 
 	[Serializable]

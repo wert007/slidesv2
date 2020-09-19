@@ -1,5 +1,6 @@
 ﻿using SimpleLogger;
 using Slides;
+using Slides.Data;
 using Slides.Elements;
 using Slides.Helpers;
 using System;
@@ -46,7 +47,7 @@ namespace HTMLWriter
 			if (selector == null)
 				throw new ArgumentNullException();
 			string postfix = "";
-			if(pseudoClass != null)
+			if (pseudoClass != null)
 			{
 				postfix = $":{pseudoClass}";
 			}
@@ -90,7 +91,7 @@ namespace HTMLWriter
 		{
 			if (value != null)
 				WriteAttribute(name, value);
-			else if(inherits)
+			else if (inherits)
 				WriteAttribute(name, "inherit");
 		}
 
@@ -142,26 +143,18 @@ namespace HTMLWriter
 				case Color c:
 					_writer.Write(ToString(c));
 					break;
-				case ColorQuadruple colorQuadruple:
-					WriteValue(colorQuadruple.top);
-					_writer.Write(" ");
-					WriteValue(colorQuadruple.right);
-					_writer.Write(" ");
-					WriteValue(colorQuadruple.bottom);
-					_writer.Write(" ");
-					WriteValue(colorQuadruple.left);
-					break;
-				case BorderStyle borderStyle:
-					WriteBorderStyle(borderStyle);
-					break;
-				case BorderStyleQuadruple borderStyleQuadruple:
-					WriteValue(borderStyleQuadruple.top);
-					_writer.Write(" ");
-					WriteValue(borderStyleQuadruple.right);
-					_writer.Write(" ");
-					WriteValue(borderStyleQuadruple.bottom);
-					_writer.Write(" ");
-					WriteValue(borderStyleQuadruple.left);
+				case BorderLine borderLine:
+					if (borderLine.h_Width != null)
+					{
+						WriteValue(borderLine.h_Width);
+						_writer.Write(" ");
+					}
+					WriteBorderStyle(borderLine.style);
+					if (borderLine.n_color != null)
+					{
+						_writer.Write(" ");
+						WriteValue(borderLine.n_color);
+					}
 					break;
 				case Alignment a:
 					WriteAlignment(a);
@@ -207,7 +200,7 @@ namespace HTMLWriter
 
 		private static string ToString(Color c)
 		{
-			if(c.IsRGBA)
+			if (c.IsRGBA)
 				return $"rgba({c.R}, {c.G}, {c.B}, {ToString(c.A / 255f)})";
 			return $"hsla({c.Hue}, {ToString(c.Saturation / 2.55f)}%, {ToString(c.Lightness / 2.55f)}%, {ToString(c.A / 255f)})";
 		}

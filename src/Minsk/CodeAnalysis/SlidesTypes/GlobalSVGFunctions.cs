@@ -21,6 +21,7 @@ using SVGLib.ContainerElements;
 using SVGLib;
 using Slides.Elements.SVG;
 using Slides.Elements;
+using Slides.Data;
 
 namespace Minsk.CodeAnalysis.SlidesTypes
 {

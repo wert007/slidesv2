@@ -9,7 +9,7 @@ using Slides;
 using Slides.Data;
 using Slides.Helpers;
 using Slides.MathExpressions;
-using Color = Slides.Color;
+using Color = Slides.Data.Color;
 
 namespace Minsk.CodeAnalysis
 {

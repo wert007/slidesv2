@@ -2,6 +2,7 @@
 using Minsk.CodeAnalysis.Symbols;
 using SimpleLogger;
 using Slides;
+using Slides.Data;
 using Slides.Elements;
 using System;
 using System.Globalization;
@@ -256,6 +257,11 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 		public static Unit pt(float value) => new Unit(value, Unit.UnitKind.Point);
 		public static Unit pct(float value) => new Unit(value, Unit.UnitKind.Percent);
 		public static float @float(Unit value) => value.Value;
+
+		public static BorderLine border(Unit width, BorderStyle style, Color color)
+		{
+			return new BorderLine(width, style, color);
+		}
 
 		public static ImportExpression<LibrarySymbol> lib(string path) => throw new NotSupportedException();
 

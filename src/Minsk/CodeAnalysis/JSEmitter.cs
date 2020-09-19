@@ -4,7 +4,7 @@ using Minsk.CodeAnalysis.Binding;
 using Minsk.CodeAnalysis.Symbols;
 using Slides;
 using Slides.MathExpressions;
-using Color = Slides.Color;
+using Color = Slides.Data.Color;
 using System.Text;
 using Slides.Elements;
 using System.IO;

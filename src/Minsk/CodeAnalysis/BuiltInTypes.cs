@@ -13,9 +13,9 @@ using SVGLib.GraphicsElements;
 using SVGGroup = SVGLib.ContainerElements.Group;
 using SVGPath = SVGLib.GraphicsElements.Path;
 using SVGText = SVGLib.GraphicsElements.Text;
-using Color = Slides.Color;
-using Matrix = Slides.Matrix;
-using Vector2 = Slides.Vector2;
+using Color = Slides.Data.Color;
+using Matrix = Slides.Data.Matrix;
+using Vector2 = Slides.Data.Vector2;
 using SVGColor = SVGLib.Datatypes.Color;
 using SVGMatrix = SVGLib.Datatypes.Matrix;
 using SVGVector2 = SVGLib.Datatypes.Vector2;
@@ -115,13 +115,11 @@ namespace Minsk.CodeAnalysis
 			Add(typeof(LibrarySymbol), CreateEmptySymbol("Library"));
 
 			Add(typeof(BorderStyle));
-			Add(typeof(BorderStyleQuadruple));
 			Add(typeof(Direction));
 			Add(typeof(Time.TimeUnit));
 			Add(typeof(Time));
 			Add(typeof(Thickness));
 			Add(typeof(Color));
-			Add(typeof(ColorQuadruple));
 			Add(typeof(Font));
 			Add(typeof(ImageSource));
 			Add(typeof(CSVFile));
@@ -132,7 +130,8 @@ namespace Minsk.CodeAnalysis
 			Add(typeof(Interpolation));
 			Add(typeof(Brush.BrushMode));
 			Add(typeof(Brush), new TypeSymbol[] { LookSymbolUp(typeof(Color)), LookSymbolUp(typeof(ImageSource)) });
-
+			Add(typeof(BorderLine));
+			Add(typeof(Border));
 			Add(typeof(Filter));
 
 			//Add(typeof(FormattedString));
@@ -392,7 +391,10 @@ namespace Minsk.CodeAnalysis
 				var parameter = new VariableSymbolCollection();
 				foreach (var para in typeConstructor.GetParameters())
 				{
-					parameter.Add(new VariableSymbol(para.Name.ToVariableLower(), true, LookSymbolUp(para.ParameterType)));
+					if (para.ParameterType == type)
+						parameter.Add(new VariableSymbol(para.Name.ToVariableLower(), true, null));
+					else
+						parameter.Add(new VariableSymbol(para.Name.ToVariableLower(), true, LookSymbolUp(para.ParameterType)));
 				}
 				parameter.Seal();
 				constructor.Add(new FunctionSymbol("constructor", parameter, null));
@@ -469,6 +471,10 @@ namespace Minsk.CodeAnalysis
 						}
 					}
 			}
+			foreach (var c in constructor)
+				foreach (var p in c.Parameter)
+					if (p.Type == null)
+						p.Type = symbol;
 			foreach (var c in constructor)
 			{
 				c.Type = symbol;
