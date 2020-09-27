@@ -19,26 +19,24 @@ namespace Slides.Elements
 
 		public override ElementKind kind => ElementKind.Image;
 
-		protected override Unit get_UninitializedStyleHeight()
+		public override Unit get_UninitializedStyleHeight()
 		{
-			if (h_parent != null) return null;
+			if (h_Parent != null) return null;
 			return get_InitialHeight();
 		}
-		protected override Unit get_UninitializedStyleWidth()
+		public override Unit get_UninitializedStyleWidth()
 		{
-			if (h_parent != null) return null;
+			if (h_Parent != null) return null;
 			return get_InitialWidth();
 		}
 		internal override Unit get_InitialHeight()
 		{
-			Unit statedWidth = null;
-			if (_width != null)
-				statedWidth = _width;
+			Unit statedWidth = styling.get_UserDefinedWidth();
 			var m = get_ActualValue(nameof(margin)) as Thickness ?? new Thickness();
 			if (SlidesHelper.GetHorizontal(orientation) == Horizontal.Stretch && h_AllowsHorizontalStretching)
 				statedWidth = new Unit(100, Unit.UnitKind.Percent) - m.Horizontal;
-			if (h_parent != null)
-				statedWidth = h_parent.get_StatedWidth();
+			if (h_Parent != null)
+				statedWidth = h_Parent.styling.get_StatedWidth();
 			if (statedWidth != null)
 				return statedWidth * source.aspectRatio;
 			return new Unit(source.height, Unit.UnitKind.Pixel);
@@ -46,7 +44,7 @@ namespace Slides.Elements
 
 		internal override Unit get_InitialWidth()
 		{
-			var statedHeight = get_StatedHeight();
+			var statedHeight = styling.get_StatedHeight();
 			if (statedHeight != null)
 				return statedHeight / source.aspectRatio;
 			return new Unit(source.width, Unit.UnitKind.Pixel);

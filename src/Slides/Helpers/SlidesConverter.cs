@@ -16,6 +16,8 @@ namespace Slides.Helpers
 		{
 			if (target == typeof(Brush))
 				return ConvertToBrush(obj);
+			if (target == typeof(Border))
+				return ConvertToBorder(obj);
 			if (target == typeof(Color))
 				return ConvertToColor(obj);
 			if (target == typeof(SVGColor))

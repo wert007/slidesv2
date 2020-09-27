@@ -193,7 +193,7 @@ namespace HTMLWriter
 					WriteFilter(filter);
 					break;
 				default:
-					_writer.Write(value.ToString());
+					_writer.Write(GetValue(value));
 					break;
 			}
 		}
@@ -382,6 +382,13 @@ namespace HTMLWriter
 				default:
 					return value.ToString();
 			}
+		}
+
+		public void WriteComment(string comment)
+		{
+			_writer.Write("/*");
+			_writer.Write(comment);
+			_writer.WriteLine("*/");
 		}
 	}
 }

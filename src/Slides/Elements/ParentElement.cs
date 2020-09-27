@@ -10,7 +10,13 @@ namespace Slides.Elements
 		protected abstract IEnumerable<Element> get_Children();
 		protected Dictionary<string, Element> _namedChildren = new Dictionary<string, Element>();
 		protected virtual bool _shouldApplyStyleToChildren { get; } = false;
-		protected override void HandleApplyStyle(Style style)
+		protected ParentElement()
+		{
+
+		}
+
+		protected ParentElement(object noInit) : base(noInit) { }
+		internal override void h_HandleApplyStyle(Style style)
 		{
 			foreach (var substyle in style.Substyles.GetIterator())
 			{

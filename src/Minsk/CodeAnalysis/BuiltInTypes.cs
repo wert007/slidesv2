@@ -57,6 +57,8 @@ namespace Minsk.CodeAnalysis
 			}
 			else return str;
 		}
+
+		internal static string ToCSharpField(this string str, TypeSymbol type) => type.Type == TypeType.Noneable ? "n_" + str : str;
 	}
 	public class BuiltInTypes
 	{
@@ -129,9 +131,9 @@ namespace Minsk.CodeAnalysis
 			Add(typeof(Orientation));
 			Add(typeof(Interpolation));
 			Add(typeof(Brush.BrushMode));
-			Add(typeof(Brush), new TypeSymbol[] { LookSymbolUp(typeof(Color)), LookSymbolUp(typeof(ImageSource)) });
+			Add(typeof(Brush), new [] { LookSymbolUp(typeof(Color)), LookSymbolUp(typeof(ImageSource)) });
 			Add(typeof(BorderLine));
-			Add(typeof(Border));
+			Add(typeof(Border), new[] { LookSymbolUp(typeof(BorderLine)) });
 			Add(typeof(Filter));
 
 			//Add(typeof(FormattedString));
@@ -173,6 +175,8 @@ namespace Minsk.CodeAnalysis
 			Add(typeof(TileFilter));
 
 //			Add(typeof(ParentElement), CreateEmptySymbol(nameof(ParentElement)));
+			Add(typeof(ElementStyling));
+			Add(typeof(TextElementStyling));
 			Add(typeof(Element), canBeCastedTo: implementsIFilterInput);
 			Add(typeof(Element), name: "any", canBeCastedTo: implementsIFilterInput);
 			Add(typeof(TextElement));
@@ -185,7 +189,8 @@ namespace Minsk.CodeAnalysis
 			Add(typeof(Label));
 			Add(typeof(Container));
 			Add(typeof(SplittedContainer));
-			Add(typeof(List.ListMarkerType));
+			Add(typeof(ListMarkerType));
+			Add(typeof(ListElementStyling));
 			Add(typeof(List));
 			Add(typeof(IFrame));
 			Add(typeof(Slider));

@@ -25,9 +25,9 @@ namespace Slides.Elements
 		public Captioned(Element child, string caption, CaptionPlacement captionPlacement)
 		{
 			this.child = child;
-			this.child.h_parent = this;
+			this.child.h_Parent = this;
 			this.caption = new Label(caption);
-			this.caption.h_parent = this;
+			this.caption.h_Parent = this;
 			this.captionPlacement = captionPlacement;
 			addApplyStyleHandler("captionPlacement", v => { captionPlacement = (CaptionPlacement)v; });
 			_namedChildren["caption"] = this.caption;
@@ -50,24 +50,24 @@ namespace Slides.Elements
 			}
 		}
 
-		protected override Unit get_UninitializedStyleHeight()
-		{
-			// Didn't really think about always returning null, but it seems to work?
-			//if (CaptionPlacementIsVertical(captionPlacement)) return null;
-			//return get_InitialHeight();
-			return null;
-		}
+		//protected override Unit get_UninitializedStyleHeight()
+		//{
+		//	// Didn't really think about always returning null, but it seems to work?
+		//	//if (CaptionPlacementIsVertical(captionPlacement)) return null;
+		//	//return get_InitialHeight();
+		//	return null;
+		//}
 
 		
-		protected override Unit get_UninitializedStyleWidth()
-		{
-			// Didn't really think about always returning null, but it seems to work?
-			//if (!CaptionPlacementIsVertical(captionPlacement)) return null;
-			//return get_InitialWidth();
-			return null;
-		}
+		//protected override Unit get_UninitializedStyleWidth()
+		//{
+		//	// Didn't really think about always returning null, but it seems to work?
+		//	//if (!CaptionPlacementIsVertical(captionPlacement)) return null;
+		//	//return get_InitialWidth();
+		//	return null;
+		//}
 
-		protected override void UpdateLayout()
+		public override void UpdateLayout()
 		{
 			switch (captionPlacement)
 			{
@@ -94,13 +94,13 @@ namespace Slides.Elements
 			}
 			if (CaptionPlacementIsVertical(captionPlacement))
 			{
-				if (child is Image && _height != null)
+				if (child is Image && styling.get_UserDefinedHeight() != null)
 					child.height = new Unit(100, Unit.UnitKind.Percent) - caption.height;
 			//	_height = null;
 			}
 			else
 			{
-				if (child is Image && _width != null)
+				if (child is Image && styling.get_UserDefinedWidth() != null)
 					child.width = new Unit(100, Unit.UnitKind.Percent) - caption.width;
 			//	_width = null;
 			}

@@ -32,7 +32,7 @@ namespace Slides.Elements
 				{
 					cells[c][r] = new TableChild("");
 					cells[c][r].ContentUpdated += UpdateLayout;
-					cells[c][r].h_parent = this;
+					cells[c][r].h_Parent = this;
 				}
 			}
 			UpdateLayout();
@@ -54,7 +54,7 @@ namespace Slides.Elements
 						content = contents[r][c];
 					cells[c][r] = new TableChild(content);
 					cells[c][r].ContentUpdated += UpdateLayout;
-					cells[c][r].h_parent = this;
+					cells[c][r].h_Parent = this;
 				}
 			}
 			UpdateLayout();
@@ -73,7 +73,7 @@ namespace Slides.Elements
 		//    columnWidth of 8%. Which is, if your screen is 2000px wide, 360px
 		//    so if your text is longer than that we would never know. because we say
 		//    relative is always bigger than absolute. even if your text is 500px long..
-		protected override void UpdateLayout()
+		public override void UpdateLayout()
 		{
 			var t = top;
 			var l = left;

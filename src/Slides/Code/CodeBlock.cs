@@ -24,8 +24,9 @@ namespace Slides.Code
 		internal override Unit get_InitialHeight()
 		{
 			var defaultFont = new Font("Consolas");
-			var height = MeasureText(code, defaultFont, 1.25f).Y;
-			height += MeasureText("\n\n\n", defaultFont, 0.75f).Y;
+			//TODO: How do we replace these line-height|s rightfully?
+			var height = MeasureText(code, defaultFont).Y; //line-height = 1.25f
+			height += MeasureText("\n\n\n", defaultFont).Y; //line-height = 0.75f
 			return new Unit(height, Unit.UnitKind.Pixel);
 		}
 	}

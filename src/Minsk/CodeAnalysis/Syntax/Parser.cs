@@ -474,7 +474,7 @@ namespace Minsk.CodeAnalysis.Syntax
 			if(allowFieldKeywords)
 			{
 				identifier = NextToken();
-				if (identifier.Kind != SyntaxKind.IdentifierToken && identifier.Kind != SyntaxKind.FilterKeyword && identifier.Kind != SyntaxKind.TransitionKeyword)
+				if (identifier.Kind != SyntaxKind.IdentifierToken && identifier.Kind != SyntaxKind.FilterKeyword && identifier.Kind != SyntaxKind.TransitionKeyword && identifier.Kind != SyntaxKind.StyleKeyword)
 					_diagnostics.ReportUnexpectedToken(identifier.Span, identifier.Kind, SyntaxKind.IdentifierToken);
 			}
 			else identifier = MatchToken(SyntaxKind.IdentifierToken);   
@@ -832,6 +832,7 @@ namespace Minsk.CodeAnalysis.Syntax
 				case SyntaxKind.IdentifierToken:
 				case SyntaxKind.FilterKeyword:
 				case SyntaxKind.TransitionKeyword:
+				case SyntaxKind.StyleKeyword:
 					return ParseVariableOrFunctionExpression(true);
 				default:
 					_diagnostics.ReportUnexpectedToken(Current.Span, Current.Kind, SyntaxKind.IdentifierToken);
@@ -904,7 +905,7 @@ namespace Minsk.CodeAnalysis.Syntax
 		{
 			if(Current.Kind != SyntaxKind.IdentifierToken && Current.Kind != SyntaxKind.TildeToken)
 			{
-				if (!allowFieldKeywords || Current.Kind != SyntaxKind.FilterKeyword && Current.Kind != SyntaxKind.TransitionKeyword)
+				if (!allowFieldKeywords || Current.Kind != SyntaxKind.FilterKeyword && Current.Kind != SyntaxKind.TransitionKeyword && Current.Kind != SyntaxKind.StyleKeyword)
 				{
 					_diagnostics.ReportUnexpectedToken(Current.Span, Current.Kind, SyntaxKind.IdentifierToken);
 					return ParseNameExpression();

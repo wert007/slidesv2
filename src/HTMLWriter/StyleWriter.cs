@@ -8,6 +8,7 @@ using Slides.Styling;
 using Slides.SVG;
 using Slides.Transforms;
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -226,41 +227,20 @@ namespace HTMLWriter
 				return;
 			var id = $"{parentName}-{element.name}";
 			writer.StartId($"{id}");
-			WriteBrush(writer, element.h_Background);
-			WriteBorder(writer, element.border);
-			var properties = new string[] { "color", "filter", "padding" };
-			foreach (var prop in properties)
-			{
-				writer.WriteAttributeIfValue(CSSWriter.ToCssAttribute(prop), element.get_ActualField(prop));
-			}
 			WriteOrientation(writer, element, parent);
-
-
-			WriteTransform(writer, element.get_Transforms());
+			
+			WriteElementStyling(writer, element.h_Styling);
 
 			switch (element)
 			{
-				case TextElement e:
-					writer.WriteAttributeIfValueOrInherit("font-size", e.fontsize, e.InheritsFontsize());
-
-					if (e.fontsize != null && e.kind != ElementKind.Captioned)
-						writer.WriteAttribute("line-height", e.fontsize + new Unit(6, Unit.UnitKind.Point));
-
-					writer.WriteAttributeIfValueOrInherit("font-family", e.font, e.InheritsFont());
-					switch (e)
-					{
-						case Label l:
-							writer.WriteAttributeIfNotDefault("text-align", l.align, Alignment.Unset);
-							break;
-						case List list:
-							writer.WriteAttributeIfNotDefault("list-style-type", list.markerType, List.ListMarkerType.Disk);
-							if (list.get_TextMarker() != null)
-								writer.WriteAttribute("padding-left", "1em");
-							break;
-						case Table _:
-							writer.WriteAttribute("border-collapse", "collapse");
-							break;
-					}
+				case Label l:
+					writer.WriteAttributeIfNotDefault("text-align", l.align, Alignment.Unset);
+					break;
+				case List list:
+					writer.WriteAttributeIfNotDefault("text-align", list.align, Alignment.Unset);
+					break;
+				case Table _:
+					writer.WriteAttribute("border-collapse", "collapse");
 					break;
 				case Image i:
 					writer.WriteAttribute("object-fit", i.stretching);
@@ -270,31 +250,78 @@ namespace HTMLWriter
 			}
 			writer.EndId();
 
-
-			if (element is List listCustomMarker)
+			// 'listAgain': Just because we already have a list in the switch statement above..
+			if(element is List listAgain)
 			{
-				if (!listCustomMarker.isOrdered && listCustomMarker.get_TextMarker() != null)
+				if (!listAgain.isOrdered && listAgain.get_Textmarker() != null)
 				{
 					writer.StartId($"{id} li", "before");
-					writer.WriteAttribute("content", $"\"{FormattedString.Convert(listCustomMarker.get_TextMarker()).ToHTML()}\"");
+					writer.WriteAttribute("content", $"\"{FormattedString.Convert(listAgain.get_Textmarker()).ToHTML()}\"");
 					writer.WriteAttribute("left", "0");
 					writer.WriteAttribute("position", "absolute");
 					writer.EndSelector();
 				}
+
+				WriteSubstylings(writer, parentName, listAgain);
 			}
 
-			if (element.hover == null)
+			if (element.hover.h_IsDefault)
 				return;
 
 			writer.StartId(id, pseudoClass: "hover");
-			//There should be now substyles in hover. 
-			//Maybe there should. But we don't support it right now!
-			foreach (var property in element.hover.Substyles.GetIterator().Single().Properties)
-			{
-				writer.WriteAttribute(CSSWriter.ToCssAttribute(property.Key), property.Value);
-			}
+			WriteElementStyling(writer, element.hover);
 			writer.EndSelector();
 
+		}
+
+		private static void WriteElementStyling(CSSWriter writer, ElementStyling styling)
+		{
+			WriteBrush(writer, styling.h_Background);
+			WriteBorder(writer, styling.border);
+			var properties = new string[] { "color", "filter", "padding" };
+			foreach (var prop in properties)
+			{
+				writer.WriteAttributeIfValue(CSSWriter.ToCssAttribute(prop), styling.get_ActualField(prop));
+			}
+			WriteTransform(writer, styling.get_Transforms());
+			if(styling is TextElementStyling textStyling)
+			{
+				writer.WriteAttributeIfValueOrInherit("font-size", textStyling.fontsize, textStyling.InheritsFontsize());
+
+				writer.WriteAttributeIfValue("line-height", textStyling.h_LineHeight);
+				writer.WriteAttributeIfValueOrInherit("font-family", textStyling.font, textStyling.InheritsFont());
+			}
+			if(styling is ListElementStyling listStyling)
+			{
+
+				writer.WriteAttributeIfValue("list-style-type", listStyling.h_MarkerType ?? listStyling.h_Parent?.h_MarkerType);
+				if (listStyling.get_Textmarker() != null)
+					writer.WriteAttribute("padding-left", "1em");
+			}
+		}
+
+		private static void WriteSubstylings(CSSWriter writer, string parentName, List list)
+		{
+			var index = 1;
+			var id = $"#{parentName}-{list.name} ";
+			foreach (var substyling in list.get_Stylings().Skip(1))
+			{
+				writer.WriteComment("\n    This is just for compatibility reasons with chrome-like browsers.\n    (Will hopefully be not needed anymore one day..)\n");
+				var selectorBuilder = new StringBuilder(id);
+				for (int i = 0; i < index; i++)
+					selectorBuilder.Append(":-webkit-any(ul, ol) ");
+				writer.StartSelector(selectorBuilder.ToString());
+				WriteElementStyling(writer, substyling);
+				writer.EndSelector();
+
+				selectorBuilder.Clear();
+				selectorBuilder.Append(id);
+				for (int i = 0; i < index; i++)
+					selectorBuilder.Append(":is(ul, ol) ");
+				writer.StartSelector(selectorBuilder.ToString());
+				WriteElementStyling(writer, substyling);
+				writer.EndSelector();
+			}
 		}
 
 
@@ -304,9 +331,10 @@ namespace HTMLWriter
 		//In CSS and in Slides. 
 		private static void WriteOrientation(CSSWriter writer, Element element, Element parent = null)
 		{
+			var isRelative = parent != null && parent is Stack || parent?.kind == ElementKind.List || parent?.kind == ElementKind.Captioned;
 			if (string.IsNullOrEmpty(element.position))
 			{
-				if (parent != null && parent is Stack || parent?.kind == ElementKind.List || parent?.kind == ElementKind.Captioned)
+				if (isRelative)
 					writer.WriteAttribute("position", "relative");
 				else //if(element.kind != ElementKind.Label)
 					writer.WriteAttribute("position", "absolute");
@@ -314,18 +342,8 @@ namespace HTMLWriter
 			else
 				writer.WriteAttribute("position", element.position);
 
-
+			var marginSet = element.h_Margin;
 			var m = element.margin;
-
-			var margin = m + element.padding;
-			if (parent != null && parent.padding != null)
-			{
-				margin += parent.padding;
-			}
-
-			//writer.WriteAttributeIfValue("margin", element.margin);
-			//writer.WriteAttributeIfValue("padding", element.padding);
-
 
 			var unit100Percent = new Unit(100, Unit.UnitKind.Percent);
 			var orientation = element.orientation;
@@ -358,7 +376,10 @@ namespace HTMLWriter
 			}
 
 
-			WriteOrientation_(writer, element, orientation, m);
+			if (!isRelative)
+				WriteOrientation_(writer, element, orientation, m);
+			else
+				writer.WriteAttributeIfValue("margin", marginSet);
 		}
 
 		private static void WriteOrientation_(CSSWriter writer, Element element, Orientation orientation, Thickness margin)
@@ -367,7 +388,6 @@ namespace HTMLWriter
 
 			var marginHorizontalOffset = margin.left - margin.right;
 			var marginVerticalOffset = margin.top - margin.bottom;
-
 			switch (orientation)
 			{
 				case Orientation.LeftTop:

@@ -13,7 +13,6 @@ namespace Slides.Elements
 		{
 			this.text = text;
 			align = Alignment.Unset;
-			fontsize = null;
 		}
 
 		public override ElementKind kind => ElementKind.Label;

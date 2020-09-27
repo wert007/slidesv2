@@ -26,6 +26,9 @@ namespace Minsk.CodeAnalysis
 			_constants.Add(new VariableSymbol("seperator", true, _builtInTypes.LookSymbolUp(typeof(LibrarySymbol))), Library.Seperator);
 			_constants.Add(new VariableSymbol("code", true, _builtInTypes.LookSymbolUp(typeof(LibrarySymbol))), Library.Code);
 			_constants.Add(new VariableSymbol("auto", true, _builtInTypes.LookSymbolUp(typeof(Unit))), new Unit(0, Unit.UnitKind.Auto));
+			_constants.Add(new VariableSymbol("thin", true, _builtInTypes.LookSymbolUp(typeof(Unit))), Unit.Thin);
+			_constants.Add(new VariableSymbol("medium", true, _builtInTypes.LookSymbolUp(typeof(Unit))), Unit.Medium);
+			_constants.Add(new VariableSymbol("thick", true, _builtInTypes.LookSymbolUp(typeof(Unit))), Unit.Thick);
 			foreach (var color in Color.GetStaticColors())
 			{
 				_constants.Add(new VariableSymbol(color.Key, true, _builtInTypes.LookSymbolUp(typeof(Color))), color.Value);
@@ -449,10 +452,10 @@ namespace Minsk.CodeAnalysis
 		protected virtual object EvaluateFieldAccessExpression(BoundFieldAccessExpression node)
 		{
 			var parent = EvaluateExpression(node.Parent);
-			return EvaluateFieldAccessExpressionValue(parent, node.Field.Variable.Name);
+			return EvaluateFieldAccessExpressionValue(parent, node.Field.Variable.Name, _builtInTypes.LookTypeUp(node.Field.Variable.Type));
 		}
 
-		protected static object EvaluateFieldAccessExpressionValue(object parent, string fieldName)
+		protected static object EvaluateFieldAccessExpressionValue(object parent, string fieldName, Type fieldType)
 		{
 			var type = parent.GetType();
 			if (type == typeof(DataObject))
@@ -462,7 +465,8 @@ namespace Minsk.CodeAnalysis
 					throw new Exception();
 				return value;
 			}
-			var v = type.GetProperty(fieldName).GetValue(parent);
+			var prop = type.GetProperty(fieldName, fieldType) ?? type.GetProperty(fieldName.ToVariableUpper(), fieldType);
+			var v = prop.GetValue(parent);
 			return v;
 		}
 

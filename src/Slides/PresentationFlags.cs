@@ -14,6 +14,7 @@ namespace Slides
 		public bool TemplatesAllowed { get; set; }
 		public CodeHighlighter CodeHighlighter { get; set; }
 		public bool UsesYouTube { get; set; }
+		public bool UseDarktheme { get; set; }
 
 		public void IsLibrary(string name)
 		{

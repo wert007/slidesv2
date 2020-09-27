@@ -59,6 +59,10 @@ namespace HTMLWriter
 			}
 
 			CopyFile("core.css", targetDirectory, alwaysCopyEverything);
+			if(presentation.Flags.UseDarktheme)
+				CopyFile("darkoverlay.css", targetDirectory, alwaysCopyEverything);
+			else
+				CopyFile("overlay.css", targetDirectory, alwaysCopyEverything);
 			CopyFile("core.js", targetDirectory, alwaysCopyEverything);
 			CopyFile("datatypes.js", targetDirectory, alwaysCopyEverything);
 			if (presentation.Flags.CodeHighlighter != CodeHighlighter.None)
@@ -98,6 +102,10 @@ namespace HTMLWriter
 						_htmlWriter.UseCSS("index.css");
 						_htmlWriter.UseJS("index.js");
 						_htmlWriter.UseCSS("core.css");
+						if(presentation.Flags.UseDarktheme)
+							_htmlWriter.UseCSS("darkoverlay.css");
+						else
+							_htmlWriter.UseCSS("overlay.css");
 						_htmlWriter.UseJS("core.js");
 						_htmlWriter.UseJS("datatypes.js");
 
@@ -250,9 +258,30 @@ namespace HTMLWriter
 
 		private static void WriteStdOverlay()
 		{
+
+			/*
+			  <div id="search-slide" class="invisible">
+            <div style="position: relative;">
+					<input id="search-slide-input" oninput="searchModule.searchSlideInputChanged()" type="text"/>
+					<div id="search-slide-ghost">
+						<span id="search-slide-input-already-typed"></span>
+						<span id="search-slide-input-expected"></span>
+					</div>
+				</div>
+            <ul id="search-slide-suggestions">
+            </ul>
+        </div>
+			 */
 			_htmlWriter.StartTag("div", "search-slide", "invisible");
+			_htmlWriter.StartTag("div", "search-slide-input-area");
 			_htmlWriter.PushAttribute("type", "text");
+			_htmlWriter.PushAttribute("oninput", "searchModule.searchSlideInputChanged()");
 			_htmlWriter.WriteTag("input", "search-slide-input");
+			_htmlWriter.StartTag("div", "search-slide-ghost");
+			_htmlWriter.WriteInlineTag("span", "", "search-slide-input-already-typed");
+			_htmlWriter.WriteInlineTag("span", "", "search-slide-input-expected");
+			_htmlWriter.EndTag();
+			_htmlWriter.EndTag();
 			_htmlWriter.StartTag("ul", "search-slide-suggestions");
 			_htmlWriter.EndTag();
 			_htmlWriter.EndTag();

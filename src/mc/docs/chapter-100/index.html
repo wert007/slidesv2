@@ -4,6 +4,7 @@
         <link href="index.css" type="text/css" rel="stylesheet">
         <script src="index.js" type="text/javascript"></script>
         <link href="core.css" type="text/css" rel="stylesheet">
+        <link href="overlay.css" type="text/css" rel="stylesheet">
         <script src="core.js" type="text/javascript"></script>
         <script src="datatypes.js" type="text/javascript"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/6.2.5/math.min.js" type="text/javascript" async></script>
@@ -12,7 +13,13 @@
     </head>
     <body onkeydown="keyDown(event);" onload="load()">
         <div id="search-slide" class="invisible">
-            <input id="search-slide-input" type="text"/>
+            <div id="search-slide-input-area">
+                <input id="search-slide-input" oninput="searchModule.searchSlideInputChanged()" type="text"/>
+                <div id="search-slide-ghost">
+                    <span id="search-slide-input-already-typed"></span>
+                    <span id="search-slide-input-expected"></span>
+                </div>
+            </div>
             <ul id="search-slide-suggestions">
             </ul>
         </div>
@@ -28,7 +35,7 @@
             </div>
             <!--Inserted by template 'default'.-->
             <div id="bugs-prev" class="label  "><a href="../chapter-90/index.html">prev</a></div>
-            <div id="bugs-next" class="label  "><a href="../chapter-110/index.html">next</a></div>
+            <div id="bugs-next" class="label  "><a href="../chapter-200/index.html">next</a></div>
         </section>
         <section id="s1" class="slide" data-transition-id>
             <div class="slide-content">
@@ -38,7 +45,7 @@
             </div>
             <!--Inserted by template 'default'.-->
             <div id="s1-prev" class="label  "><a href="../chapter-90/index.html">prev</a></div>
-            <div id="s1-next" class="label  "><a href="../chapter-110/index.html">next</a></div>
+            <div id="s1-next" class="label  "><a href="../chapter-200/index.html">next</a></div>
         </section>
         <section id="s2" class="slide" data-transition-id>
             <div class="slide-content">
@@ -48,7 +55,7 @@
             </div>
             <!--Inserted by template 'default'.-->
             <div id="s2-prev" class="label  "><a href="../chapter-90/index.html">prev</a></div>
-            <div id="s2-next" class="label  "><a href="../chapter-110/index.html">next</a></div>
+            <div id="s2-next" class="label  "><a href="../chapter-200/index.html">next</a></div>
         </section>
         <section id="s3" class="slide" data-transition-id>
             <div class="slide-content">
@@ -58,7 +65,7 @@
             </div>
             <!--Inserted by template 'default'.-->
             <div id="s3-prev" class="label  "><a href="../chapter-90/index.html">prev</a></div>
-            <div id="s3-next" class="label  "><a href="../chapter-110/index.html">next</a></div>
+            <div id="s3-next" class="label  "><a href="../chapter-200/index.html">next</a></div>
         </section>
         <section id="s4" class="slide" data-transition-id>
             <div class="slide-content">
@@ -68,7 +75,7 @@
             </div>
             <!--Inserted by template 'default'.-->
             <div id="s4-prev" class="label  "><a href="../chapter-90/index.html">prev</a></div>
-            <div id="s4-next" class="label  "><a href="../chapter-110/index.html">next</a></div>
+            <div id="s4-next" class="label  "><a href="../chapter-200/index.html">next</a></div>
         </section>
         <section id="testingEverything" class="slide" data-transition-id>
             <div class="slide-content">
@@ -78,30 +85,30 @@
             </div>
             <!--Inserted by template 'default'.-->
             <div id="testingEverything-prev" class="label  "><a href="../chapter-90/index.html">prev</a></div>
-            <div id="testingEverything-next" class="label  "><a href="../chapter-110/index.html">next</a></div>
+            <div id="testingEverything-next" class="label  "><a href="../chapter-200/index.html">next</a></div>
         </section>
         <section id="testingEverything2" class="slide" data-transition-id>
             <div class="slide-content">
                 <div class="step" data-step-numerical-id="6" data-slide-id="testingEverything2">
                     <ul id="testingEverything2-list" class="list  ">
-                        <li><div id="testingEverything2-list-38" class="label  "><ul><li>tag for some quick lists </li><li>inside places where you otherwise couldn't add some lists</li></ul></div>
+                        <li><div id="testingEverything2-list-37" class="label  "><ul><li>tag for some quick lists </li><li>inside places where you otherwise couldn't add some lists</li></ul></div>
                         </li>
-                        <li><div id="testingEverything2-list-39" class="label  "><ol type="i"><li>tag for some quick lists </li><li>inside places where you otherwise couldn't add some lists</li></ol></div>
+                        <li><div id="testingEverything2-list-38" class="label  "><ol type="i"><li>tag for some quick lists </li><li>inside places where you otherwise couldn't add some lists</li></ol></div>
                         </li>
-                        <li><div id="testingEverything2-list-40" class="label  "><ol type="I"><li>tag for some quick lists </li><li>inside places where you otherwise couldn't add some lists</li></ol></div>
+                        <li><div id="testingEverything2-list-39" class="label  "><ol type="I"><li>tag for some quick lists </li><li>inside places where you otherwise couldn't add some lists</li></ol></div>
                         </li>
-                        <li><div id="testingEverything2-list-41" class="label  "><ol type="1"><li>tag for some quick lists </li><li>inside places where you otherwise couldn't add some lists</li></ol></div>
+                        <li><div id="testingEverything2-list-40" class="label  "><ol type="1"><li>tag for some quick lists </li><li>inside places where you otherwise couldn't add some lists</li></ol></div>
                         </li>
-                        <li><div id="testingEverything2-list-42" class="label  "><ol type="a"><li>tag for some quick lists </li><li>inside places where you otherwise couldn't add some lists</li></ol></div>
+                        <li><div id="testingEverything2-list-41" class="label  "><ol type="a"><li>tag for some quick lists </li><li>inside places where you otherwise couldn't add some lists</li></ol></div>
                         </li>
-                        <li><div id="testingEverything2-list-43" class="label  "><ol type="A"><li>tag for some quick lists </li><li>inside places where you otherwise couldn't add some lists</li></ol></div>
+                        <li><div id="testingEverything2-list-42" class="label  "><ol type="A"><li>tag for some quick lists </li><li>inside places where you otherwise couldn't add some lists</li></ol></div>
                         </li>
                     </ul>
                 </div>
             </div>
             <!--Inserted by template 'default'.-->
             <div id="testingEverything2-prev" class="label  "><a href="../chapter-90/index.html">prev</a></div>
-            <div id="testingEverything2-next" class="label  "><a href="../chapter-110/index.html">next</a></div>
+            <div id="testingEverything2-next" class="label  "><a href="../chapter-200/index.html">next</a></div>
         </section>
     </body>
 </html>

@@ -59,3 +59,9 @@ Done
 [*]item one
 [*]item two
 [/list]
+[sub]im loooow[/sub]
+[sup]and im high[/sup]
+
+
+[bgcolor=red]high alert[/bgcolor]
+[bg=red]high alert[/bg]

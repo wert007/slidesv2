@@ -15,7 +15,10 @@ namespace Slides.Data
 		public Unit B { get; }
 
 		internal override Unit GetMaxComponent() => Max(A, B);
-
+		public override bool ContainsPercent()
+		{
+			return A.ContainsPercent() || B.ContainsPercent();
+		}
 		public Unit Add(Unit u)
 		{
 			if (A.Kind == u.Kind)

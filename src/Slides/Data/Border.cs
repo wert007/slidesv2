@@ -2,14 +2,14 @@
 
 namespace Slides.Data
 {
-	public class Border : BorderLine
+	public class Border
 	{
 		public BorderLine top { get; set; }
 		public BorderLine right { get; set; }
 		public BorderLine bottom { get; set; }
 		public BorderLine left { get; set; }
 
-		public override Color n_color
+		public Color n_color
 		{
 			get
 			{
@@ -25,21 +25,14 @@ namespace Slides.Data
 			}
 			set
 			{
-
-				// This happens when you create a new Border and it calls the base constructor. 
-				// it will try to set style, but fails because all fields (top, right, bottom left)
-				// are null.
-				//
-				// TODO: Maybe we should introduce a local field to BorderLine, which it will set
-				// instead of these properties
-				if (top == null) return;
 				top.n_color = value;
 				right.n_color = value;
 				bottom.n_color = value;
 				left.n_color = value;
+				if (style == BorderStyle.Unset) style = BorderStyle.Solid;
 			}
 		}
-		public override BorderStyle style
+		public BorderStyle style
 		{
 			get
 			{
@@ -55,36 +48,36 @@ namespace Slides.Data
 			}
 			set
 			{
-				// This happens when you create a new Border and it calls the base constructor. 
-				// it will try to set style, but fails because all fields (top, right, bottom left)
-				// are null.
-				if (top == null) return;
 				top.style = value;
 				right.style = value;
 				bottom.style = value;
 				left.style = value;
 			}
 		}
-		public override Unit width
+		public Unit h_Width { get; set; }
+		public Unit width
 		{
 			get
 			{
 				if (top.h_Width != null)
-					return top.h_Width;
+					return h_Width = top.h_Width;
 				else if (right.h_Width != null)
-					return right.h_Width;
+					return h_Width = right.h_Width;
 				else if (bottom.h_Width != null)
-					return bottom.h_Width;
+					return h_Width = bottom.h_Width;
 				else if (left.h_Width != null)
-					return left.h_Width;
+					return h_Width = left.h_Width;
+				h_Width = null;
 				return Unit.Medium;
 			}
 			set
 			{
+				h_Width = value;
 				top.width = value;
 				right.width = value;
 				bottom.width = value;
 				left.width = value;
+				if (style == BorderStyle.Unset) style = BorderStyle.Solid;
 			}
 		}
 
@@ -94,6 +87,7 @@ namespace Slides.Data
 			right = new BorderLine();
 			bottom = new BorderLine();
 			left = new BorderLine();
+			h_Width = null;
 		}
 
 		public Border(BorderLine line)
@@ -102,6 +96,15 @@ namespace Slides.Data
 			right = new BorderLine(line);
 			bottom = new BorderLine(line);
 			left = new BorderLine(line);
+			if (top.h_Width != null)
+				h_Width = top.h_Width;
+			else if (right.h_Width != null)
+				h_Width = right.h_Width;
+			else if (bottom.h_Width != null)
+				h_Width = bottom.h_Width;
+			else if (left.h_Width != null)
+				h_Width = left.h_Width;
+			else h_Width = null;
 		}
 
 		public bool get_AllEqual()

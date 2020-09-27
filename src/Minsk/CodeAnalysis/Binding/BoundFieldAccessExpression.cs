@@ -21,7 +21,7 @@ namespace Minsk.CodeAnalysis.Binding
 		public override bool EqualsBoundExpression(BoundExpression expression)
 		{
 			var e = (BoundFieldAccessExpression)expression;
-			if (!Parent.EqualsBoundExpression(e.Parent))
+			if (!Parent.Equals(e.Parent))
 				return false;
 			return Field.EqualsBoundExpression(e.Field);
 		}

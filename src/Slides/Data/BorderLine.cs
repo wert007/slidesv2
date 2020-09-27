@@ -7,27 +7,43 @@ namespace Slides.Data
 		public BorderLine()
 		{
 			h_Width = null;
-			style = BorderStyle.Unset;
-			n_color = null;
+			_style = BorderStyle.Unset;
+			_color = null;
 		}
 
 		public BorderLine(BorderLine line)
 		{
-			width = line.h_Width;
-			style = line.style;
-			n_color = line.n_color;
+			h_Width = line.h_Width;
+			_style = line._style;
+			_color = line._color;
 		}
 
 		public BorderLine(Unit width, BorderStyle style, Color color)
 		{
-			this.width = width;
-			this.style = style;
-			n_color = color;
+			h_Width = width;
+			_style = style;
+			_color = color;
 		}
 
-		public virtual Unit width { get => h_Width ?? Unit.Medium; set => h_Width = value; }
-		public virtual BorderStyle style { get; set; }
-		public virtual Color n_color { get; set; }
+		public virtual Unit width
+		{
+			get => h_Width ?? Unit.Medium; set
+			{
+				h_Width = value;
+				if (_style == BorderStyle.Unset) _style = BorderStyle.Solid;
+			}
+		}
+		private BorderStyle _style;
+		public virtual BorderStyle style { get => _style; set => _style = value; }
+		private Color _color;
+		public virtual Color n_color
+		{
+			get => _color; set
+			{
+				_color = value;
+				if (_style == BorderStyle.Unset) _style = BorderStyle.Solid;
+			}
+		}
 		public Unit h_Width { get; set; }
 
 		public override bool Equals(object obj)

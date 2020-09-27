@@ -26,10 +26,12 @@ namespace Minsk.CodeAnalysis
 		private readonly List<string> _imports = new List<string>();
 		private readonly List<JSInsertionBlock> _jsInsertions = new List<JSInsertionBlock>();
 		private int _invisibleSlideCount = 0;
+		private bool _useDarktheme;
 
 		public PresentationBuilder(LibrarySymbol[] referenced)
 		{
 			_referenced = referenced;
+			_useDarktheme = false;
 		}
 
 		internal LibrarySymbol[] GetReferenced() => _referenced;
@@ -79,5 +81,8 @@ namespace Minsk.CodeAnalysis
 		internal void AddJSInsertion(JSInsertionBlock insertion) => _jsInsertions.Add(insertion);
 		internal JSInsertionBlock[] GetJSInsertions() => _jsInsertions.ToArray();
 
+		internal void SetDarktheme(bool useDarktheme) => _useDarktheme = useDarktheme;
+
+		internal bool GetDarktheme() => _useDarktheme;
 	}
 }

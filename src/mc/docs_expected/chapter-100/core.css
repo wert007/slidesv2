@@ -7,7 +7,7 @@ body {
 	margin-inline-end: 0;
 	overflow: hidden;
 	font-size: 19.60pt; /* equals 14pt in slides*/
-	/*line-height: 1.4em;*/
+	line-height: 1.4; 
 }
 
 .captioned {

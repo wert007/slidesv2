@@ -39,20 +39,20 @@ namespace Slides.Elements
 			fontsize = null;
 			align = null;
 			//TODO: Remove this. There should be a solution in core.css
-			position = "relative";
+			styling.position = "relative";
 		}
 
 		public override string ToString() => content;
 
 		internal Unit get_ActualTableChildHeight() => get_ActualHeight();
 		internal Unit get_ActualTableChildWidth() => get_ActualWidth();
-		internal Unit get_UserDefinedHeight() => _height;
-		internal Unit get_UserDefinedWidth() => _width;
+		internal Unit get_UserDefinedHeight() => styling.get_UserDefinedHeight();
+		internal Unit get_UserDefinedWidth() => styling.get_UserDefinedWidth();
 
-		protected override Unit get_UninitializedStyleHeight() => get_InitialHeight();
-		protected override Unit get_UninitializedStyleWidth() => get_InitialWidth();
+		public override Unit get_UninitializedStyleHeight() => get_InitialHeight();
+		public override Unit get_UninitializedStyleWidth() => get_InitialWidth();
 
-		protected override void UpdateLayout()
+		public override void UpdateLayout()
 		{
 			ContentUpdated?.Invoke();
 		}

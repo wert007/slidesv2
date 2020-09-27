@@ -18,6 +18,7 @@ using Slides.Elements;
 using Slides.Styling;
 using SimpleLogger;
 using Slides.Data;
+using Slides.Helpers;
 
 namespace Minsk.CodeAnalysis.Binding
 {
@@ -74,6 +75,9 @@ namespace Minsk.CodeAnalysis.Binding
 			_builtInConstants.Add("qr", new VariableSymbol("qr", true, _builtInTypes.LookSymbolUp(typeof(LibrarySymbol))));
 
 			_builtInConstants.Add("auto", new VariableSymbol("auto", true, _builtInTypes.LookSymbolUp(typeof(Unit))));
+			_builtInConstants.Add("thin", new VariableSymbol("thin", true, _builtInTypes.LookSymbolUp(typeof(Unit))));
+			_builtInConstants.Add("medium", new VariableSymbol("medium", true, _builtInTypes.LookSymbolUp(typeof(Unit))));
+			_builtInConstants.Add("thick", new VariableSymbol("thick", true, _builtInTypes.LookSymbolUp(typeof(Unit))));
 			foreach (var color in Color.GetStaticColors())
 			{
 				_builtInConstants.Add(color.Key, new VariableSymbol(color.Key, true, _builtInTypes.LookSymbolUp(typeof(Color))));
@@ -493,6 +497,7 @@ namespace Minsk.CodeAnalysis.Binding
 				}
 				_scope.TryDeclare(new VariableSymbol(nameof(Element.orientation), false, _builtInTypes.LookSymbolUp(typeof(Orientation))));
 				//TODO: Incomplete!
+				_scope.TryDeclare(new VariableSymbol("useDarkTheme", false, PrimitiveTypeSymbol.Bool));
 				_scope.TryDeclare(new VariableSymbol("Slide", false, _builtInTypes.LookSymbolUp(typeof(SlideAttributes))));
 				_scope.TryDeclare(new VariableSymbol("Label", false, _builtInTypes.LookSymbolUp(typeof(Label))));
 				_scope.TryDeclare(new VariableSymbol("Image", false, _builtInTypes.LookSymbolUp(typeof(Image))));
@@ -1068,11 +1073,19 @@ namespace Minsk.CodeAnalysis.Binding
 			BoundExpression boundMember;
 			if (syntax.Member.Kind == SyntaxKind.FunctionExpression)
 			{
-				if (writeToMember) throw new Exception();
 				boundMember = BindMemberFunctionExpression((FunctionExpressionSyntax)syntax.Member, boundExpression.Type);
+				if (boundMember is BoundErrorExpression error) 
+					return error;
+
+
+				// TODO: Make sure this is a parent in a MemberAccess
+				if (writeToMember && (boundMember.Type.Type == TypeType.Enum || boundMember.Type.Type == TypeType.Primitive))
+				{
+					_diagnostics.ReportCannotWriteToTypeType(syntax.Member.Span, boundMember.Type);
+					return new BoundErrorExpression();
+				}
 				if (boundMember is BoundFunctionExpression functionExpression)
 					return new BoundFunctionAccessExpression(boundExpression, functionExpression);
-				else if (boundMember is BoundErrorExpression error) return error;
 				throw new Exception();
 			}
 			else if (syntax.Member.Kind == SyntaxKind.VariableExpression)
@@ -1469,7 +1482,7 @@ namespace Minsk.CodeAnalysis.Binding
 
 		private BoundExpression BindAssignmentExpression(AssignmentExpressionSyntax syntax)
 		{
-			var boundLValue = BindExpression(syntax.LValue, false);
+			var boundLValue = BindExpression(syntax.LValue, true);
 			VariableSymbol variable = null;
 			switch (boundLValue.Kind)
 			{
@@ -1484,7 +1497,7 @@ namespace Minsk.CodeAnalysis.Binding
 					variable = new VariableSymbol("#arrayAccess", false, PrimitiveTypeSymbol.Error);
 					break;
 				default:
-					throw new NotImplementedException();
+					throw new NotImplementedException(boundLValue.ToString());
 			}
 			if (variable.IsReadOnly)
 			{
@@ -1552,9 +1565,20 @@ namespace Minsk.CodeAnalysis.Binding
 			//		f[0] = #math '1';
 			if (variable != null && boundExpression is BoundMathExpression mathExpression)
 				_mathFormulas[variable] = mathExpression;
-
-			if (variable != null && _compileTimeEvaluator.TryGetValue(boundExpression, out var value))
+			if (_compileTimeEvaluator.TryGetValue(boundExpression, out var value) && variable != null)
 				_compileTimeEvaluator.SetVariable(variable, value);
+
+			if (boundLValue is BoundFieldAccessExpression fieldAccessExpression && fieldAccessExpression.Parent.Type.CanBeConvertedTo(_builtInTypes.LookSymbolUp(typeof(BorderLine))) && fieldAccessExpression.Type.CanBeConvertedTo(_builtInTypes.LookSymbolUp(typeof(Unit))))
+			{
+				if (_compileTimeEvaluator.TryGetValue(boundExpression, out value))
+				{
+					var unitValue = SlidesConverter.ConvertToUnit(value);
+					if(unitValue.ContainsPercent())
+					{
+						_diagnostics.ReportPercentUnitValueNotAllowed(syntax.Expression.Span);
+					}
+				}
+			}
 
 			return new BoundAssignmentExpression(boundLValue, boundExpression);
 		}

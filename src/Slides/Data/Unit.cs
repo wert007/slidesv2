@@ -9,9 +9,9 @@ namespace Slides.Data
 	{
 		private static CultureInfo _usCulture = CultureInfo.CreateSpecificCulture("US-us");
 		public static readonly Unit HundredPercent = new Unit(100, UnitKind.Percent);
-		internal static readonly Unit Thin   = new Unit(1, UnitKind.Pixel);
-		internal static readonly Unit Medium = new Unit(3, UnitKind.Pixel);
-		internal static readonly Unit Thick  = new Unit(5, UnitKind.Pixel);
+		public static readonly Unit Thin   = new Unit(1, UnitKind.Pixel);
+		public static readonly Unit Medium = new Unit(3, UnitKind.Pixel);
+		public static readonly Unit Thick  = new Unit(5, UnitKind.Pixel);
 
 		public float Value { get; }
 		public UnitKind Kind { get; }
@@ -264,6 +264,26 @@ namespace Slides.Data
 					 Value == unit.Value &&
 					                     //Not always true. Like auto
 					 (Kind == unit.Kind || Value == 0);
+		}
+
+		public virtual bool ContainsPercent()
+		{
+			switch (Kind)
+			{
+				case UnitKind.Point:
+				case UnitKind.Pixel:
+				case UnitKind.CharacterWidth:
+					return false;
+				case UnitKind.Percent:
+				case UnitKind.Auto:
+				case UnitKind.HorizontalPercent:
+				case UnitKind.VerticalPercent:
+					return true;
+				default:
+				case UnitKind.Addition:
+				case UnitKind.Subtraction:
+					throw new Exception();
+			}
 		}
 	}
 }

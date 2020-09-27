@@ -99,6 +99,7 @@ namespace Minsk.CodeAnalysis
 					libraries[i] = new Library(referenced[i].Name, referenced[i].Libraries?.Select(l => new Library(l.Name, null, l.Styles)).ToArray(), referenced[i].Styles);
 					_presentationBuilder.AddImportRange(referenced[i].Imports);
 				}
+				Flags.UseDarktheme = _presentationBuilder.GetDarktheme();
 				return new Presentation(_presentationBuilder.GetSlides(), _presentationBuilder.GetStyles(), _presentationBuilder.GetFilters(), _presentationBuilder.GetTransitions(), libraries, _presentationBuilder.GetJSInsertions(), _presentationBuilder.GetImports(), _presentationBuilder.GetReferencedFiles(), Flags);
 			}
 		}
@@ -201,6 +202,12 @@ namespace Minsk.CodeAnalysis
 
 			var styleCollector = new StyleCollector(node.BoundBody, node.Variable?.Name ?? "std", _variables);
 			var style = styleCollector.CollectFields();
+			
+			if(node.Variable == null)
+			{
+				if (style.GetMainStyle().HasProperty("useDarkTheme"))
+					_presentationBuilder.SetDarktheme((bool)style.GetMainStyle().GetValue("useDarkTheme"));
+			}
 			//TODO(Structure): The Element class shouldn't have to keep track of the
 			// std style. It should be stored in the presentation. So you would have to
 			// initialize firstly the presentation and then add the elements and everything
@@ -341,7 +348,8 @@ namespace Minsk.CodeAnalysis
 				return;
 			_variables = _variables.Push();
 			_currentSlide = new SlideAttributes(node.Variable.Name, _presentationBuilder.GetSlideIndex(), node.Variable.IsVisible);
-			
+			//TODO: Does a slide have other readonly variables?
+			_variables.Add(new VariableSymbol("name", true, PrimitiveTypeSymbol.String), node.Variable.Name);
 			_steps = new List<Step>();
 			foreach (var statement in node.Statements)
 			{
@@ -794,10 +802,10 @@ namespace Minsk.CodeAnalysis
 			}
 			else
 			{
-				var result = SetField(parent, field.Name, value);
+				var result = SetField(parent, TextHelper.ToCSharpField(field.Name, field.Type), value);
 				if (!result)
 				{
-					result = SetField(parent, field.Name.ToVariableUpper(), value);
+					result = SetField(parent, TextHelper.ToCSharpField(field.Name.ToVariableUpper(), field.Type), value);
 					if (!result)
 						throw new Exception($"Could not find Field '{field.Name}'");
 				}
@@ -813,6 +821,7 @@ namespace Minsk.CodeAnalysis
 			if (field != null)
 			{
 				field.SetValue(parent, value);
+				Logger.Log($"Unexpected use of a field variable in {parent}.{fieldName}");
 			}
 			else if (property != null)
 			{

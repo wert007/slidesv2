@@ -5,42 +5,97 @@ using System.Collections.Generic;
 
 namespace Slides.Elements
 {
+	public enum ListMarkerType
+	{
+		Disk,
+		Circle,
+		Square,
+		None,
+	}
+	public class ListElementStyling : TextElementStyling
+	{
+		private string _markerText = null;
+		public ListMarkerType? h_MarkerType { get; set; }
+		public ListElementStyling h_Parent { get; }
+		public ListElementStyling h_Child { get; set; } = null;
+		public bool isOrdered { get; set; } = false;
+		public ListMarkerType markerType { get => h_MarkerType ?? h_Parent?.h_MarkerType ?? ListMarkerType.Disk;
+			set => h_MarkerType = value; }
+		public Alignment align { get; set; } = Alignment.Unset;
+		private ListElementStyling(List _element) : base(_element)
+		{
+
+		}
+		private ListElementStyling(ListElementStyling parent)
+		{
+			h_Parent = parent;
+		}
+
+		public static ListElementStyling h_CreateElementStyling(List _element) => new ListElementStyling(_element);
+
+		public void setTextmarker(string marker)
+		{
+			markerType = ListMarkerType.None;
+			_markerText = marker;
+			if (h_Child != null) h_Child.setTextmarker(marker);
+		}
+
+		public string get_Textmarker() => _markerText;
+
+		public ListElementStyling h_AssureNext()
+		{
+			if (h_Child == null)
+				h_Child = new ListElementStyling(this);
+			return h_Child;
+		}
+
+		public ListElementStyling[] h_ToArray()
+		{
+			var current = this;
+			var result = new List<ListElementStyling>();
+			while(current != null)
+			{
+				result.Add(current);
+				current = current.h_Child;
+			}
+			return result.ToArray();
+		}
+	}
 	public class List : ParentElement
 	{
-		public enum ListMarkerType
-		{
-			Disk,
-			Circle,
-			Square,
-			None,
-		}
 		private List<Element> _children;
-
+		public bool isOrdered { get => ((ListElementStyling)h_Styling).isOrdered; set => ((ListElementStyling)h_Styling).isOrdered = value; }
+		public Alignment align { get => ((ListElementStyling)h_Styling).align; set => ((ListElementStyling)h_Styling).align = value; }
+		public ListMarkerType markerType { get => ((ListElementStyling)h_Styling).markerType;
+			set => ((ListElementStyling)h_Styling).markerType = value; }
 		public override ElementKind kind => ElementKind.List;
-		public bool isOrdered { get; set; } = false;
 		public Element[] children => _children.ToArray();
-		public ListMarkerType markerType { get; set; }
-		private string _markerText = null;
-		private readonly List<List<Style>> _appliedStyles = new List<List<Style>>();
+		private readonly ListElementStyling _styling;
+		public override ElementStyling h_Styling => _styling;
 
-		public List()
+		public List() : base(null)
 		{
+			_styling = ListElementStyling.h_CreateElementStyling(this);
 			_children = new List<Element>();
 			//TODO: Introduce a place for such constants maybe??
 			addApplyStyleHandler("non-css-custom-text-marker", v => setTextmarker((string)v));
+			Init();
 		}
 
-		public List(string[] contents)
+		public List(string[] contents) : base(null)
 		{
+			_styling = ListElementStyling.h_CreateElementStyling(this);
 			_children = new List<Element>();
 			foreach (var listItem in contents)
-				add(listItem);
+				addParsing(listItem);
 			//TODO: Introduce a place for such constants maybe??
 			addApplyStyleHandler("non-css-custom-text-marker", v => setTextmarker((string)v));
+			Init();
 		}
 
-		public List(string[][] contents)
+		public List(string[][] contents) : base(null)
 		{
+			_styling = ListElementStyling.h_CreateElementStyling(this);
 			_children = new List<Element>();
 			foreach (var subList in contents)
 				if (subList.Length == 1)
@@ -49,18 +104,40 @@ namespace Slides.Elements
 					add(subList);
 			//TODO: Introduce a place for such constants maybe??
 			addApplyStyleHandler("non-css-custom-text-marker", v => setTextmarker((string)v)); 
+			Init();
+		}
+		public new ListElementStyling styling(int index)
+		{
+			var current = ((ListElementStyling)h_Styling);
+			while (index > 0)
+			{
+				current = current.h_AssureNext();
+				index--;
+			}
+			return current;
 		}
 
+		public ListElementStyling[] get_Stylings() => ((ListElementStyling)h_Styling).h_ToArray();
+
+		public void setTextmarker(string marker) => ((ListElementStyling)h_Styling).setTextmarker(marker);
+		public string get_Textmarker() => ((ListElementStyling)h_Styling).get_Textmarker();
 		private void addChild(int level, Element e)
 		{
-			e.h_parent = this;
+			e.h_Parent = this;
 			_children.Add(e);
 			foreach (var style in get_AppliedStyles())
 				e.applyStyle(style);
 
-			for (int i = 0; i < Math.Min(level, _appliedStyles.Count); i++)
-				foreach (var style in _appliedStyles[i])
-					e.applyStyle(style);
+			//for (int i = 0; i < Math.Min(level, _appliedStyles.Count); i++)
+			//	foreach (var style in _appliedStyles[i])
+			//		e.applyStyle(style);
+		}
+
+		public void addParsing(string listItem)
+		{
+			int i = 0;
+			while (listItem[i] == ' ') i++;
+			add(i, listItem);
 		}
 
 		public void add(string listItem)
@@ -117,33 +194,21 @@ namespace Slides.Elements
 			addChild(1, list);	
 		}
 
-		public void setTextmarker(string marker)
-		{
-			markerType = ListMarkerType.None;
-			_markerText = marker;
-			foreach (var child in children)
-			{
-				if (child is List l) l.setTextmarker(marker);
-			}
-		}
 
-		public void applyStyle(int level, Style style)
-		{
-			if (level == 0)
-			{
-				applyStyle(style);
-				return;
-			}
-			while (_appliedStyles.Count < level) _appliedStyles.Add(new List<Style>());
-			_appliedStyles[level-1].Add(style);
-			foreach (var child in children)
-			{
-				if (child is List l)
-					l.applyStyle(level - 1, style);
-			}
-		}
-
-		public string get_TextMarker() => _markerText;
+		//public void applyStyle(int level, Style style)
+		//{
+		//	if (level == 0)
+		//	{
+		//		applyStyle(style);
+		//		return;
+		//	}
+		//	styling(level).applyStyle(style);
+		//	foreach (var child in children)
+		//	{
+		//		if (child is List l)
+		//			l.applyStyle(level - 1, style);
+		//	}
+		//}
 
 		internal override Unit get_InitialWidth()
 		{
@@ -163,7 +228,7 @@ namespace Slides.Elements
 			var result = new Unit();
 			for (int i = 0; i < _children.Count; i++)
 				result += _children[i].height;
-			return result * 1.25f; //TODO: Absolutely Hacky! 1.25f is for lineheight. but there should be better ways then this!
+			return result * lineHeight; //TODO: Check if this works out!
 		}
 
 		protected override IEnumerable<Element> get_Children() => _children;

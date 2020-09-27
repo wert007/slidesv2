@@ -21,9 +21,9 @@ namespace Slides.Styling
 			Properties[name] = value;
 		}
 
-		internal bool HasProperty(string name) => Properties.ContainsKey(name);
+		public bool HasProperty(string name) => Properties.ContainsKey(name);
 
-		internal object GetValue(string name) => HasProperty(name) ? Properties[name] : null;
+		public object GetValue(string name) => HasProperty(name) ? Properties[name] : null;
 
 		public override Substyle GetMainStyle() => this;
 	}

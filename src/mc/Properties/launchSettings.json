@@ -2,7 +2,7 @@
   "profiles": {
     "mc": {
       "commandName": "Project",
-      "commandLineArgs": "sldsrc/transsib/presentation.sld docs -build-fresh"
+      "commandLineArgs": "sldsrc/transsib/presentation.sld trash -build-fresh"
     }
   }
 }

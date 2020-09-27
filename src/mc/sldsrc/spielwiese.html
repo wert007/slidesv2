@@ -13,42 +13,32 @@
             margin: 0;
         }
 
-        .demoWrapper {
-            padding: 10%;
-            background: chartreuse;
-            
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            max-height: 100%;
-            max-width: 100%;
+        /* 
+            This is just compatibility reasons with chrome-like browsers. 
+            (Will hopefully be not needed anymore on day..) 
+        */
+        :-webkit-any(ul, ol) :-webkit-any(ul, ol) :-webkit-any(ul, ol) li {
+            background: green;
         }
-
-        /* div {
-            width: 100%;
-            padding-bottom: 30%;
-            padding-top: 30%;
-            background: gold;
-            position: relative;
-        } */
-
-        #center {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+        :is(ul, ol) :is(ul, ol) :is(ul, ol) li {
+            background: green;
         }
     </style>
 </head>
 
 <body>
-    <div style="background:red; filter:grayscale(70%)">
-        <strong>looooooooooool <em>du nase</strong>-enB&auml;r</em>
-        <div style="background:blue; filter:grayscale(70%)">
-        Helloooooo
-        </div>
-    </div>
+    <ul>
+        <ul>
+            <ol>
+                <li>hi</li>
+                <li>na</li>
+                <li>hmm</li>
+                <li>okay</li>
+            </ol>
+            <li>not green</li>
+        </ul>
+        <li>still not green</li>
+    </ul>
     
     <!-- <div class="demoWrapper">
         <div></div>

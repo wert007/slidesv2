@@ -493,7 +493,7 @@ namespace Minsk.CodeAnalysis
 		{
 			var message = $"Index '{index}' was out ouf range.";
 			if(index >= arrayLength) message += $" It has to be lower than '{arrayLength}'.";
-			if(index < 0) message += $" It has to be higher than '0'.";
+			if(index < 0) message += $" It has to be higher than or equal to '0'.";
 			Report(span, message, DiagnosticLevel.Error);
 		}
 
@@ -532,6 +532,18 @@ namespace Minsk.CodeAnalysis
 		public void ReportNoDefaultValueForType(TextSpan span, TypeSymbol type)
 		{
 			var message = $"There is no default value for type '{type}'. Maybe try '{type}?' instead with the default value 'none'.";
+			Report(span, message, DiagnosticLevel.Error);
+		}
+
+		public void ReportPercentUnitValueNotAllowed(TextSpan span)
+		{
+			var message = $"You can only use absolute values like 'px' or 'pt' here!";
+			Report(span, message, DiagnosticLevel.Error);
+		}
+
+		internal void ReportCannotWriteToTypeType(TextSpan span, TypeSymbol type)
+		{
+			var message = $"Cannot write to function return-type '{type}'.";
 			Report(span, message, DiagnosticLevel.Error);
 		}
 	}

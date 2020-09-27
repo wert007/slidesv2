@@ -60,6 +60,12 @@
 			}
 			return new UnitSubtraction(this, u);
 		}
+
+		public override bool ContainsPercent()
+		{
+			return A.ContainsPercent() || B.ContainsPercent();
+		}
+
 		public override string ToString()
 		{
 			if(B.Kind == UnitKind.Subtraction ||

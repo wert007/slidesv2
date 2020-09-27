@@ -17,6 +17,7 @@
 		public ExpressionSyntax[] Arguments { get; }
 		public SyntaxToken CloseParenthesisToken { get; }
 
-		public override bool IsLValue => false;
+		// This could be a LValue, but no guarantee
+		public override bool IsLValue => true;
 	}
 }

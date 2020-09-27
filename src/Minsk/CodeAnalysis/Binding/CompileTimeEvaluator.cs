@@ -145,7 +145,7 @@ namespace Minsk.CodeAnalysis.Binding
 		{
 			value = null;
 			if (!TryGetValue(expression.Parent, out var parent)) return false;
-			value = EvaluateFieldAccessExpressionValue(parent, expression.Field.Variable.Name);
+			value = EvaluateFieldAccessExpressionValue(parent, expression.Field.Variable.Name, _builtInTypes.LookTypeUp(expression.Field.Variable.Type));
 			return true;
 		}
 
