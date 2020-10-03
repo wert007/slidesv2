@@ -2,7 +2,7 @@
 import font('Arial') as arial;
 
 template default(s: Slide):
-    let prev = new Label('[url="../chapter-100/index.html"]prev[/url]');
+    let prev = new Label('[url="../chapter-150/index.html"]prev[/url]');
     prev.orientation = Horizontal.Left | Vertical.Top;
     let next = new Label('[url="../chapter-210/index.html"]next[/url]');
     next.orientation = Horizontal.Right | Vertical.Top;
@@ -27,17 +27,17 @@ slide t1 < default:
     // already create a border and how you can access just a few sides
     // or the border as whole.
     let stack = new Stack(FlowAxis.Vertical);
-    let ~label = new Label('Hello World!\nThis is me!!');
-    ~label.border.color = red;
-    stack.add(~label);
-    ~label = new Label('Hello World!\nThis is me!!');
-    ~label.border.right.color = green;
-    ~label.border.left.color = green;
-    stack.add(~label);
-    ~label = new Label('Hello World!\nThis is me!!');
-    ~label.border.top.color = blue;
-    ~label.border.bottom.color = blue;
-    stack.add(~label);
+    let label = new Label('Hello World!\nThis is me!!');
+    label.border.color = red;
+    stack.add(label);
+    label = new Label('Hello World!\nThis is me!!');
+    label.border.right.color = green;
+    label.border.left.color = green;
+    stack.add(label);
+    label = new Label('Hello World!\nThis is me!!');
+    label.border.top.color = blue;
+    label.border.bottom.color = blue;
+    stack.add(label);
 endslide
 
 slide t2 < default:
@@ -47,22 +47,22 @@ slide t2 < default:
     // thin, medium and thick are just constant units. border-width has
     // a default value of medium 
     let stack = new Stack(FlowAxis.Vertical);
-    let ~label = new Label('Hello World!\nThis is me!!');
-    ~label.border.width = 1px;
-    stack.add(~label);
-    ~label = new Label('Hello World!\nThis is me!!');
-    ~label.border.left.width = 12pt;
-    ~label.border.right.width = 99px;
-    stack.add(~label);
-    ~label = new Label('Hello World!\nThis is me!!');
-    ~label.border.top.width = thin;
-    ~label.border.bottom.width = thick;
-    stack.add(~label);
-    ~label = new Label('Hello World!\nThis is me!!');
-    ~label.border.top.width = thin;
-    ~label.border.bottom.width = thick;
-    ~label.color = green;
-    stack.add(~label);
+    let label = new Label('Hello World!\nThis is me!!');
+    label.border.width = 1px;
+    stack.add(label);
+    label = new Label('Hello World!\nThis is me!!');
+    label.border.left.width = 12pt;
+    label.border.right.width = 99px;
+    stack.add(label);
+    label = new Label('Hello World!\nThis is me!!');
+    label.border.top.width = thin;
+    label.border.bottom.width = thick;
+    stack.add(label);
+    label = new Label('Hello World!\nThis is me!!');
+    label.border.top.width = thin;
+    label.border.bottom.width = thick;
+    label.color = green;
+    stack.add(label);
 endslide
 
 
@@ -70,73 +70,73 @@ slide t3 < default:
     // Here you have a quick demonstration of all BorderStyle|s there
     // are. You can as well use BorderStyle.None to remove a border.
     background = rgb(255, 255, 200);
-    let stack = new Stack(FlowAxis.Horizontal);
-    let ~label = new Label('Hello World!');
-    ~label.border.style = BorderStyle.Dotted;
-    stack.add(~label);
-    ~label = new Label('Hello World!');
-    ~label.border.style = BorderStyle.Dashed;
-    stack.add(~label);
-    ~label = new Label('Hello World!');
-    ~label.border.style = BorderStyle.Solid;
-    stack.add(~label);
-    ~label = new Label('Hello World!');
-    ~label.border.style = BorderStyle.Double;
-    stack.add(~label);
-    ~label = new Label('Hello World!');
-    ~label.border.style = BorderStyle.Groove;
-    stack.add(~label);
-    ~label = new Label('Hello World!');
-    ~label.border.style = BorderStyle.Ridge;
-    stack.add(~label);
-    ~label = new Label('Hello World!');
-    ~label.border.style = BorderStyle.Inset;
-    stack.add(~label);
-    ~label = new Label('Hello World!');
-    ~label.border.style = BorderStyle.Outset;
-    stack.add(~label);
+    let stack = new Stack(FlowAxis.Vertical);
+    let label = new Label('Hello World!');
+    label.border.style = BorderStyle.Dotted;
+    stack.add(label);
+    label = new Label('Hello World!');
+    label.border.style = BorderStyle.Dashed;
+    stack.add(label);
+    label = new Label('Hello World!');
+    label.border.style = BorderStyle.Solid;
+    stack.add(label);
+    label = new Label('Hello World!');
+    label.border.style = BorderStyle.Double;
+    stack.add(label);
+    label = new Label('Hello World!');
+    label.border.style = BorderStyle.Groove;
+    stack.add(label);
+    label = new Label('Hello World!');
+    label.border.style = BorderStyle.Ridge;
+    stack.add(label);
+    label = new Label('Hello World!');
+    label.border.style = BorderStyle.Inset;
+    stack.add(label);
+    label = new Label('Hello World!');
+    label.border.style = BorderStyle.Outset;
+    stack.add(label);
 endslide
 
 slide t4 < default:
     // The same as t3, but with colors!
     background = rgb(255, 255, 200);
-    let stack = new Stack(FlowAxis.Horizontal);
-    let ~label = new Label('Hello World!');
-    ~label.border.style = BorderStyle.Dotted;
-    ~label.border.color = red;
-    stack.add(~label);
-    ~label = new Label('Hello World!');
-    ~label.border.style = BorderStyle.Dashed;
-    ~label.border.color = red;
-    stack.add(~label);
-    ~label = new Label('Hello World!');
-    ~label.border.style = BorderStyle.Solid;
-    ~label.border.color = red;
-    stack.add(~label);
-    ~label = new Label('Hello World!');
-    ~label.border.style = BorderStyle.Double;
-    ~label.border.color = red;
-    stack.add(~label);
-    ~label = new Label('Hello World!');
-    ~label.border.style = BorderStyle.Groove;
-    ~label.border.color = red;
-    stack.add(~label);
-    ~label = new Label('Hello World!');
-    ~label.border.style = BorderStyle.Ridge;
-    ~label.border.color = red;
-    stack.add(~label);
-    ~label = new Label('Hello World!');
-    ~label.border.style = BorderStyle.Inset;
-    ~label.border.color = red;
-    stack.add(~label);
-    ~label = new Label('Hello World!');
-    ~label.border.style = BorderStyle.Outset;
-    ~label.border.color = red;
-    stack.add(~label);
-    ~label = new Label('Hello World!');
-    ~label.border.style = BorderStyle.None;
-    ~label.border.color = red;
-    stack.add(~label);
+    let stack = new Stack(FlowAxis.Vertical);
+    let label = new Label('Hello World!');
+    label.border.style = BorderStyle.Dotted;
+    label.border.color = red;
+    stack.add(label);
+    label = new Label('Hello World!');
+    label.border.style = BorderStyle.Dashed;
+    label.border.color = red;
+    stack.add(label);
+    label = new Label('Hello World!');
+    label.border.style = BorderStyle.Solid;
+    label.border.color = red;
+    stack.add(label);
+    label = new Label('Hello World!');
+    label.border.style = BorderStyle.Double;
+    label.border.color = red;
+    stack.add(label);
+    label = new Label('Hello World!');
+    label.border.style = BorderStyle.Groove;
+    label.border.color = red;
+    stack.add(label);
+    label = new Label('Hello World!');
+    label.border.style = BorderStyle.Ridge;
+    label.border.color = red;
+    stack.add(label);
+    label = new Label('Hello World!');
+    label.border.style = BorderStyle.Inset;
+    label.border.color = red;
+    stack.add(label);
+    label = new Label('Hello World!');
+    label.border.style = BorderStyle.Outset;
+    label.border.color = red;
+    stack.add(label);
+    label = new Label('Hello World!');
+    label.border.style = BorderStyle.None;
+    label.border.color = red;
+    stack.add(label);
 endslide
 
 slide t5 < default:

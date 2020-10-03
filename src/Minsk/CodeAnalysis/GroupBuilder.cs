@@ -14,7 +14,7 @@ namespace Minsk.CodeAnalysis
 		private readonly Dictionary<VariableSymbol, Element> _children;
 		private readonly List<CustomStyle> _groupAppliedStyles = new List<CustomStyle>();
 		private bool IsSVG => _children == null;
-		private GroupBuilder(bool isSVG) 
+		private GroupBuilder(bool isSVG)
 		{
 			if (!isSVG) _children = new Dictionary<VariableSymbol, Element>();
 			else _svgChildren = new Dictionary<VariableSymbol, SVGGraphicsElement>();
@@ -42,7 +42,7 @@ namespace Minsk.CodeAnalysis
 		{
 			if (!(value is Element))
 				return;
-			if(value is object[] array)
+			if (value is object[] array)
 			{
 				var type = ((ArrayTypeSymbol)variable.Type).Child;
 				for (int i = 0; i < array.Length; i++)
@@ -50,7 +50,7 @@ namespace Minsk.CodeAnalysis
 					TryAddGroupChildren(array[i], new VariableSymbol($"{variable.Name}#{i}", variable.IsReadOnly, type));
 				}
 			}
-			if (variable.IsVisible && value is Element element && element.isVisible)
+			if (value is Element element && element.isVisible && element.h_Parent == null)
 				_children[variable] = element;
 		}
 
@@ -58,22 +58,20 @@ namespace Minsk.CodeAnalysis
 		{
 			if (!(value is SVGGraphicsElement || value is object[]))
 				return;
-			if (variable.IsVisible)
-			{
-				if (variable.Type.Type != TypeType.Array && value is SVGGraphicsElement element && element.IsVisible)
-					_svgChildren[variable] = element;
-				else
-					for (int i = 0; i < ((object[])value).Length; i++)
+
+			if (variable.Type.Type != TypeType.Array && value is SVGGraphicsElement element && element.IsVisible)
+				_svgChildren[variable] = element;
+			else
+				for (int i = 0; i < ((object[])value).Length; i++)
+				{
+					var e = ((object[])value)[i];
+					if (e is SVGGraphicsElement elementArr && elementArr.IsVisible)
 					{
-						var e = ((object[])value)[i];
-						if (e is SVGGraphicsElement elementArr && elementArr.IsVisible)
-						{
-							var t = ((ArrayTypeSymbol)variable.Type).Child;
-							var variableArray = new VariableSymbol($"{variable.Name}#{i}", variable.IsReadOnly, t);
-							_svgChildren.Add(variableArray, elementArr);
-						}
+						var t = ((ArrayTypeSymbol)variable.Type).Child;
+						var variableArray = new VariableSymbol($"{variable.Name}#{i}", variable.IsReadOnly, t);
+						_svgChildren.Add(variableArray, elementArr);
 					}
-			}
+				}
 		}
 
 		internal SVGGraphicsElement[] GetSVGValues()
@@ -83,7 +81,7 @@ namespace Minsk.CodeAnalysis
 
 		internal Element[] GetGroupValues()
 		{
-			return _children.Select(c => c.Value).Where(c => c.isVisible).ToArray();
+			return _children.Select(c => c.Value).Where(c => c.isVisible && c.h_Parent == null).ToArray();
 		}
 
 		internal IEnumerable<CustomStyle> GetAppliedStyles()

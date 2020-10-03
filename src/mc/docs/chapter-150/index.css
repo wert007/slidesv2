@@ -1,0 +1,1874 @@
+* {
+    font-family: 'Arial';
+}
+
+.coding {
+}
+
+#s1 {
+}
+
+#s1>.slide-content {
+}
+
+section#s1 div.step {
+}
+
+#s1-stack {
+    position: absolute;
+    height: 200.00px;
+    right: 0.00px;
+    bottom: 50.00px;
+}
+
+#s1-stack-0 {
+    position: relative;
+    object-fit: contain;
+}
+
+#s1-stack-1 {
+    position: relative;
+    object-fit: contain;
+}
+
+#s1-stack-2 {
+    position: relative;
+    object-fit: contain;
+}
+
+#s1-stack-3 {
+    position: relative;
+    object-fit: contain;
+}
+
+#s1-stack-4 {
+    position: relative;
+    object-fit: contain;
+}
+
+#s1-stack-5 {
+    position: relative;
+    object-fit: contain;
+}
+
+#s1-stack-6 {
+    position: relative;
+    object-fit: contain;
+}
+
+#s1-stack-7 {
+    position: relative;
+    object-fit: contain;
+}
+
+#s1-stack-8 {
+    position: relative;
+    object-fit: contain;
+}
+
+#s1-prev {
+    position: absolute;
+    left: 0.00px;
+    top: 0.00px;
+}
+
+#s1-next {
+    position: absolute;
+    right: 0.00px;
+    top: 0.00px;
+}
+
+#s2 {
+}
+
+#s2>.slide-content {
+}
+
+section#s2 div.step {
+}
+
+#s2-stack {
+    position: absolute;
+    height: 100.00%;
+    width: 200.00px;
+    right: 50.00px;
+    top: 50.00%;
+    transform: translateY(-50%) translateX(0px) ;
+}
+
+#s2-stack-0 {
+    position: relative;
+    object-fit: contain;
+}
+
+#s2-stack-1 {
+    position: relative;
+    object-fit: contain;
+}
+
+#s2-stack-2 {
+    position: relative;
+    object-fit: contain;
+}
+
+#s2-stack-3 {
+    position: relative;
+    object-fit: contain;
+}
+
+#s2-stack-4 {
+    position: relative;
+    object-fit: contain;
+}
+
+#s2-stack-5 {
+    position: relative;
+    object-fit: contain;
+}
+
+#s2-stack-6 {
+    position: relative;
+    object-fit: contain;
+}
+
+#s2-stack-7 {
+    position: relative;
+    object-fit: contain;
+}
+
+#s2-stack-8 {
+    position: relative;
+    object-fit: contain;
+}
+
+#s2-prev {
+    position: absolute;
+    left: 0.00px;
+    top: 0.00px;
+}
+
+#s2-next {
+    position: absolute;
+    right: 0.00px;
+    top: 0.00px;
+}
+
+#s3 {
+}
+
+#s3>.slide-content {
+}
+
+section#s3 div.step {
+}
+
+#s3-stackHorizontal {
+    position: absolute;
+    right: 0.00px;
+    top: 51.44px;
+}
+
+#s3-stackHorizontal-0 {
+    position: relative;
+    background-color: rgba(0, 255, 255, 1.00);
+    color: rgba(255, 0, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-1 {
+    position: relative;
+    background-color: rgba(255, 127, 255, 1.00);
+    color: rgba(0, 128, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-2 {
+    position: relative;
+    background-color: rgba(255, 255, 0, 1.00);
+    color: rgba(0, 0, 255, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-3 {
+    position: relative;
+    background-color: rgba(0, 0, 255, 1.00);
+    color: rgba(255, 255, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-4 {
+    position: relative;
+    background-color: rgba(255, 0, 255, 1.00);
+    color: rgba(0, 255, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-5 {
+    position: relative;
+    background-color: rgba(127, 255, 127, 1.00);
+    color: rgba(128, 0, 128, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-6 {
+    position: relative;
+    background-color: rgba(0, 255, 255, 1.00);
+    color: rgba(255, 0, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-7 {
+    position: relative;
+    background-color: rgba(255, 127, 255, 1.00);
+    color: rgba(0, 128, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-8 {
+    position: relative;
+    background-color: rgba(255, 255, 0, 1.00);
+    color: rgba(0, 0, 255, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-9 {
+    position: relative;
+    background-color: rgba(0, 0, 255, 1.00);
+    color: rgba(255, 255, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-10 {
+    position: relative;
+    background-color: rgba(255, 0, 255, 1.00);
+    color: rgba(0, 255, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-11 {
+    position: relative;
+    background-color: rgba(127, 255, 127, 1.00);
+    color: rgba(128, 0, 128, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-12 {
+    position: relative;
+    background-color: rgba(0, 255, 255, 1.00);
+    color: rgba(255, 0, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-13 {
+    position: relative;
+    background-color: rgba(255, 127, 255, 1.00);
+    color: rgba(0, 128, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-14 {
+    position: relative;
+    background-color: rgba(255, 255, 0, 1.00);
+    color: rgba(0, 0, 255, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-15 {
+    position: relative;
+    background-color: rgba(0, 0, 255, 1.00);
+    color: rgba(255, 255, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-16 {
+    position: relative;
+    background-color: rgba(255, 0, 255, 1.00);
+    color: rgba(0, 255, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-17 {
+    position: relative;
+    background-color: rgba(127, 255, 127, 1.00);
+    color: rgba(128, 0, 128, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-18 {
+    position: relative;
+    background-color: rgba(0, 255, 255, 1.00);
+    color: rgba(255, 0, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-19 {
+    position: relative;
+    background-color: rgba(255, 127, 255, 1.00);
+    color: rgba(0, 128, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-20 {
+    position: relative;
+    background-color: rgba(255, 255, 0, 1.00);
+    color: rgba(0, 0, 255, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-21 {
+    position: relative;
+    background-color: rgba(0, 0, 255, 1.00);
+    color: rgba(255, 255, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-22 {
+    position: relative;
+    background-color: rgba(255, 0, 255, 1.00);
+    color: rgba(0, 255, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-23 {
+    position: relative;
+    background-color: rgba(127, 255, 127, 1.00);
+    color: rgba(128, 0, 128, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-24 {
+    position: relative;
+    background-color: rgba(0, 255, 255, 1.00);
+    color: rgba(255, 0, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-25 {
+    position: relative;
+    background-color: rgba(255, 127, 255, 1.00);
+    color: rgba(0, 128, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-26 {
+    position: relative;
+    background-color: rgba(255, 255, 0, 1.00);
+    color: rgba(0, 0, 255, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-27 {
+    position: relative;
+    background-color: rgba(0, 0, 255, 1.00);
+    color: rgba(255, 255, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-28 {
+    position: relative;
+    background-color: rgba(255, 0, 255, 1.00);
+    color: rgba(0, 255, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-29 {
+    position: relative;
+    background-color: rgba(127, 255, 127, 1.00);
+    color: rgba(128, 0, 128, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-30 {
+    position: relative;
+    background-color: rgba(0, 255, 255, 1.00);
+    color: rgba(255, 0, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-31 {
+    position: relative;
+    background-color: rgba(255, 127, 255, 1.00);
+    color: rgba(0, 128, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-32 {
+    position: relative;
+    background-color: rgba(255, 255, 0, 1.00);
+    color: rgba(0, 0, 255, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-33 {
+    position: relative;
+    background-color: rgba(0, 0, 255, 1.00);
+    color: rgba(255, 255, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-34 {
+    position: relative;
+    background-color: rgba(255, 0, 255, 1.00);
+    color: rgba(0, 255, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-35 {
+    position: relative;
+    background-color: rgba(127, 255, 127, 1.00);
+    color: rgba(128, 0, 128, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-36 {
+    position: relative;
+    background-color: rgba(0, 255, 255, 1.00);
+    color: rgba(255, 0, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-37 {
+    position: relative;
+    background-color: rgba(255, 127, 255, 1.00);
+    color: rgba(0, 128, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-38 {
+    position: relative;
+    background-color: rgba(255, 255, 0, 1.00);
+    color: rgba(0, 0, 255, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-39 {
+    position: relative;
+    background-color: rgba(0, 0, 255, 1.00);
+    color: rgba(255, 255, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-40 {
+    position: relative;
+    background-color: rgba(255, 0, 255, 1.00);
+    color: rgba(0, 255, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-41 {
+    position: relative;
+    background-color: rgba(127, 255, 127, 1.00);
+    color: rgba(128, 0, 128, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-42 {
+    position: relative;
+    background-color: rgba(0, 255, 255, 1.00);
+    color: rgba(255, 0, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-43 {
+    position: relative;
+    background-color: rgba(255, 127, 255, 1.00);
+    color: rgba(0, 128, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-44 {
+    position: relative;
+    background-color: rgba(255, 255, 0, 1.00);
+    color: rgba(0, 0, 255, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-45 {
+    position: relative;
+    background-color: rgba(0, 0, 255, 1.00);
+    color: rgba(255, 255, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-46 {
+    position: relative;
+    background-color: rgba(255, 0, 255, 1.00);
+    color: rgba(0, 255, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-47 {
+    position: relative;
+    background-color: rgba(127, 255, 127, 1.00);
+    color: rgba(128, 0, 128, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-48 {
+    position: relative;
+    background-color: rgba(0, 255, 255, 1.00);
+    color: rgba(255, 0, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-49 {
+    position: relative;
+    background-color: rgba(255, 127, 255, 1.00);
+    color: rgba(0, 128, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-50 {
+    position: relative;
+    background-color: rgba(255, 255, 0, 1.00);
+    color: rgba(0, 0, 255, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-51 {
+    position: relative;
+    background-color: rgba(0, 0, 255, 1.00);
+    color: rgba(255, 255, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-52 {
+    position: relative;
+    background-color: rgba(255, 0, 255, 1.00);
+    color: rgba(0, 255, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackHorizontal-53 {
+    position: relative;
+    background-color: rgba(127, 255, 127, 1.00);
+    color: rgba(128, 0, 128, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical {
+    position: absolute;
+    right: 172.84px;
+    top: 0.00px;
+}
+
+#s3-stackVertical-0 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(127, 255, 127, 1.00);
+    color: rgba(128, 0, 128, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-1 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(255, 0, 255, 1.00);
+    color: rgba(0, 255, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-2 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(0, 0, 255, 1.00);
+    color: rgba(255, 255, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-3 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(255, 255, 0, 1.00);
+    color: rgba(0, 0, 255, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-4 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(255, 127, 255, 1.00);
+    color: rgba(0, 128, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-5 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(0, 255, 255, 1.00);
+    color: rgba(255, 0, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-6 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(127, 255, 127, 1.00);
+    color: rgba(128, 0, 128, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-7 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(255, 0, 255, 1.00);
+    color: rgba(0, 255, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-8 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(0, 0, 255, 1.00);
+    color: rgba(255, 255, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-9 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(255, 255, 0, 1.00);
+    color: rgba(0, 0, 255, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-10 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(255, 127, 255, 1.00);
+    color: rgba(0, 128, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-11 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(0, 255, 255, 1.00);
+    color: rgba(255, 0, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-12 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(127, 255, 127, 1.00);
+    color: rgba(128, 0, 128, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-13 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(255, 0, 255, 1.00);
+    color: rgba(0, 255, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-14 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(0, 0, 255, 1.00);
+    color: rgba(255, 255, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-15 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(255, 255, 0, 1.00);
+    color: rgba(0, 0, 255, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-16 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(255, 127, 255, 1.00);
+    color: rgba(0, 128, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-17 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(0, 255, 255, 1.00);
+    color: rgba(255, 0, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-18 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(127, 255, 127, 1.00);
+    color: rgba(128, 0, 128, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-19 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(255, 0, 255, 1.00);
+    color: rgba(0, 255, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-20 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(0, 0, 255, 1.00);
+    color: rgba(255, 255, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-21 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(255, 255, 0, 1.00);
+    color: rgba(0, 0, 255, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-22 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(255, 127, 255, 1.00);
+    color: rgba(0, 128, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-23 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(0, 255, 255, 1.00);
+    color: rgba(255, 0, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-24 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(127, 255, 127, 1.00);
+    color: rgba(128, 0, 128, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-25 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(255, 0, 255, 1.00);
+    color: rgba(0, 255, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-26 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(0, 0, 255, 1.00);
+    color: rgba(255, 255, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-27 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(255, 255, 0, 1.00);
+    color: rgba(0, 0, 255, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-28 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(255, 127, 255, 1.00);
+    color: rgba(0, 128, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-29 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(0, 255, 255, 1.00);
+    color: rgba(255, 0, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-30 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(127, 255, 127, 1.00);
+    color: rgba(128, 0, 128, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-31 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(255, 0, 255, 1.00);
+    color: rgba(0, 255, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-32 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(0, 0, 255, 1.00);
+    color: rgba(255, 255, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-33 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(255, 255, 0, 1.00);
+    color: rgba(0, 0, 255, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-34 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(255, 127, 255, 1.00);
+    color: rgba(0, 128, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-35 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(0, 255, 255, 1.00);
+    color: rgba(255, 0, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-36 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(127, 255, 127, 1.00);
+    color: rgba(128, 0, 128, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-37 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(255, 0, 255, 1.00);
+    color: rgba(0, 255, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-38 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(0, 0, 255, 1.00);
+    color: rgba(255, 255, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-39 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(255, 255, 0, 1.00);
+    color: rgba(0, 0, 255, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-40 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(255, 127, 255, 1.00);
+    color: rgba(0, 128, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-41 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(0, 255, 255, 1.00);
+    color: rgba(255, 0, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-42 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(127, 255, 127, 1.00);
+    color: rgba(128, 0, 128, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-43 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(255, 0, 255, 1.00);
+    color: rgba(0, 255, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-44 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(0, 0, 255, 1.00);
+    color: rgba(255, 255, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-45 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(255, 255, 0, 1.00);
+    color: rgba(0, 0, 255, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-46 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(255, 127, 255, 1.00);
+    color: rgba(0, 128, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-47 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(0, 255, 255, 1.00);
+    color: rgba(255, 0, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-48 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(127, 255, 127, 1.00);
+    color: rgba(128, 0, 128, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-49 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(255, 0, 255, 1.00);
+    color: rgba(0, 255, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-50 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(0, 0, 255, 1.00);
+    color: rgba(255, 255, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-51 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(255, 255, 0, 1.00);
+    color: rgba(0, 0, 255, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-52 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(255, 127, 255, 1.00);
+    color: rgba(0, 128, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-stackVertical-53 {
+    position: relative;
+    margin: 0.00px 0.00px;background-color: rgba(0, 255, 255, 1.00);
+    color: rgba(255, 0, 0, 1.00);
+    padding: 5.00px 5.00px 5.00px 5.00px;
+    font-size: 30.00px;
+    font-family: inherit;
+}
+
+#s3-prev {
+    position: absolute;
+    left: 0.00px;
+    top: 0.00px;
+}
+
+#s3-next {
+    position: absolute;
+    right: 0.00px;
+    top: 0.00px;
+}
+
+#s4 {
+}
+
+#s4>.slide-content {
+}
+
+section#s4 div.step {
+}
+
+#s4-stack {
+    position: absolute;
+    right: 0.00px;
+    top: 50.00%;
+    transform: translateY(-50%) translateX(0px) ;
+}
+
+#s4-stack-0 {
+    position: relative;
+    height: 50.00px;
+    text-align: right;
+    margin-left: auto;
+    object-fit: contain;
+}
+
+#s4-stack-1 {
+    position: relative;
+    text-align: right;
+    margin-left: auto;
+    font-family: inherit;
+}
+
+#s4-stack-2 {
+    position: relative;
+    height: 50.00px;
+    text-align: right;
+    margin-left: auto;
+    object-fit: contain;
+}
+
+#s4-stack-3 {
+    position: relative;
+    text-align: right;
+    margin-left: auto;
+    font-family: inherit;
+}
+
+#s4-stack-4 {
+    position: relative;
+    height: 50.00px;
+    text-align: right;
+    margin-left: auto;
+    object-fit: contain;
+}
+
+#s4-stack-5 {
+    position: relative;
+    text-align: right;
+    margin-left: auto;
+    font-family: inherit;
+}
+
+#s4-stack-6 {
+    position: relative;
+    height: 50.00px;
+    text-align: right;
+    margin-left: auto;
+    object-fit: contain;
+}
+
+#s4-stack-7 {
+    position: relative;
+    text-align: right;
+    margin-left: auto;
+    font-family: inherit;
+}
+
+#s4-stack-8 {
+    position: relative;
+    height: 50.00px;
+    text-align: right;
+    margin-left: auto;
+    object-fit: contain;
+}
+
+#s4-stack-9 {
+    position: relative;
+    text-align: right;
+    margin-left: auto;
+    font-family: inherit;
+}
+
+#s4-stack-10 {
+    position: relative;
+    height: 50.00px;
+    text-align: right;
+    margin-left: auto;
+    object-fit: contain;
+}
+
+#s4-stack-11 {
+    position: relative;
+    text-align: right;
+    margin-left: auto;
+    font-family: inherit;
+}
+
+#s4-stack-12 {
+    position: relative;
+    height: 50.00px;
+    text-align: right;
+    margin-left: auto;
+    object-fit: contain;
+}
+
+#s4-stack-13 {
+    position: relative;
+    text-align: right;
+    margin-left: auto;
+    font-family: inherit;
+}
+
+#s4-stack-14 {
+    position: relative;
+    height: 50.00px;
+    text-align: right;
+    margin-left: auto;
+    object-fit: contain;
+}
+
+#s4-stack-15 {
+    position: relative;
+    text-align: right;
+    margin-left: auto;
+    font-family: inherit;
+}
+
+#s4-stack-16 {
+    position: relative;
+    height: 50.00px;
+    text-align: right;
+    margin-left: auto;
+    object-fit: contain;
+}
+
+#s4-stack-17 {
+    position: relative;
+    text-align: right;
+    margin-left: auto;
+    font-family: inherit;
+}
+
+#s4-stack-18 {
+    position: relative;
+    height: 50.00px;
+    text-align: right;
+    margin-left: auto;
+    object-fit: contain;
+}
+
+#s4-stack-19 {
+    position: relative;
+    text-align: right;
+    margin-left: auto;
+    font-family: inherit;
+}
+
+#s4-stack-20 {
+    position: relative;
+    height: 50.00px;
+    text-align: right;
+    margin-left: auto;
+    object-fit: contain;
+}
+
+#s4-stack-21 {
+    position: relative;
+    text-align: right;
+    margin-left: auto;
+    font-family: inherit;
+}
+
+#s4-stack-22 {
+    position: relative;
+    height: 50.00px;
+    text-align: right;
+    margin-left: auto;
+    object-fit: contain;
+}
+
+#s4-stack-23 {
+    position: relative;
+    text-align: right;
+    margin-left: auto;
+    font-family: inherit;
+}
+
+#s4-stack-24 {
+    position: relative;
+    height: 50.00px;
+    text-align: right;
+    margin-left: auto;
+    object-fit: contain;
+}
+
+#s4-stack-25 {
+    position: relative;
+    text-align: right;
+    margin-left: auto;
+    font-family: inherit;
+}
+
+#s4-stack-26 {
+    position: relative;
+    height: 50.00px;
+    text-align: right;
+    margin-left: auto;
+    object-fit: contain;
+}
+
+#s4-stack-27 {
+    position: relative;
+    text-align: right;
+    margin-left: auto;
+    font-family: inherit;
+}
+
+#s4-stack-28 {
+    position: relative;
+    height: 50.00px;
+    text-align: right;
+    margin-left: auto;
+    object-fit: contain;
+}
+
+#s4-stack-29 {
+    position: relative;
+    text-align: right;
+    margin-left: auto;
+    font-family: inherit;
+}
+
+#s4-stack-30 {
+    position: relative;
+    height: 50.00px;
+    text-align: right;
+    margin-left: auto;
+    object-fit: contain;
+}
+
+#s4-stack-31 {
+    position: relative;
+    text-align: right;
+    margin-left: auto;
+    font-family: inherit;
+}
+
+#s4-stack-32 {
+    position: relative;
+    height: 50.00px;
+    text-align: right;
+    margin-left: auto;
+    object-fit: contain;
+}
+
+#s4-stack-33 {
+    position: relative;
+    text-align: right;
+    margin-left: auto;
+    font-family: inherit;
+}
+
+#s4-stack-34 {
+    position: relative;
+    height: 50.00px;
+    text-align: right;
+    margin-left: auto;
+    object-fit: contain;
+}
+
+#s4-stack-35 {
+    position: relative;
+    text-align: right;
+    margin-left: auto;
+    font-family: inherit;
+}
+
+#s4-prev {
+    position: absolute;
+    left: 0.00px;
+    top: 0.00px;
+}
+
+#s4-next {
+    position: absolute;
+    right: 0.00px;
+    top: 0.00px;
+}
+
+#s5 {
+}
+
+#s5>.slide-content {
+}
+
+section#s5 div.step {
+}
+
+#s5-schedule {
+    position: absolute;
+    width: 70.00%;
+    left: 15.00%;
+    right: 15.00%;
+    top: 50.00%;
+    transform: translateY(-50%) translateX(0px) ;
+}
+
+#s5-schedule-0 {
+    position: relative;
+    width: 14.29%;
+    vertical-align: top;
+    font-family: inherit;
+}
+
+#s5-schedule-0-0 {
+    position: relative;
+    font-family: inherit;
+}
+
+#s5-schedule-0-1 {
+    position: relative;
+    background-color: rgba(230, 230, 230, 1.00);
+    font-family: inherit;
+}
+
+#s5-schedule-0-2 {
+    position: relative;
+    background-color: rgba(255, 255, 255, 1.00);
+    font-family: inherit;
+}
+
+#s5-schedule-1 {
+    position: relative;
+    width: 14.29%;
+    vertical-align: top;
+    font-family: inherit;
+}
+
+#s5-schedule-1-0 {
+    position: relative;
+    font-family: inherit;
+}
+
+#s5-schedule-1-1 {
+    position: relative;
+    background-color: rgba(255, 255, 255, 1.00);
+    font-family: inherit;
+}
+
+#s5-schedule-1-2 {
+    position: relative;
+    background-color: rgba(230, 230, 230, 1.00);
+    font-family: inherit;
+}
+
+#s5-schedule-2 {
+    position: relative;
+    width: 14.29%;
+    vertical-align: top;
+    font-family: inherit;
+}
+
+#s5-schedule-2-0 {
+    position: relative;
+    font-family: inherit;
+}
+
+#s5-schedule-2-1 {
+    position: relative;
+    background-color: rgba(230, 230, 230, 1.00);
+    font-family: inherit;
+}
+
+#s5-schedule-2-2 {
+    position: relative;
+    background-color: rgba(255, 255, 255, 1.00);
+    font-family: inherit;
+}
+
+#s5-schedule-3 {
+    position: relative;
+    width: 14.29%;
+    vertical-align: top;
+    font-family: inherit;
+}
+
+#s5-schedule-3-0 {
+    position: relative;
+    font-family: inherit;
+}
+
+#s5-schedule-3-1 {
+    position: relative;
+    background-color: rgba(255, 255, 255, 1.00);
+    font-family: inherit;
+}
+
+#s5-schedule-3-2 {
+    position: relative;
+    background-color: rgba(230, 230, 230, 1.00);
+    font-family: inherit;
+}
+
+#s5-schedule-4 {
+    position: relative;
+    width: 14.29%;
+    vertical-align: top;
+    font-family: inherit;
+}
+
+#s5-schedule-4-0 {
+    position: relative;
+    font-family: inherit;
+}
+
+#s5-schedule-4-1 {
+    position: relative;
+    background-color: rgba(230, 230, 230, 1.00);
+    font-family: inherit;
+}
+
+#s5-schedule-4-2 {
+    position: relative;
+    background-color: rgba(255, 255, 255, 1.00);
+    font-family: inherit;
+}
+
+#s5-schedule-5 {
+    position: relative;
+    width: 14.29%;
+    vertical-align: top;
+    font-family: inherit;
+}
+
+#s5-schedule-5-0 {
+    position: relative;
+    font-family: inherit;
+}
+
+#s5-schedule-5-1 {
+    position: relative;
+    background-color: rgba(255, 255, 255, 1.00);
+    font-family: inherit;
+}
+
+#s5-schedule-6 {
+    position: relative;
+    width: 14.29%;
+    vertical-align: top;
+    font-family: inherit;
+}
+
+#s5-schedule-6-0 {
+    position: relative;
+    font-family: inherit;
+}
+
+#s5-schedule-6-1 {
+    position: relative;
+    background-color: rgba(230, 230, 230, 1.00);
+    font-family: inherit;
+}
+
+#s5-prev {
+    position: absolute;
+    left: 0.00px;
+    top: 0.00px;
+}
+
+#s5-next {
+    position: absolute;
+    right: 0.00px;
+    top: 0.00px;
+}
+
+#t1 {
+}
+
+#t1>.slide-content {
+}
+
+section#t1 div.step {
+}
+
+#t1-stack {
+    position: absolute;
+    left: 50.00%;
+    top: 50.00%;
+    transform: translateY(-50%) translateX(-50%) ;
+    font-size: 7.00pt;
+}
+
+#t1-stack-0 {
+    position: relative;
+    width: 130.00px;
+    margin-right: auto;
+    margin-left: auto;
+    text-align: center;
+    font-size: inherit;
+    font-family: inherit;
+}
+
+#t1-stack-1 {
+    position: relative;
+    width: 260.00px;
+    margin-right: auto;
+    margin-left: auto;
+    text-align: center;
+    font-size: inherit;
+    font-family: inherit;
+}
+
+#t1-stack-2 {
+    position: relative;
+    width: 390.00px;
+    margin-right: auto;
+    margin-left: auto;
+    text-align: center;
+    font-size: inherit;
+    font-family: inherit;
+}
+
+#t1-stack-3 {
+    position: relative;
+    width: 520.00px;
+    margin-right: auto;
+    margin-left: auto;
+    text-align: center;
+    font-size: inherit;
+    font-family: inherit;
+}
+
+#t1-stack-4 {
+    position: relative;
+    width: 650.00px;
+    margin-right: auto;
+    margin-left: auto;
+    text-align: center;
+    font-size: inherit;
+    font-family: inherit;
+}
+
+#t1-stack-5 {
+    position: relative;
+    width: 780.00px;
+    margin-right: auto;
+    margin-left: auto;
+    text-align: center;
+    font-size: inherit;
+    font-family: inherit;
+}
+
+#t1-stack-6 {
+    position: relative;
+    width: 910.00px;
+    margin-right: auto;
+    margin-left: auto;
+    text-align: center;
+    font-size: inherit;
+    font-family: inherit;
+}
+
+#t1-prev {
+    position: absolute;
+    left: 0.00px;
+    top: 0.00px;
+}
+
+#t1-next {
+    position: absolute;
+    right: 0.00px;
+    top: 0.00px;
+}
+
+#t2 {
+}
+
+#t2>.slide-content {
+}
+
+section#t2 div.step {
+}
+
+#t2-stack {
+    position: absolute;
+    left: 50.00%;
+    top: 50.00%;
+    transform: translateY(-50%) translateX(-50%) ;
+    font-size: 7.00pt;
+}
+
+#t2-stack-0 {
+    position: relative;
+    vertical-align: middle;
+    font-size: inherit;
+    font-family: inherit;
+}
+
+#t2-stack-1 {
+    position: relative;
+    vertical-align: middle;
+    font-size: inherit;
+    font-family: inherit;
+}
+
+#t2-stack-2 {
+    position: relative;
+    vertical-align: middle;
+    font-size: inherit;
+    font-family: inherit;
+}
+
+#t2-stack-3 {
+    position: relative;
+    vertical-align: middle;
+    font-size: inherit;
+    font-family: inherit;
+}
+
+#t2-stack-4 {
+    position: relative;
+    vertical-align: middle;
+    font-size: inherit;
+    font-family: inherit;
+}
+
+#t2-stack-5 {
+    position: relative;
+    vertical-align: middle;
+    font-size: inherit;
+    font-family: inherit;
+}
+
+#t2-stack-6 {
+    position: relative;
+    vertical-align: middle;
+    font-size: inherit;
+    font-family: inherit;
+}
+
+#t2-prev {
+    position: absolute;
+    left: 0.00px;
+    top: 0.00px;
+}
+
+#t2-next {
+    position: absolute;
+    right: 0.00px;
+    top: 0.00px;
+}
+
+#t3 {
+    background-color: rgba(255, 255, 200, 1.00);
+}
+
+#t3>.slide-content {
+}
+
+section#t3 div.step {
+}
+
+#t3-stack {
+    position: absolute;
+    left: 50.00%;
+    top: 50.00%;
+    transform: translateY(-50%) translateX(-50%) ;
+}
+
+#t3-stack-0 {
+    position: relative;
+    border: dotted rgba(255, 0, 0, 1.00);
+    font-family: inherit;
+}
+
+#t3-stack-1 {
+    position: relative;
+    border: dotted rgba(255, 0, 0, 1.00);
+    font-family: inherit;
+}
+
+#t3-stack-2 {
+    position: relative;
+    border: dotted rgba(255, 0, 0, 1.00);
+    font-family: inherit;
+}
+
+#t3-stack-3 {
+    position: relative;
+    border: dotted rgba(255, 0, 0, 1.00);
+    font-family: inherit;
+}
+
+#t3-prev {
+    position: absolute;
+    left: 0.00px;
+    top: 0.00px;
+}
+
+#t3-next {
+    position: absolute;
+    right: 0.00px;
+    top: 0.00px;
+}
+

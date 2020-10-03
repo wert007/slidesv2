@@ -47,7 +47,7 @@ namespace Minsk.CodeAnalysis
 
 		internal void AddSlide(VariableSymbol variable, Slide slide)
 		{
-			if (!variable.IsVisible)
+			if (!slide.Attributes.isVisible)
 				_invisibleSlideCount++;
 			_slides.Add(variable, slide);
 		}

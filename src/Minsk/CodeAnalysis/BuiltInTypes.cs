@@ -184,6 +184,7 @@ namespace Minsk.CodeAnalysis
 			Add(typeof(ImageStretching));
 			Add(typeof(Image));
 			Add(typeof(FlowAxis));
+			Add(typeof(StackAlignment));
 			Add(typeof(Stack));
 			Add(typeof(Alignment));
 			Add(typeof(Label));
@@ -444,6 +445,7 @@ namespace Minsk.CodeAnalysis
 				{
 					//TODO: Add if array type or normal type...
 					todoList.Add(mname);
+					functions.Add(new FunctionSymbol(mname, parameter, null));
 				}
 			}
 			/*
@@ -475,6 +477,7 @@ namespace Minsk.CodeAnalysis
 								p.Type = symbol;
 						}
 					}
+
 			}
 			foreach (var c in constructor)
 				foreach (var p in c.Parameter)

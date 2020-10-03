@@ -1,8 +1,8 @@
 ﻿import gfont('Quicksand') as quicksand;
 import lib('qmclib.sld') as qmcLib;
 
-const sourceCodeMainC = code.loadFile('src_code\\main.c', 'C');
-const sourceCodeMainH = code.loadFile('src_code\\main.h', 'C');
+const sourceCodeMainC = coding.loadFile('src_code\\main.c', 'C');
+const sourceCodeMainH = coding.loadFile('src_code\\main.h', 'C');
 
 style std:
     font = quicksand;
@@ -10,6 +10,8 @@ style std:
     fontsize = 16pt;
     //TODO: Functioncalls in default-style???
     //List.setTextmarker('-');
+    coding.highlighting = CodeHighlighter.Default;
+
 endstyle
 
 template withTitle(child: Slide):
@@ -56,7 +58,7 @@ slide programStructure < withTitle:
     
     list.isOrdered = true;
     list.applyStyle(qmcLib.contentStyle);
-    list.applyStyle(1, qmcLib.subListStyle);
+    list.styling(1).applyStyle(qmcLib.subListStyle);
 endslide
 
 slide structCharArray < withTitle:
@@ -78,11 +80,10 @@ slide structCharArray < withTitle:
     lblConclusion.orientation = Horizontal.Left | Vertical.Bottom;
     lblConclusion.applyStyle(qmcLib.contentStyle);
 
-    code.setStyle(CodeHighlighter.Default);
-    let ~structCode = code.codeblock(sourceCodeMainH, 7..12);
-    let ~cCode = new Captioned(~structCode, 'main.h');
-    ~cCode.applyStyle(qmcLib.captionedCode);
-    container.fillB(~cCode);
+    let structCode = coding.codeblock(sourceCodeMainH, 7..12);
+    let cCode = new Captioned(structCode, 'main.h');
+    cCode.applyStyle(qmcLib.captionedCode);
+    container.fillB(cCode);
 endslide
 
 
@@ -90,7 +91,7 @@ slide structListAndNode < withTitle:
     setData('title', 'Datenstruktur: "list" & "node"');
 
     let container = seperator.vertical(55%);
-    let ~stack = new Stack(FlowAxis.Vertical);
+    let stack = new Stack(FlowAxis.Vertical);
 
     let listBulletPoints = [
         'Einfach verkettete Liste',
@@ -108,10 +109,10 @@ slide structListAndNode < withTitle:
     stack.add(new qmcLib.StructDescription('Liste', listBulletPoints, [0,0,1,0,1]));
     stack.add(new qmcLib.StructDescription('Node',  nodeBulletPoints, [0,1,0,1]));
     stack.orientation = Orientation.Stretch;
-    let ~structCode = code.codeblock(sourceCodeMainH, 20..30);
-    let ~cCode = new Captioned(~structCode, 'main.h');
-    ~cCode.applyStyle(qmcLib.captionedCode);
-    container.fill(~stack, ~cCode);
+    let structCode = coding.codeblock(sourceCodeMainH, 20..30);
+    let cCode = new Captioned(structCode, 'main.h');
+    cCode.applyStyle(qmcLib.captionedCode);
+    container.fill(stack, cCode);
 endslide
 /*
 slide implementationOfPhaseIOverview < withTitle:
@@ -146,29 +147,29 @@ endslide
 //Replacement above!
 slide implementationOfPhaseIOverview1 < withTitle:
     setData('title', 'Implementierung von Phase I');
-    let ~structCode = code.codeblock(sourceCodeMainC, 111..123);
-    let cCode = new Captioned(~structCode, 'main.c');
+    let structCode = code.codeblock(sourceCodeMainC, 111..123);
+    let cCode = new Captioned(structCode, 'main.c');
     cCode.applyStyle(qmcLib.captionedCode);
 endslide
 
 slide implementationOfPhaseIOverview2 < withTitle:
     setData('title', 'Implementierung von Phase I');
-    let ~structCode = code.codeblock(sourceCodeMainC, 125..134);
-    let cCode = new Captioned(~structCode, 'main.c');
+    let structCode = code.codeblock(sourceCodeMainC, 125..134);
+    let cCode = new Captioned(structCode, 'main.c');
     cCode.applyStyle(qmcLib.captionedCode);
 endslide
 
 slide implementationOfPhaseIOverview3 < withTitle:
     setData('title', 'Implementierung von Phase I');
-    let ~structCode = code.codeblock(sourceCodeMainC, 136..151);
-    let cCode = new Captioned(~structCode, 'main.c');
+    let structCode = code.codeblock(sourceCodeMainC, 136..151);
+    let cCode = new Captioned(structCode, 'main.c');
     cCode.applyStyle(qmcLib.captionedCode);
 endslide
 
 slide implementationOfPhaseIWrapItUp < withTitle:
     setData('title', 'Implementierung von Phase I');
-    let ~structCode = code.codeblock(sourceCodeMainC, 153..169);
-    let cCode = new Captioned(~structCode, 'main.c');
+    let structCode = code.codeblock(sourceCodeMainC, 153..169);
+    let cCode = new Captioned(structCode, 'main.c');
     cCode.applyStyle(qmcLib.captionedCode);
 endslide
 */
@@ -177,24 +178,24 @@ endslide
 slide implementationOfPhaseICompare < withTitle:
     setData('title', 'Implementierung von Phase I');
     let container = seperator.vertical(55%);
-    let ~structCode = code.codeblock(sourceCodeMainC, 448..479);
-    let ~cCode = new Captioned(~structCode, 'main.c');
-    ~cCode.applyStyle(qmcLib.captionedCodeSmall);
-    ~cCode.captionPlacement = CaptionPlacement.BottomOutwards;
-    let ~list = new List([
+    let structCode = coding.codeblock(sourceCodeMainC, 448..479);
+    let cCode = new Captioned(structCode, 'main.c');
+    cCode.applyStyle(qmcLib.captionedCodeSmall);
+    cCode.captionPlacement = CaptionPlacement.BottomOutwards;
+    let list = new List([
         'Vergleich eines jeden Elements der aktuellen Liste mit jedem Element der Folge-Liste',
         'Falls Unterscheidungs an nur einer Stelle und "Don\'t-Care"-Werte nur an gleichen Stellen vorkommen --> rufe combine_components() auf',
         'Falls Element nicht vergleichbar ist, füge es der finalen Liste hinzu'
     ]);
-    ~list.applyStyle(qmcLib.defaultList);
-    ~list.margin.left = 30px;
-    container.fill(~cCode, ~list);
+    list.applyStyle(qmcLib.defaultList);
+    list.margin.left = 30px;
+    container.fill(cCode, list);
 endslide
 
 slide implementationOfPhaseICombineComponents < withTitle:
     setData('title', 'Implementierung von Phase I');
-    let ~structCode = code.codeblock(sourceCodeMainC, 537..550);
-    let cCode = new Captioned(~structCode, 'main.c');
+    let structCode = coding.codeblock(sourceCodeMainC, 537..550);
+    let cCode = new Captioned(structCode, 'main.c');
     cCode.applyStyle(qmcLib.captionedCode);
 endslide
 
@@ -259,7 +260,7 @@ endslide
 slide theEnd < withTitle:
     setData('title', 'Fragen & Quellen');
     let container = seperator.vertical(40%);
-    let ~repoLink = new Label('Source Code: github.com/wert007/GTIProject');
+    let repoLink = new Label('Source Code: github.com/wert007/GTIProject');
     let imgSrc = qr.urlQRCode('github.com/wert007/GTIProject', red, blue);
-    container.fill(~repoLink, new SVGContainer(imgSrc));
+    container.fill(repoLink, new SVGContainer(imgSrc));
 endslide

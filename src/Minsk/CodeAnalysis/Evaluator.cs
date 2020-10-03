@@ -57,8 +57,7 @@ namespace Minsk.CodeAnalysis
 			_declarations = declarations;
 			foreach (var declaration in _declarations)
 			{
-				if (declaration.Key.Type == _builtInTypes.LookSymbolUp(typeof(SlideAttributes))
-					&& declaration.Key.IsVisible)
+				if (declaration.Value is BoundSlideStatement s && s.IsVisible)
 					_slideCount++;
 			}
 			_constants.Add(new VariableSymbol("slideCount", true, PrimitiveTypeSymbol.Integer), _slideCount);
@@ -96,7 +95,10 @@ namespace Minsk.CodeAnalysis
 				for (int i = 0; i < libraries.Length; i++)
 				{
 					//TODO(Major): Recursion
-					libraries[i] = new Library(referenced[i].Name, referenced[i].Libraries?.Select(l => new Library(l.Name, null, l.Styles)).ToArray(), referenced[i].Styles);
+					libraries[i] = new Library(
+						referenced[i].Name, 
+						referenced[i].Libraries?.Select(l => new Library(l.Name, null, l.Styles)).ToArray(), 
+						referenced[i].Styles);
 					_presentationBuilder.AddImportRange(referenced[i].Imports);
 				}
 				Flags.UseDarktheme = _presentationBuilder.GetDarktheme();
@@ -199,20 +201,22 @@ namespace Minsk.CodeAnalysis
 			if (!Flags.StyleAllowed)
 				throw new Exception();
 			_variables = _variables.Push();
-
 			var styleCollector = new StyleCollector(node.BoundBody, node.Variable?.Name ?? "std", _variables);
 			var style = styleCollector.CollectFields();
-			
+
 			if(node.Variable == null)
-			{
+			{ 
 				if (style.GetMainStyle().HasProperty("useDarkTheme"))
 					_presentationBuilder.SetDarktheme((bool)style.GetMainStyle().GetValue("useDarkTheme"));
+				Flags.CodeHighlighter = (CodeHighlighter?)style.Substyles.GetByType("coding")?.GetValue("coding-highlighting") ?? Flags.CodeHighlighter;
 			}
 			//TODO(Structure): The Element class shouldn't have to keep track of the
 			// std style. It should be stored in the presentation. So you would have to
 			// initialize firstly the presentation and then add the elements and everything
-			// right now we do it the other way around. We collect the elements and everything 
+			// right now we do it the other way around. We collect the ele	ments and everything 
 			// and then we create a presentation with them!
+			//
+			// That comment is slightly out dated. But the problem still holds.
 			if(node.Variable == null)
 				Element.SetStdStyle((StdStyle)style);
 			_presentationBuilder.AddStyle(node.Variable ?? new VariableSymbol("std", true, _builtInTypes.LookSymbolUp(typeof(StdStyle))), style);
@@ -342,12 +346,13 @@ namespace Minsk.CodeAnalysis
 
 		protected override void EvaluateSlideStatement(BoundSlideStatement node)
 		{
+
 			//When _declarations doesn't contain our variable
 			//we already evaluated it.
 			if (!_declarations.ContainsKey(node.Variable))
 				return;
 			_variables = _variables.Push();
-			_currentSlide = new SlideAttributes(node.Variable.Name, _presentationBuilder.GetSlideIndex(), node.Variable.IsVisible);
+			_currentSlide = new SlideAttributes(node.Variable.Name, _presentationBuilder.GetSlideIndex(), node.IsVisible);
 			//TODO: Does a slide have other readonly variables?
 			_variables.Add(new VariableSymbol("name", true, PrimitiveTypeSymbol.String), node.Variable.Name);
 			_steps = new List<Step>();
@@ -368,7 +373,7 @@ namespace Minsk.CodeAnalysis
 				var visualChildren = new List<Element>();
 				foreach (var value in children)
 				{
-					if (value.Value is Element e && e.isVisible)
+					if (value.Value is Element e && e.isVisible && e.h_Parent == null)
 						visualChildren.Add(e);
 					else
 						dataChildren.Add(value);
@@ -379,6 +384,15 @@ namespace Minsk.CodeAnalysis
 			_currentSlide = null;
 			_presentationBuilder.AddSlide(node.Variable, slide);
 			_declarations.Remove(node.Variable);
+
+
+			if (!CompilationFlags.SilentMode)
+			{
+				if (_presentationBuilder.GetSlideIndex() == 1)
+					Console.WriteLine();
+				Console.SetCursorPosition(0, Console.CursorTop - 1);
+				Console.WriteLine($"Slide {_presentationBuilder.GetSlideIndex()}/{_slideCount}");
+			}
 		}
 
 
@@ -401,7 +415,7 @@ namespace Minsk.CodeAnalysis
 			{
 				if (_steps.TakeWhile(s => s != step).Any(s => s.DataChildren.Contains(value.Value) || s.VisualChildren.Contains(value.Value)))
 					continue;
-				if (value.Key.IsVisible && value.Value is Element e)
+				if (value.Value is Element e && e.h_Parent == null)
 				{
 					e.name = value.Key.Name;
 					visualChildren.Add(e);

@@ -73,11 +73,6 @@ namespace Slides
 			Styles = styles;
 		}
 
-		public Library(string name)
-		{
-			Name = name;
-		}
-
 		public override string ToString() => Name;
 
 	}

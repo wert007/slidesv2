@@ -556,7 +556,7 @@ namespace Minsk.CodeAnalysis
 				statements.Add(DeserializeStepStatement());
 			}
 			ConsumeStatementTail();
-			return new BoundSlideStatement(variable, template, statements.ToArray());
+			return new BoundSlideStatement(true, variable, template, statements.ToArray());
 		}
 
 		private VariableSymbol DeserializeTemplateStatement()
@@ -689,10 +689,7 @@ namespace Minsk.CodeAnalysis
 			}
 			ConsumeToken(); //:
 			var type = DeserializeTypeSymbol();
-			return new VariableSymbol(identifier, isReadonly, type)
-			{
-				IsVisible = isVisible
-			};
+			return new VariableSymbol(identifier, isReadonly, type);
 		}
 
 		private TypeSymbol DeserializeTypeSymbol()

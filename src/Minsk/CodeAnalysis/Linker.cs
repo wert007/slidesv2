@@ -182,6 +182,7 @@ namespace Minsk.CodeAnalysis
 				//	}
 				//	return;
 				//}
+				
 				var compilation = Loader.LoadCompilationFromFile(CompilationFlags.Directory, path, _offlineView);
 				if (compilation == null)
 				{

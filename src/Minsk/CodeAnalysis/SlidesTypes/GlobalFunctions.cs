@@ -32,7 +32,7 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 		{
 			var bytes = Encoding.UTF32.GetBytes(str);
 			var result = new int[bytes.Length / 4];
-			
+
 			//Let's just hope this is right..
 			for (int i = 0; i < result.Length; i++)
 			{
@@ -189,8 +189,38 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 		}
 
 		public static void println() => Console.WriteLine();
-		public static void println(string message) => Console.WriteLine(message);
-		public static void print(string message) => Console.Write(message);
+		public static void println(string message) => Console.WriteLine(SldStringToCSharpStr(message));
+		public static void print(string message) => Console.Write(SldStringToCSharpStr(message));
+		private static string SldStringToCSharpStr(string str)
+		{
+			if (!str.Contains("\\")) return str;
+			var resultBuilder = new StringBuilder();
+			for (int i = 0; i < str.Length; i++)
+			{
+				var cur = str[i];
+				var nex = i + 1 < str.Length ? str[i + 1] : '\0';
+				if (cur != '\\')
+					resultBuilder.Append(cur);
+				else
+				{
+					i++;
+					switch (nex)
+					{
+						case 'n':
+							resultBuilder.Append('\n');
+							break;
+						case 't':
+							resultBuilder.Append('\t');
+							break;
+						default:
+							resultBuilder.Append(cur);
+							resultBuilder.Append(nex);
+							break;
+					}
+				}
+			}
+			return resultBuilder.ToString();
+		}
 
 		public static Color hsl(int hue, int sat, int light)
 		{

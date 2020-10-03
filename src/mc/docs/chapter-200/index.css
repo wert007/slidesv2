@@ -28,18 +28,21 @@ section#t1 div.step {
 #t1-stack-0 {
     position: relative;
     border: solid rgba(255, 0, 0, 1.00);
+    font-family: inherit;
 }
 
 #t1-stack-1 {
     position: relative;
     border-right: solid rgba(0, 128, 0, 1.00);
     border-left: solid rgba(0, 128, 0, 1.00);
+    font-family: inherit;
 }
 
 #t1-stack-2 {
     position: relative;
     border-top: solid rgba(0, 0, 255, 1.00);
     border-bottom: solid rgba(0, 0, 255, 1.00);
+    font-family: inherit;
 }
 
 #t1-prev {
@@ -73,18 +76,21 @@ section#t2 div.step {
 #t2-stack-0 {
     position: relative;
     border: 1.00px solid;
+    font-family: inherit;
 }
 
 #t2-stack-1 {
     position: relative;
     border-right: 99.00px solid;
     border-left: 16.80pt solid;
+    font-family: inherit;
 }
 
 #t2-stack-2 {
     position: relative;
     border-top: 1.00px solid;
     border-bottom: 5.00px solid;
+    font-family: inherit;
 }
 
 #t2-stack-3 {
@@ -92,6 +98,7 @@ section#t2 div.step {
     border-top: 1.00px solid;
     border-bottom: 5.00px solid;
     color: rgba(0, 128, 0, 1.00);
+    font-family: inherit;
 }
 
 #t2-prev {
@@ -126,41 +133,49 @@ section#t3 div.step {
 #t3-stack-0 {
     position: relative;
     border: dotted;
+    font-family: inherit;
 }
 
 #t3-stack-1 {
     position: relative;
     border: dashed;
+    font-family: inherit;
 }
 
 #t3-stack-2 {
     position: relative;
     border: solid;
+    font-family: inherit;
 }
 
 #t3-stack-3 {
     position: relative;
     border: double;
+    font-family: inherit;
 }
 
 #t3-stack-4 {
     position: relative;
     border: groove;
+    font-family: inherit;
 }
 
 #t3-stack-5 {
     position: relative;
     border: ridge;
+    font-family: inherit;
 }
 
 #t3-stack-6 {
     position: relative;
     border: inset;
+    font-family: inherit;
 }
 
 #t3-stack-7 {
     position: relative;
     border: outset;
+    font-family: inherit;
 }
 
 #t3-prev {
@@ -195,46 +210,55 @@ section#t4 div.step {
 #t4-stack-0 {
     position: relative;
     border: dotted rgba(255, 0, 0, 1.00);
+    font-family: inherit;
 }
 
 #t4-stack-1 {
     position: relative;
     border: dashed rgba(255, 0, 0, 1.00);
+    font-family: inherit;
 }
 
 #t4-stack-2 {
     position: relative;
     border: solid rgba(255, 0, 0, 1.00);
+    font-family: inherit;
 }
 
 #t4-stack-3 {
     position: relative;
     border: double rgba(255, 0, 0, 1.00);
+    font-family: inherit;
 }
 
 #t4-stack-4 {
     position: relative;
     border: groove rgba(255, 0, 0, 1.00);
+    font-family: inherit;
 }
 
 #t4-stack-5 {
     position: relative;
     border: ridge rgba(255, 0, 0, 1.00);
+    font-family: inherit;
 }
 
 #t4-stack-6 {
     position: relative;
     border: inset rgba(255, 0, 0, 1.00);
+    font-family: inherit;
 }
 
 #t4-stack-7 {
     position: relative;
     border: outset rgba(255, 0, 0, 1.00);
+    font-family: inherit;
 }
 
 #t4-stack-8 {
     position: relative;
     border: none rgba(255, 0, 0, 1.00);
+    font-family: inherit;
 }
 
 #t4-prev {
@@ -301,7 +325,7 @@ section#t6 div.step {
 #t6-label2 {
     position: absolute;
     left: 50.00%;
-    top: calc(50% + 90.89498px);
+    top: calc(50% + 72.19326px);
     border: 5.00px solid rgba(128, 0, 128, 1.00);
     transform: translateY(-50%) translateX(-50%) ;
 }
@@ -338,7 +362,7 @@ section#t7 div.step {
 #t7-label2 {
     position: absolute;
     left: 50.00%;
-    top: calc(50% + 90.89498px);
+    top: calc(50% + 72.19326px);
     border: 5.00px solid rgba(128, 0, 128, 1.00);
     transform: translateY(-50%) translateX(-50%) ;
 }

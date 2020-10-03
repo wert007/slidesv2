@@ -4,7 +4,7 @@ import font('Arial') as arial;
 template default(s: Slide):
     let prev = new Label('[url="../chapter-90/index.html"]prev[/url]');
     prev.orientation = Horizontal.Left | Vertical.Top;
-    let next = new Label('[url="../chapter-200/index.html"]next[/url]');
+    let next = new Label('[url="../chapter-150/index.html"]next[/url]');
     next.orientation = Horizontal.Right | Vertical.Top;
 endtemplate
 

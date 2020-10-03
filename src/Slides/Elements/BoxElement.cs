@@ -10,6 +10,10 @@ namespace Slides.Elements
 		{
 			TypeName = typeName;
 			BoxChildren = children;
+			foreach (var child in children)
+			{
+				child.h_Parent = this;
+			}
 		}
 
 		public Element[] BoxChildren { get; }

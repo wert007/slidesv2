@@ -63,8 +63,18 @@ namespace Minsk.CodeAnalysis
 			Parent = null;
 			return result;
 		}
+
+		public Dictionary<string, object> ToStringObjectDictionary()
+		{
+			var result = Parent?.ToStringObjectDictionary() ?? new Dictionary<string, object>();
+			foreach (var entry in this)
+			{
+				result.Add(entry.Key.Name, entry.Value);
+			}
+			return result;
+		}
 		//}
-		
+
 
 		//public object LookUp(VariableSymbol variable)
 		//{

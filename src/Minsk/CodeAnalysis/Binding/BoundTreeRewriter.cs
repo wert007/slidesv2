@@ -225,7 +225,7 @@ namespace Minsk.CodeAnalysis.Binding
 
 			if (builder == null)
 				return node;
-			return new BoundSlideStatement(node.Variable, node.Template, builder.ToArray());
+			return new BoundSlideStatement(node.IsVisible, node.Variable, node.Template, builder.ToArray());
 		}
 
 		protected virtual BoundStepStatement RewriteStepStatement(BoundStepStatement node)

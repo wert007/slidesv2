@@ -95,7 +95,7 @@ namespace Slides.Elements
 			if (Element.StdStyle != null && Element.StdStyle.GetMainStyle().Properties.TryGetValue("fontsize", out var stdStyleFontsizeObj))
 				stdStyleFontsize = (Unit)stdStyleFontsizeObj;
 			var fontsize = GetFontsize() ?? stdStyleFontsize ?? new Unit(14, Unit.UnitKind.Point);
-			return font.Measure(text, fontsize * lineHeight);
+			return font.Measure(text, fontsize, lineHeight);
 		}
 
 	}

@@ -12,6 +12,7 @@ namespace Slides.Data
 		public static readonly Unit Thin   = new Unit(1, UnitKind.Pixel);
 		public static readonly Unit Medium = new Unit(3, UnitKind.Pixel);
 		public static readonly Unit Thick  = new Unit(5, UnitKind.Pixel);
+		public static readonly Unit Auto   = new Unit(0, UnitKind.Auto);
 
 		public float Value { get; }
 		public UnitKind Kind { get; }

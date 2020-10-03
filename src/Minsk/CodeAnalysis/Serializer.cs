@@ -128,13 +128,10 @@ namespace Minsk.CodeAnalysis
 
 		private static string SerializeMin(VariableSymbol symbol)
 		{
-			var prefix = string.Empty;
-			if (!symbol.IsVisible)
-				prefix = "~";
 			var postfix = string.Empty;
 			if (symbol.IsReadOnly)
 				postfix = "*";
-			return $"{prefix}{symbol.Name}{postfix}:{symbol.Type}";
+			return $"{symbol.Name}{postfix}:{symbol.Type}";
 		}
 
 		private static string Serialize(FunctionSymbol symbol)

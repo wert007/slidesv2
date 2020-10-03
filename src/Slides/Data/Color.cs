@@ -38,6 +38,12 @@ namespace Slides.Data
 			A = a;
 		}
 
+		public Color invert()
+		{
+			if (!IsRGBA) throw new NotImplementedException();
+			return new Color((byte)(255 - R), (byte)(255 - G), (byte)(255 - B), A);
+		}
+
 		public static Color FromHSLA(int hue, byte saturation, byte light, byte alpha)
 		{
 			var result = new Color(0, 0, 0, alpha);
@@ -64,6 +70,7 @@ namespace Slides.Data
 			return false;
 		}
 
+		public override string ToString() => ToHex();
 		public string ToHex()
 		{
 			return "#" + R.ToString("X2") + G.ToString("X2") + B.ToString("X2") + A.ToString("X2");

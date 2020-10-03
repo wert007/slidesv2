@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Github;
@@ -14,14 +15,15 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 	{
 		public static LibrarySymbol GetLibrary()
 		{
-			var name = "code";
+			var name = "coding";
 			var libraries = new LibrarySymbol[0];
 			var customTypes = new BodySymbol[0];
 			var styles = new StdStyle[0]; //TODO: Why is this a array of StdStyle? There always can only be one!
+			var typeSymbolCodeHighlighter = BuiltInTypes.Instance.LookSymbolUp(typeof(CodeHighlighter));
 			var globalVariables = new VariableValueCollection(null);
 			var globalFunctions = new FunctionSymbol[]
 			{
-				new FunctionSymbol("setStyle", new VariableSymbol("style", false, BuiltInTypes.Instance.LookSymbolUp(typeof(CodeHighlighter))), PrimitiveTypeSymbol.Void),
+				//new FunctionSymbol("setStyle", new VariableSymbol("style", false, typeSymbolCodeHighlighter), PrimitiveTypeSymbol.Void),
 				new FunctionSymbol("github", new VariableSymbol("path", false, PrimitiveTypeSymbol.String), BuiltInTypes.Instance.LookSymbolUp(typeof(GitRepository))),
 
 				new FunctionSymbol("codeblock", new VariableSymbolCollection(new VariableSymbol[]
@@ -45,7 +47,7 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			};
 			var globalFunctionsReflections = new string[]
 			{
-				nameof(SetStyle),
+				//nameof(SetStyle),
 				nameof(GetGitRepository),
 				nameof(CreateCodeBlockFromFile),
 				nameof(CreateCodeBlockFromRep),
@@ -55,13 +57,6 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			var result = new LibrarySymbol(name, libraries, customTypes, styles, globalVariables, globalFunctions, globalFunctionsReflections, imports);
 			result.SourceType = typeof(CodeLibrary);
 			return result;
-		}
-
-
-		//TODO: Change this!
-		public static void SetStyle(CodeHighlighter codeHighlighter)
-		{
-			Evaluator.Flags.CodeHighlighter = codeHighlighter;
 		}
 
 		public static GitRepository GetGitRepository(string path)

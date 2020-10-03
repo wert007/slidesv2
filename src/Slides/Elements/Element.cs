@@ -168,7 +168,7 @@ namespace Slides.Elements
 
 		public void applyStyle(Style style)
 		{
-			h_Element.h_HandleApplyStyle(style);
+			h_Element?.h_HandleApplyStyle(style);
 			foreach (var field in style.GetMainStyle().Properties)
 			{
 				if (_applyStyleHandlers.ContainsKey(field.Key))

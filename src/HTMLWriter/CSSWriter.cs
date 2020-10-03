@@ -129,6 +129,42 @@ namespace HTMLWriter
 			}
 		}
 
+		public void WriteMarginOrPadding(string fieldname, Thickness value)
+		{
+			if (value == null)
+				return;
+			if(value.top != null && value.right != null && value.bottom != null && value.left != null)
+			{
+				
+				_writer.Write($"{fieldname}: ");
+				WriteUnit(value.top);
+				if(value.left == value.right)
+				{
+					_writer.Write(" ");
+					WriteUnit(value.right);
+					if(value.top != value.bottom)
+					{
+						_writer.Write(" ");
+						WriteUnit(value.bottom);
+					}
+					if(value.left != value.right)
+					{
+						_writer.Write(" ");
+						WriteUnit(value.left);
+					}
+				}
+				_writer.Write(";");
+			}
+			else
+			{
+				WriteAttributeIfValue($"{fieldname}-top", value.top);
+				WriteAttributeIfValue($"{fieldname}-right", value.right);
+				WriteAttributeIfValue($"{fieldname}-bottom", value.bottom);
+				WriteAttributeIfValue($"{fieldname}-left", value.left);
+			}
+			
+		}
+
 		internal void WriteAttribute(string name, object value)
 		{
 			_writer.Write($"{name}: ");

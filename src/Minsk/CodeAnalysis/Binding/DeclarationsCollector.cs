@@ -221,7 +221,6 @@ namespace Minsk.CodeAnalysis.Binding
 			var name = syntax.Identifier.Text;
 			var isVisible = syntax.PretildeToken == null;
 			var variable = new VariableSymbol(name, true, _builtInTypes.LookSymbolUp(typeof(SlideAttributes)));
-			variable.IsVisible = isVisible;
 
 			if (!_scope.TryDeclare(variable, null))
 				_diagnostics.ReportVariableAlreadyDeclared(syntax.Identifier.Span, name);

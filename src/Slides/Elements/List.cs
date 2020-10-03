@@ -128,9 +128,17 @@ namespace Slides.Elements
 			foreach (var style in get_AppliedStyles())
 				e.applyStyle(style);
 
-			//for (int i = 0; i < Math.Min(level, _appliedStyles.Count); i++)
-			//	foreach (var style in _appliedStyles[i])
-			//		e.applyStyle(style);
+			//TODO: This only works, if we first set our styling up and afterwards add children
+			// Make it work otherwise too!
+			var currentStyling = _styling;
+			while(currentStyling != null && level >= 0)
+			{
+				
+				foreach (var style in currentStyling.get_AppliedStyles())
+					e.h_HandleApplyStyle(style);
+				currentStyling = _styling.h_Child;
+				level--;
+			}
 		}
 
 		public void addParsing(string listItem)

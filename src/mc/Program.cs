@@ -52,7 +52,7 @@ namespace Minsk
 			var statusCode = STATUS_ERRORS_FOUND;
 			var fileName = Path.GetFileName(path);
 			var directory = Path.GetDirectoryName(path);
-			CompilationFlags.Init(directory, fileName, completeRebuild);
+			CompilationFlags.Init(directory, fileName, completeRebuild, silentMode);
 			if (!File.Exists(Path.Combine(directory, fileName)))
 			{
 				Console.Error.WriteLine($"File '{Path.Combine(directory, fileName)}' not found!");

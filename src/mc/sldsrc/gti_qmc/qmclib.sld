@@ -70,7 +70,7 @@ group StructDescription(name: string, bulletPoints: string[], levels: int[]):
     list.margin.top = lblName.bottomSide + 15px;
     list.applyStyle(defaultList);
     list.applyStyle(contentStyle);
-    list.applyStyle(1, subListStyleNoMarker);
+    list.styling(1).applyStyle(subListStyleNoMarker);
     for bulletPoint, i in bulletPoints:
         list.add(levels.getSafe(i) ?? 0, bulletPoint);
     endfor
@@ -114,9 +114,9 @@ group QuineMcCluskeyTable(implicants: string[], simplifiedImplicants: string[], 
 
     let selectedRects = [:UnitRect?;selected.len()];
     for s, i in selected:
-        let ~left = table.cells[0][s + 1];
-        let ~right = table.cells[table.columns - 1][s + 1];
-        selectedRects[i] = rect(~left.relativePos(Vertical.Top | Horizontal.Left), ~right.relativePos(Vertical.Bottom | Horizontal.Right));
+        let stackVerticalleft = table.cells[0][s + 1];
+        let stackVerticalright = table.cells[table.columns - 1][s + 1];
+        selectedRects[i] = rect(stackVerticalleft.relativePos(Vertical.Top | Horizontal.Left), stackVerticalright.relativePos(Vertical.Bottom | Horizontal.Right));
         selectedRects[i].stroke = orange;
         selectedRects[i].strokeWidth = 2px;
     endfor
@@ -124,16 +124,16 @@ group QuineMcCluskeyTable(implicants: string[], simplifiedImplicants: string[], 
     let deletedLines = [:UnitLine?;deleted.len()];
     for d, i in deleted:
         if d < simplifiedImplicants.len():
-            let ~left = table.cells[0][d + 1];
-            let ~right = table.cells[table.columns - 1][d + 1];
-            deletedLines[i] = line(~left.relativePos(Vertical.Center | Horizontal.Left), ~right.relativePos(Vertical.Center | Horizontal.Right));
+            let stackVerticalleft = table.cells[0][d + 1];
+            let stackVerticalright = table.cells[table.columns - 1][d + 1];
+            deletedLines[i] = line(stackVerticalleft.relativePos(Vertical.Center | Horizontal.Left), stackVerticalright.relativePos(Vertical.Center | Horizontal.Right));
             deletedLines[i].stroke = red;
             deletedLines[i].strokeWidth = 2px;
         else
             d -= simplifiedImplicants.len();
-            let ~top = table.cells[d + 1][0];
-            let ~bottom = table.cells[d + 1][table.rows - 1];
-            deletedLines[i] = line(~top.relativePos(Vertical.Top | Horizontal.Center), ~bottom.relativePos(Vertical.Bottom | Horizontal.Center));
+            let stackVerticaltop = table.cells[d + 1][0];
+            let stackVerticalbottom = table.cells[d + 1][table.rows - 1];
+            deletedLines[i] = line(stackVerticaltop.relativePos(Vertical.Top | Horizontal.Center), stackVerticalbottom.relativePos(Vertical.Bottom | Horizontal.Center));
             deletedLines[i].stroke = red;
             deletedLines[i].strokeWidth = 2px;
         endif
@@ -152,11 +152,11 @@ group QuineMcCluskeySteps(highlight: int):
     list.add(1, 'Streichen der dominanten Spalten und dominierten Zeilen');
     list.add('Wiederholen bis die Tabelle leer ist.');
     list.applyStyle(defaultList);
-    let ~subList = cast list.children[highlight]: List;
-    if ~subList:
-        for ~c in ~subList.children:
-            ~c.color = black;
-            ~c.background = rgb(239, 239, 239);
+    let stackVerticalsubList = cast list.children[highlight]: List;
+    if stackVerticalsubList:
+        for stackVerticalc in stackVerticalsubList.children:
+            stackVerticalc.color = black;
+            stackVerticalc.background = rgb(239, 239, 239);
         endfor
     else
         list.children[highlight].color = black;
@@ -164,9 +164,9 @@ group QuineMcCluskeySteps(highlight: int):
     endif
 
     if cast list.children[highlight]: List:
-        for ~c in cast list.children[highlight]: List.children:
-            ~c.color = black;
-            ~c.background = rgb(239, 239, 239);
+        for stackVerticalc in cast list.children[highlight]: List.children:
+            stackVerticalc.color = black;
+            stackVerticalc.background = rgb(239, 239, 239);
         endfor
     else
         list.children[highlight].color = black;
@@ -188,9 +188,9 @@ endstruct
 
 group PhaseIIPanel(data: PhaseIIData):
     let container = seperator.vertical(50%);
-    let ~table = new QuineMcCluskeyTable(data.implicants, data.simplifiedImplicants, data.selected, data.deleted, data.alreadyFound);
-    let ~steps = new QuineMcCluskeySteps(data.highlightedStep);
-    container.fill(~steps, ~table);
+    let stackVerticaltable = new QuineMcCluskeyTable(data.implicants, data.simplifiedImplicants, data.selected, data.deleted, data.alreadyFound);
+    let stackVerticalsteps = new QuineMcCluskeySteps(data.highlightedStep);
+    container.fill(stackVerticalsteps, stackVerticaltable);
     width = 100%;
     height = 100%;
 endgroup

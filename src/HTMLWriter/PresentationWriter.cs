@@ -365,64 +365,65 @@ namespace HTMLWriter
 		private static void WriteElement(string parentName, Element element, Element parent = null, string optionalFieldName = null)
 		{
 			StyleWriter.WriteElement(_cssWriter, parentName, element, parent);
+			var newLineAfterEndTag = parent?.kind != ElementKind.Stack;
 			switch (element.kind)
 			{
 				case ElementKind.Image:
-					WriteImage(parentName, (Image)element, optionalFieldName);
+					WriteImage(parentName, (Image)element, optionalFieldName, newLineAfterEndTag);
 					break;
 				case ElementKind.BoxElement:
-					WriteBoxElement(parentName, (BoxElement)element, optionalFieldName);
+					WriteBoxElement(parentName, (BoxElement)element, optionalFieldName, newLineAfterEndTag);
 					break;
 				case ElementKind.Label:
-					WriteLabel(parentName, (Label)element, optionalFieldName);
+					WriteLabel(parentName, (Label)element, optionalFieldName, newLineAfterEndTag);
 					break;
 				case ElementKind.Chart:
-					WriteLineChart(parentName, (LineChart)element, optionalFieldName);
+					WriteLineChart(parentName, (LineChart)element, optionalFieldName, newLineAfterEndTag);
 					break;
 				case ElementKind.MathPlot:
-					WriteMathPlot(parentName, (MathPlot)element, optionalFieldName);
+					WriteMathPlot(parentName, (MathPlot)element, optionalFieldName, newLineAfterEndTag);
 					break;
 				case ElementKind.Stack:
-					WriteStack(parentName, (Stack)element, optionalFieldName);
+					WriteStack(parentName, (Stack)element, optionalFieldName, newLineAfterEndTag);
 					break;
 				case ElementKind.Container:
-					WriteContainer(parentName, (Container)element, optionalFieldName);
+					WriteContainer(parentName, (Container)element, optionalFieldName, newLineAfterEndTag);
 					break;
 				case ElementKind.SplittedContainer:
-					WriteSplittedContainer(parentName, (SplittedContainer)element, optionalFieldName);
+					WriteSplittedContainer(parentName, (SplittedContainer)element, optionalFieldName, newLineAfterEndTag);
 					break;
 				case ElementKind.List:
-					WriteList(parentName, (List)element, optionalFieldName);
+					WriteList(parentName, (List)element, optionalFieldName, newLineAfterEndTag);
 					break;
 				case ElementKind.CodeBlock:
-					WriteCodeBlock(parentName, (CodeBlock)element, optionalFieldName);
+					WriteCodeBlock(parentName, (CodeBlock)element, optionalFieldName, newLineAfterEndTag);
 					break;
 				case ElementKind.IFrame:
-					WriteIFrame(parentName, (IFrame)element, optionalFieldName);
+					WriteIFrame(parentName, (IFrame)element, optionalFieldName, newLineAfterEndTag);
 					break;
 				case ElementKind.Slider:
-					WriteSlider(parentName, (Slider)element, optionalFieldName);
+					WriteSlider(parentName, (Slider)element, optionalFieldName, newLineAfterEndTag);
 					break;
 				case ElementKind.SVGContainer:
-					WriteSVGContainer(parentName, (SVGContainer)element, optionalFieldName);
+					WriteSVGContainer(parentName, (SVGContainer)element, optionalFieldName, newLineAfterEndTag);
 					break;
 				case ElementKind.UnitRect:
-					WriteUnitRect(parentName, (UnitRect)element, optionalFieldName);
+					WriteUnitRect(parentName, (UnitRect)element, optionalFieldName, newLineAfterEndTag);
 					break;
 				case ElementKind.UnitSVGShape:
-					WriteUnitSVGShape(parentName, (UnitLine)element, optionalFieldName);
+					WriteUnitSVGShape(parentName, (UnitLine)element, optionalFieldName, newLineAfterEndTag);
 					break;
 				case ElementKind.Table:
-					WriteTable(parentName, (Table)element, optionalFieldName);
+					WriteTable(parentName, (Table)element, optionalFieldName, newLineAfterEndTag);
 					break;
 				case ElementKind.TableChild:
-					WriteTableChild(parentName, (TableChild)element, optionalFieldName);
+					WriteTableChild(parentName, (TableChild)element, optionalFieldName, newLineAfterEndTag);
 					break;
 				case ElementKind.Captioned:
-					WriteCaptioned(parentName, (Captioned)element, optionalFieldName);
+					WriteCaptioned(parentName, (Captioned)element, optionalFieldName, newLineAfterEndTag);
 					break;
 				case ElementKind.YouTubePlayer:
-					WriteYouTubePlayer(parentName, (YouTubePlayer)element, optionalFieldName);
+					WriteYouTubePlayer(parentName, (YouTubePlayer)element, optionalFieldName, newLineAfterEndTag);
 					break;
 				default:
 					throw new Exception($"ElementType unknown: {element.kind}");
@@ -430,7 +431,7 @@ namespace HTMLWriter
 		}
 
 
-		private static void WriteList(string parentName, List element, string optionalFieldName)
+		private static void WriteList(string parentName, List element, string optionalFieldName, bool newLineAfterEndTag)
 		{
 			var startTag = "ul";
 			if (element.isOrdered)
@@ -449,10 +450,10 @@ namespace HTMLWriter
 					_htmlWriter.EndTag();
 
 			}
-			_htmlWriter.EndTag();
+			_htmlWriter.EndTag(newLineAfterEndTag);
 		}
 
-		private static void WriteCodeBlock(string parentName, CodeBlock element, string optionalFieldName)
+		private static void WriteCodeBlock(string parentName, CodeBlock element, string optionalFieldName, bool newLineAfterEndTag)
 		{
 			var id = $"{parentName}-{element.name}";
 			_htmlWriter.StartTag("div", id: id, classes: "codeblock " + optionalFieldName);
@@ -466,10 +467,10 @@ namespace HTMLWriter
 			WriteText(element.code);
 			_htmlWriter.EndTag(false);
 			_htmlWriter.EndTag(false);
-			_htmlWriter.EndTag();
+			_htmlWriter.EndTag(newLineAfterEndTag);
 		}
 
-		private static void WriteIFrame(string parentName, IFrame element, string optionalFieldName)
+		private static void WriteIFrame(string parentName, IFrame element, string optionalFieldName, bool newLineAfterEndTag)
 		{
 			var id = $"{parentName}-{element.name}";
 			if (string.IsNullOrEmpty(element.name))
@@ -479,12 +480,12 @@ namespace HTMLWriter
 				_htmlWriter.PushAttribute("allow", element.allow);
 			//TODO: Use applied styles!
 			_htmlWriter.StartTag("iframe", id: id, classes: "iframe " + optionalFieldName);
-			_htmlWriter.EndTag();
+			_htmlWriter.EndTag(newLineAfterEndTag);
 		}
 
 		//Element.feld = <Formel->value>
 
-		private static void WriteSlider(string parentName, Slider element, string optionalFieldName)
+		private static void WriteSlider(string parentName, Slider element, string optionalFieldName, bool newLineAfterEndTag)
 		{
 			var id = $"{parentName}-{element.name}";
 			if (string.IsNullOrEmpty(element.name))
@@ -501,7 +502,7 @@ namespace HTMLWriter
 			_htmlWriter.PushAttribute("value", element.value.ToString());
 			_htmlWriter.PushAttribute("oninput", $"oninput_{jsId}()");
 			_htmlWriter.StartTag("input", id: id, classes: "slider " + optionalFieldName + " " + " " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
-			_htmlWriter.EndTag();
+			_htmlWriter.EndTag(newLineAfterEndTag);
 		}
 
 
@@ -517,7 +518,7 @@ namespace HTMLWriter
 			_jsWriter.EndFunction();
 		}
 
-		private static void WriteSVGContainer(string parentName, SVGContainer element, string optionalFieldName)
+		private static void WriteSVGContainer(string parentName, SVGContainer element, string optionalFieldName, bool newLineAfterEndTag)
 		{
 			var id = $"{parentName}-{element.name}";
 			if (string.IsNullOrEmpty(element.name))
@@ -541,29 +542,29 @@ namespace HTMLWriter
 			//}
 			//else 
 				SVGWriter.Write(_htmlWriter, child);
-			_htmlWriter.EndTag();
+			_htmlWriter.EndTag(newLineAfterEndTag);
 		}
 
-		private static void WriteUnitRect(string parentName, UnitRect element, string optionalFieldName)
+		private static void WriteUnitRect(string parentName, UnitRect element, string optionalFieldName, bool newLineAfterEndTag)
 		{
 			var id = $"{parentName}-{element.name}";
 			if (string.IsNullOrEmpty(element.name))
 				id = null;
 			_htmlWriter.StartTag("div", id: id, classes: "rect " + optionalFieldName + " " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
-			_htmlWriter.EndTag();
+			_htmlWriter.EndTag(newLineAfterEndTag);
 		}
 		
-		private static void WriteUnitSVGShape(string parentName, UnitLine element, string optionalFieldName)
+		private static void WriteUnitSVGShape(string parentName, UnitLine element, string optionalFieldName, bool newLineAfterEndTag)
 		{
 			var id = $"{parentName}-{element.name}";
 			if (string.IsNullOrEmpty(element.name))
 				id = null;
 			_htmlWriter.StartTag("svg", id: $"{id}-container", classes: "unitSVGShapeContainer " + optionalFieldName + " " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
 			SVGWriter.Write(_htmlWriter, element);
-			_htmlWriter.EndTag();
+			_htmlWriter.EndTag(newLineAfterEndTag);
 		}
 
-		private static void WriteTable(string parentName, Table element, string optionalFieldName)
+		private static void WriteTable(string parentName, Table element, string optionalFieldName, bool newLineAfterEndTag)
 		{
 			var id = $"{parentName}-{element.name}";
 			if (string.IsNullOrEmpty(element.name))
@@ -581,21 +582,21 @@ namespace HTMLWriter
 				}
 				_htmlWriter.EndTag();
 			}
-			_htmlWriter.EndTag();
+			_htmlWriter.EndTag(newLineAfterEndTag);
 		}
 
-		private static void WriteTableChild(string parentName, TableChild element, string optionalFieldName)
+		private static void WriteTableChild(string parentName, TableChild element, string optionalFieldName, bool newLineAfterEndTag)
 		{
 			var id = $"{parentName}-{element.name}";
 			if (string.IsNullOrEmpty(element.name))
 				id = null;
 			_htmlWriter.StartTag("td", id: id, classes: "tablecell " + optionalFieldName + " " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
 			_htmlWriter.Write(element.content);
-			_htmlWriter.EndTag();
+			_htmlWriter.EndTag(newLineAfterEndTag);
 		}
 
 		//TODO: Styling for captioned.isOutside and caption.direction;
-		private static void WriteCaptioned(string parentName, Captioned element, string optionalFieldName)
+		private static void WriteCaptioned(string parentName, Captioned element, string optionalFieldName, bool newLineAfterEndTag)
 		{
 			var id = $"{parentName}-{element.name}";
 			if (string.IsNullOrEmpty(element.name))
@@ -603,16 +604,16 @@ namespace HTMLWriter
 			_htmlWriter.StartTag("div", id: id, classes: "captioned " + optionalFieldName + " " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
 			WriteElement(id, element.child, element, "child");
 			WriteElement(id, element.caption, element, "caption");
-			_htmlWriter.EndTag();
+			_htmlWriter.EndTag(newLineAfterEndTag);
 		}
 
-		private static void WriteYouTubePlayer(string parentName, YouTubePlayer element, string optionalFieldName)
+		private static void WriteYouTubePlayer(string parentName, YouTubePlayer element, string optionalFieldName, bool newLineAfterEndTag)
 		{
 			var id = $"{parentName}-{element.name}";
 			if (string.IsNullOrEmpty(element.name))
 				id = null;
 			_htmlWriter.StartTag("div", id: id, classes: "youtubeplayer " + optionalFieldName + " " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
-			_htmlWriter.EndTag();
+			_htmlWriter.EndTag(newLineAfterEndTag);
 
 
 			_jsWriter.SwitchInto("youtubeAPIReady");
@@ -644,17 +645,17 @@ namespace HTMLWriter
 			_jsWriter.ResetWriter();
 		}
 
-		private static void WriteContainer(string parentName, Container element, string optionalFieldName)
+		private static void WriteContainer(string parentName, Container element, string optionalFieldName, bool newLineAfterEndTag)
 		{
 			var id = $"{parentName}-{element.name}";
 			if (string.IsNullOrEmpty(element.name))
 				id = null;
 			_htmlWriter.StartTag("div", id: id, classes: "container " + optionalFieldName + " " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
 			WriteElement(id, element.child, element);
-			_htmlWriter.EndTag();
+			_htmlWriter.EndTag(newLineAfterEndTag);
 		}
 
-		private static void WriteSplittedContainer(string parentName, SplittedContainer element, string optionalFieldName)
+		private static void WriteSplittedContainer(string parentName, SplittedContainer element, string optionalFieldName, bool newLineAfterEndTag)
 		{
 
 			var id = $"{parentName}-{element.name}";
@@ -663,14 +664,15 @@ namespace HTMLWriter
 			_htmlWriter.StartTag("div", id: id, classes: "splittedContainer " + optionalFieldName + " " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
 			WriteElement(id, element.childA, element);
 			WriteElement(id, element.childB, element);
-			_htmlWriter.EndTag();
+			_htmlWriter.EndTag(newLineAfterEndTag);
 		}
-		private static void WriteStack(string parentName, Stack stack, string optionalFieldName)
+		private static void WriteStack(string parentName, Stack stack, string optionalFieldName, bool newLineAfterEndTag)
 		{
 			var id = $"{parentName}-{stack.name}";
 			if (string.IsNullOrEmpty(stack.name))
 				id = null;
-			_htmlWriter.StartTag("div", id: id, classes: "stack " + optionalFieldName + " " + string.Join(" ", stack.get_AppliedStyles().Select(s => s.Name)));
+			var stackFlow = stack.StackFlow == FlowAxis.Horizontal ? "stack-horizontal" : "stack-vertical";
+			_htmlWriter.StartTag("div", id: id, classes: "stack " + stackFlow +  " " + optionalFieldName + " " + string.Join(" ", stack.get_AppliedStyles().Select(s => s.Name)));
 			var i = 0;
 			foreach (var element in stack.children)
 			{
@@ -683,27 +685,26 @@ namespace HTMLWriter
 				i++;
 				WriteElement(id, element, stack);
 			}
-			_htmlWriter.EndTag();
+			_htmlWriter.EndTag(newLineAfterEndTag);
 		}
 
-		private static void WriteLineChart(string parentName, LineChart element, string optionalFieldName)
+		private static void WriteLineChart(string parentName, LineChart element, string optionalFieldName, bool newLineAfterEndTag)
 		{
 			var id = $"{parentName}-{element.name}";
 			_htmlWriter.StartTag("div", id: id, classes: "lineChart " + optionalFieldName + " " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
 			ChartWriter.WriteChart(_jsWriter, id, element);
-			_htmlWriter.EndTag();
+			_htmlWriter.EndTag(newLineAfterEndTag);
 		}
 
-		private static void WriteMathPlot(string parentName, MathPlot element, string optionalFieldName)
+		private static void WriteMathPlot(string parentName, MathPlot element, string optionalFieldName, bool newLineAfterEndTag)
 		{
 			var id = $"{parentName}-{element.name}";
 			_htmlWriter.StartTag("div", id: id, classes: "mathPlot " + optionalFieldName + " " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
 			ChartWriter.WritePlot(_jsWriter, parentName, element);
-			_htmlWriter.EndTag();
-
+			_htmlWriter.EndTag(newLineAfterEndTag);
 		}
 
-		private static void WriteLabel(string parentName, Label element, string optionalFieldName)
+		private static void WriteLabel(string parentName, Label element, string optionalFieldName, bool newLineAfterEndTag)
 		{
 			var id = $"{parentName}-{element.name}";
 			if (string.IsNullOrEmpty(element.name))
@@ -712,7 +713,7 @@ namespace HTMLWriter
 			_htmlWriter.StartTag("div", id: id, classes: "label " + optionalFieldName + " " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)), useNewLine: false);
 			WriteFormattedText(element.text);
 			//_htmlWriter.EndTag(useNewLine: false);
-			_htmlWriter.EndTag();
+			_htmlWriter.EndTag(newLineAfterEndTag);
 		}
 
 		private static void WriteText(string text)
@@ -821,7 +822,7 @@ namespace HTMLWriter
 			_htmlWriter.Write(span.ToString());
 		}
 
-		private static void WriteBoxElement(string parentName, BoxElement element, string optionalFieldName)
+		private static void WriteBoxElement(string parentName, BoxElement element, string optionalFieldName, bool newLineAfterEndTag)
 		{
 			var id = $"{parentName}-{element.name}";
 			if (string.IsNullOrEmpty(element.name))
@@ -840,10 +841,10 @@ namespace HTMLWriter
 				i++;
 				WriteElement(id, child, element);
 			}
-			_htmlWriter.EndTag();
+			_htmlWriter.EndTag(newLineAfterEndTag);
 		}
 
-		private static void WriteImage(string parentName, Image element, string optionalFieldName)
+		private static void WriteImage(string parentName, Image element, string optionalFieldName, bool newLineAfterEndTag)
 		{
 			_htmlWriter.PushAttribute("src", element.source.h_Path);
 			if (element.alt != string.Empty)
@@ -851,8 +852,7 @@ namespace HTMLWriter
 			var id = $"{parentName}-{element.name}";
 			if (string.IsNullOrEmpty(element.name))
 				id = null;
-			_htmlWriter.WriteTag("img", id: id, needsEnding: false, classes: "image " + optionalFieldName + " " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
-
+			_htmlWriter.WriteTag("img", id: id, needsEnding: false, classes: "image " + optionalFieldName + " " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)), useNewLine: newLineAfterEndTag);
 		}
 	}
 }

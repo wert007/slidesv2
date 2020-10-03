@@ -19,6 +19,7 @@ using Slides.Styling;
 using SimpleLogger;
 using Slides.Data;
 using Slides.Helpers;
+using Slides.Code;
 
 namespace Minsk.CodeAnalysis.Binding
 {
@@ -71,7 +72,7 @@ namespace Minsk.CodeAnalysis.Binding
 			_builtInConstants.Add("totalTime", new VariableSymbol("totalTime", true, PrimitiveTypeSymbol.Integer));    //	_builtInConstants.Add("elapsedTime", new VariableSymbol("elapsedTime", true, _builtInTypes.LookSymbolUp(typeof(float)), false));
 
 			_builtInConstants.Add("seperator", new VariableSymbol("seperator", true, _builtInTypes.LookSymbolUp(typeof(LibrarySymbol))));
-			_builtInConstants.Add("code", new VariableSymbol("code", true, _builtInTypes.LookSymbolUp(typeof(LibrarySymbol))));
+			_builtInConstants.Add("coding", new VariableSymbol("coding", true, _builtInTypes.LookSymbolUp(typeof(LibrarySymbol))));
 			_builtInConstants.Add("qr", new VariableSymbol("qr", true, _builtInTypes.LookSymbolUp(typeof(LibrarySymbol))));
 
 			_builtInConstants.Add("auto", new VariableSymbol("auto", true, _builtInTypes.LookSymbolUp(typeof(Unit))));
@@ -498,6 +499,11 @@ namespace Minsk.CodeAnalysis.Binding
 				_scope.TryDeclare(new VariableSymbol(nameof(Element.orientation), false, _builtInTypes.LookSymbolUp(typeof(Orientation))));
 				//TODO: Incomplete!
 				_scope.TryDeclare(new VariableSymbol("useDarkTheme", false, PrimitiveTypeSymbol.Bool));
+				_scope.TryDeclare(new VariableSymbol("coding", false, 
+					new AdvancedTypeSymbol("Coding-Library-Std-Style", 
+					new VariableSymbolCollection(new[] { 
+						new VariableSymbol("highlighting", false, _builtInTypes.LookSymbolUp(typeof(CodeHighlighter))) }),
+					new FunctionSymbolCollection())));
 				_scope.TryDeclare(new VariableSymbol("Slide", false, _builtInTypes.LookSymbolUp(typeof(SlideAttributes))));
 				_scope.TryDeclare(new VariableSymbol("Label", false, _builtInTypes.LookSymbolUp(typeof(Label))));
 				_scope.TryDeclare(new VariableSymbol("Image", false, _builtInTypes.LookSymbolUp(typeof(Image))));
@@ -665,7 +671,9 @@ namespace Minsk.CodeAnalysis.Binding
 				var span = scope.GetDeclarationSpan(unusedVariable);
 				if (span == null)
 					throw new Exception();
-				if (unusedVariable.IsVisible && unusedVariable.Type.CanBeConvertedTo(_builtInTypes.LookSymbolUp(typeof(Element))))
+				if (unusedVariable.Type.CanBeConvertedTo(_builtInTypes.LookSymbolUp(typeof(Element))))
+					continue;
+				if (unusedVariable.Name.StartsWith("_"))
 					continue;
 				_diagnostics.ReportUnusedVariable(unusedVariable, span.Value);
 			}
@@ -691,7 +699,7 @@ namespace Minsk.CodeAnalysis.Binding
 		{
 			var name = syntax.Identifier.Text;
 			_scope.TryLookup(name, true, out VariableSymbol variable);
-
+			var isVisible = syntax.PretildeToken == null;
 			VariableSymbol template = null;
 			if (syntax.Template != null)
 			{
@@ -716,7 +724,7 @@ namespace Minsk.CodeAnalysis.Binding
 			}
 			CheckUnusedSymbols(_scope);
 			_scope = _scope.Parent;
-			var result = new BoundSlideStatement(variable, template, boundStatements.ToArray());
+			var result = new BoundSlideStatement(isVisible, variable, template, boundStatements.ToArray());
 			Declarations[variable] = result;
 			return result;
 		}
@@ -767,6 +775,14 @@ namespace Minsk.CodeAnalysis.Binding
 			{
 				_diagnostics.ReportCannotAssignLibraries(syntax.Initializer.Span);
 				initializer = new BoundErrorExpression();
+				type = PrimitiveTypeSymbol.Error;
+			}
+			// TODO: This expects all const _ = ..; to be top-level. Which is not true!
+			if(syntax.Keyword.Kind == SyntaxKind.ConstKeyword && type.CanBeConvertedTo(_builtInTypes.LookSymbolUp(typeof(Element))))
+			{
+				_diagnostics.ReportVariableInvalidType(syntax.Span, syntax.Keyword.Kind, type);
+				initializer = new BoundErrorExpression();
+				type = PrimitiveTypeSymbol.Error;
 			}
 
 			if (_isInSVG)
@@ -1064,7 +1080,7 @@ namespace Minsk.CodeAnalysis.Binding
 			if (TryBindEnumExpression(syntax, out var result))
 				return result;
 
-			var boundExpression = BindExpression(syntax.Expression, writeToMember);
+			var boundExpression = BindExpression(syntax.Expression, false);
 
 			if (boundExpression.Type == _builtInTypes.LookSymbolUp(typeof(LibrarySymbol)))
 				return BindLibraryAccessExpression((BoundVariableExpression)boundExpression, syntax);
@@ -1139,6 +1155,10 @@ namespace Minsk.CodeAnalysis.Binding
 			if (syntax.Member.Kind == SyntaxKind.VariableExpression)
 			{
 				var variableExpression = (VariableExpressionSyntax)syntax.Member;
+				var name = variableExpression.Identifier.Text;
+				var foo = library.GlobalVariables.Keys.FirstOrDefault(v => v.Name == name);
+				if (foo != null)
+					return new BoundFieldAccessExpression(libraryVariable, new BoundVariableExpression(foo));
 				var style = library.Styles.FirstOrDefault(s => s.Name == variableExpression.Identifier.Text);
 				if (style == null)
 				{
@@ -1214,9 +1234,6 @@ namespace Minsk.CodeAnalysis.Binding
 				}
 				else
 				{
-					if (targetVariable.IsVisible != variable.IsVisible && varType != PrimitiveTypeSymbol.Error)
-						_diagnostics.ReportCannotChangeVisibility(syntax.Span, targetVariable);
-
 					variable = targetVariable;
 					varType = variable.Type;
 				}
@@ -1229,10 +1246,11 @@ namespace Minsk.CodeAnalysis.Binding
 
 			if (syntax.PreTildeToken != null)
 			{
-				if(!varType.CanBeConvertedTo(_builtInTypes.LookSymbolUp(typeof(Element))))
-					_diagnostics.ReportCannotBeInvisible(syntax.Span, varType);
-				else
-					variable.IsVisible = false;
+				_diagnostics.ReportOfflineNotSupported(syntax.Span, "PreTildeToken will not be supported anymore!");
+				//if(!varType.CanBeConvertedTo(_builtInTypes.LookSymbolUp(typeof(Element))))
+				//	_diagnostics.ReportCannotBeInvisible(syntax.Span, varType);
+				//else
+				//	variable.IsVisible = false;
 			}
 			return variable;
 		}
@@ -1496,6 +1514,8 @@ namespace Minsk.CodeAnalysis.Binding
 				case BoundNodeKind.ArrayAccessExpression:
 					variable = new VariableSymbol("#arrayAccess", false, PrimitiveTypeSymbol.Error);
 					break;
+				case BoundNodeKind.ErrorExpression:
+					return boundLValue;
 				default:
 					throw new NotImplementedException(boundLValue.ToString());
 			}
@@ -1652,9 +1672,9 @@ namespace Minsk.CodeAnalysis.Binding
 		{
 			var boundLeft = BindExpression(syntax.Left);
 			var boundRight = BindExpression(syntax.Right);
-			if (boundLeft.Type == PrimitiveTypeSymbol.Integer && boundRight.Type == PrimitiveTypeSymbol.Float)
+			if (boundLeft.Type == PrimitiveTypeSymbol.Integer && (boundRight.Type == PrimitiveTypeSymbol.Float || boundRight.Type == PrimitiveTypeSymbol.Unit))
 				boundLeft = BindConversion(syntax.Left.Span, boundLeft, PrimitiveTypeSymbol.Float);
-			else if (boundLeft.Type == PrimitiveTypeSymbol.Float && boundRight.Type == PrimitiveTypeSymbol.Integer)
+			else if ((boundLeft.Type == PrimitiveTypeSymbol.Float || boundLeft.Type == PrimitiveTypeSymbol.Unit) && boundRight.Type == PrimitiveTypeSymbol.Integer)
 				boundRight = BindConversion(syntax.Right.Span, boundRight, PrimitiveTypeSymbol.Float);
 
 			var boundOperator = BoundBinaryOperator.Bind(syntax.OperatorToken.Kind, boundLeft.Type, boundRight.Type);

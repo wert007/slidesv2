@@ -11,13 +11,13 @@ namespace Minsk.CodeAnalysis.Symbols
 			Name = name;
 			IsReadOnly = isReadOnly;
 			Type = type;
-			IsVisible = true;
+			//IsVisible = true;
 		}
 
 		public string Name { get; }
 		public bool IsReadOnly { get; }
 		public TypeSymbol Type { get; internal set; }
-		public bool IsVisible { get; internal set; }
+		//public bool IsVisible { get; internal set; }
 
 		private bool _hasValue;
 		public bool HasValue
@@ -37,8 +37,8 @@ namespace Minsk.CodeAnalysis.Symbols
 			return symbol != null &&
 					 Name == symbol.Name &&
 					 IsReadOnly == symbol.IsReadOnly &&
-					 EqualityComparer<TypeSymbol>.Default.Equals(Type, symbol.Type) &&
-					 IsVisible == symbol.IsVisible;
+					 EqualityComparer<TypeSymbol>.Default.Equals(Type, symbol.Type);// &&
+					 //IsVisible == symbol.IsVisible;
 		}
 
 		public override int GetHashCode()
@@ -47,7 +47,7 @@ namespace Minsk.CodeAnalysis.Symbols
 			hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Name);
 			hashCode = hashCode * -1521134295 + IsReadOnly.GetHashCode();
 			hashCode = hashCode * -1521134295 + EqualityComparer<TypeSymbol>.Default.GetHashCode(Type);
-			hashCode = hashCode * -1521134295 + IsVisible.GetHashCode();
+			//hashCode = hashCode * -1521134295 + IsVisible.GetHashCode();
 			return hashCode;
 		}
 

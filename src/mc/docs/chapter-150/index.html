@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link href="index.css" type="text/css" rel="stylesheet">
+        <script src="index.js" type="text/javascript"></script>
+        <link href="core.css" type="text/css" rel="stylesheet">
+        <link href="overlay.css" type="text/css" rel="stylesheet">
+        <script src="core.js" type="text/javascript"></script>
+        <script src="datatypes.js" type="text/javascript"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/6.2.5/math.min.js" type="text/javascript" async></script>
+        <script src="https://cdn.jsdelivr.net/npm/apexcharts" type="text/javascript" async></script>
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.17.1/themes/prism-okaidia.min.css" type="text/css" rel="stylesheet">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.17.1/plugins/line-numbers/prism-line-numbers.min.css" type="text/css" rel="stylesheet">
+        <script src="github.js" type="text/javascript"></script>
+        <link href="" type="text/css" rel="stylesheet">
+    </head>
+    <body onkeydown="keyDown(event);" onload="load()">
+        <div id="search-slide" class="invisible">
+            <div id="search-slide-input-area">
+                <input id="search-slide-input" oninput="searchModule.searchSlideInputChanged()" type="text"/>
+                <div id="search-slide-ghost">
+                    <span id="search-slide-input-already-typed"></span>
+                    <span id="search-slide-input-expected"></span>
+                </div>
+            </div>
+            <ul id="search-slide-suggestions">
+            </ul>
+        </div>
+        <script src="prism.js" type="text/javascript"></script>
+        <svg id="custom-filters">
+            <defs>
+            </defs>
+        </svg>
+        <section id="s1" class="slide" data-transition-id>
+            <div class="slide-content">
+                <div class="step" data-step-numerical-id="0" data-slide-id="s1">
+                    <div id="s1-stack" class="stack stack-horizontal  ">
+                        <img id="s1-stack-0" class="image  " src="gfx\\chapter-150\\turtle.jpg"><img id="s1-stack-1" class="image  " src="gfx\\chapter-150\\buildings.jpg"><img id="s1-stack-2" class="image  " src="gfx\\chapter-150\\desert.jpg"><img id="s1-stack-3" class="image  " src="gfx\\chapter-150\\buildings.jpg"><img id="s1-stack-4" class="image  " src="gfx\\chapter-150\\turtle.jpg"><img id="s1-stack-5" class="image  " src="gfx\\chapter-150\\buildings.jpg"><img id="s1-stack-6" class="image  " src="gfx\\chapter-150\\desert.jpg"><img id="s1-stack-7" class="image  " src="gfx\\chapter-150\\buildings.jpg"><img id="s1-stack-8" class="image  " src="gfx\\chapter-150\\turtle.jpg"></div>
+                </div>
+            </div>
+            <!--Inserted by template 'default'.-->
+            <div id="s1-prev" class="label  "><a href="../chapter-100/index.html">prev</a></div>
+            <div id="s1-next" class="label  "><a href="../chapter-200/index.html">next</a></div>
+        </section>
+        <section id="s2" class="slide" data-transition-id>
+            <div class="slide-content">
+                <div class="step" data-step-numerical-id="1" data-slide-id="s2">
+                    <div id="s2-stack" class="stack stack-vertical  ">
+                        <img id="s2-stack-0" class="image  " src="gfx\\chapter-150\\turtle.jpg"><img id="s2-stack-1" class="image  " src="gfx\\chapter-150\\buildings.jpg"><img id="s2-stack-2" class="image  " src="gfx\\chapter-150\\desert.jpg"><img id="s2-stack-3" class="image  " src="gfx\\chapter-150\\buildings.jpg"><img id="s2-stack-4" class="image  " src="gfx\\chapter-150\\turtle.jpg"><img id="s2-stack-5" class="image  " src="gfx\\chapter-150\\buildings.jpg"><img id="s2-stack-6" class="image  " src="gfx\\chapter-150\\desert.jpg"><img id="s2-stack-7" class="image  " src="gfx\\chapter-150\\buildings.jpg"><img id="s2-stack-8" class="image  " src="gfx\\chapter-150\\turtle.jpg"></div>
+                </div>
+            </div>
+            <!--Inserted by template 'default'.-->
+            <div id="s2-prev" class="label  "><a href="../chapter-100/index.html">prev</a></div>
+            <div id="s2-next" class="label  "><a href="../chapter-200/index.html">next</a></div>
+        </section>
+        <section id="s3" class="slide" data-transition-id>
+            <div class="slide-content">
+                <div class="step" data-step-numerical-id="2" data-slide-id="s3">
+                    <div id="s3-stackHorizontal" class="stack stack-horizontal  ">
+                        <div id="s3-stackHorizontal-0" class="label  ">Hello World!</div><div id="s3-stackHorizontal-1" class="label  ">Hello World!</div><div id="s3-stackHorizontal-2" class="label  ">Hello World!</div><div id="s3-stackHorizontal-3" class="label  ">Hello World!</div><div id="s3-stackHorizontal-4" class="label  ">Hello World!</div><div id="s3-stackHorizontal-5" class="label  ">Hello World!</div><div id="s3-stackHorizontal-6" class="label  ">Hello World!</div><div id="s3-stackHorizontal-7" class="label  ">Hello World!</div><div id="s3-stackHorizontal-8" class="label  ">Hello World!</div><div id="s3-stackHorizontal-9" class="label  ">Hello World!</div><div id="s3-stackHorizontal-10" class="label  ">Hello World!</div><div id="s3-stackHorizontal-11" class="label  ">Hello World!</div><div id="s3-stackHorizontal-12" class="label  ">Hello World!</div><div id="s3-stackHorizontal-13" class="label  ">Hello World!</div><div id="s3-stackHorizontal-14" class="label  ">Hello World!</div><div id="s3-stackHorizontal-15" class="label  ">Hello World!</div><div id="s3-stackHorizontal-16" class="label  ">Hello World!</div><div id="s3-stackHorizontal-17" class="label  ">Hello World!</div><div id="s3-stackHorizontal-18" class="label  ">Hello World!</div><div id="s3-stackHorizontal-19" class="label  ">Hello World!</div><div id="s3-stackHorizontal-20" class="label  ">Hello World!</div><div id="s3-stackHorizontal-21" class="label  ">Hello World!</div><div id="s3-stackHorizontal-22" class="label  ">Hello World!</div><div id="s3-stackHorizontal-23" class="label  ">Hello World!</div><div id="s3-stackHorizontal-24" class="label  ">Hello World!</div><div id="s3-stackHorizontal-25" class="label  ">Hello World!</div><div id="s3-stackHorizontal-26" class="label  ">Hello World!</div><div id="s3-stackHorizontal-27" class="label  ">Hello World!</div><div id="s3-stackHorizontal-28" class="label  ">Hello World!</div><div id="s3-stackHorizontal-29" class="label  ">Hello World!</div><div id="s3-stackHorizontal-30" class="label  ">Hello World!</div><div id="s3-stackHorizontal-31" class="label  ">Hello World!</div><div id="s3-stackHorizontal-32" class="label  ">Hello World!</div><div id="s3-stackHorizontal-33" class="label  ">Hello World!</div><div id="s3-stackHorizontal-34" class="label  ">Hello World!</div><div id="s3-stackHorizontal-35" class="label  ">Hello World!</div><div id="s3-stackHorizontal-36" class="label  ">Hello World!</div><div id="s3-stackHorizontal-37" class="label  ">Hello World!</div><div id="s3-stackHorizontal-38" class="label  ">Hello World!</div><div id="s3-stackHorizontal-39" class="label  ">Hello World!</div><div id="s3-stackHorizontal-40" class="label  ">Hello World!</div><div id="s3-stackHorizontal-41" class="label  ">Hello World!</div><div id="s3-stackHorizontal-42" class="label  ">Hello World!</div><div id="s3-stackHorizontal-43" class="label  ">Hello World!</div><div id="s3-stackHorizontal-44" class="label  ">Hello World!</div><div id="s3-stackHorizontal-45" class="label  ">Hello World!</div><div id="s3-stackHorizontal-46" class="label  ">Hello World!</div><div id="s3-stackHorizontal-47" class="label  ">Hello World!</div><div id="s3-stackHorizontal-48" class="label  ">Hello World!</div><div id="s3-stackHorizontal-49" class="label  ">Hello World!</div><div id="s3-stackHorizontal-50" class="label  ">Hello World!</div><div id="s3-stackHorizontal-51" class="label  ">Hello World!</div><div id="s3-stackHorizontal-52" class="label  ">Hello World!</div><div id="s3-stackHorizontal-53" class="label  ">Hello World!</div></div>
+                    <div id="s3-stackVertical" class="stack stack-vertical  ">
+                        <div id="s3-stackVertical-0" class="label  ">Hello World!</div><div id="s3-stackVertical-1" class="label  ">Hello World!</div><div id="s3-stackVertical-2" class="label  ">Hello World!</div><div id="s3-stackVertical-3" class="label  ">Hello World!</div><div id="s3-stackVertical-4" class="label  ">Hello World!</div><div id="s3-stackVertical-5" class="label  ">Hello World!</div><div id="s3-stackVertical-6" class="label  ">Hello World!</div><div id="s3-stackVertical-7" class="label  ">Hello World!</div><div id="s3-stackVertical-8" class="label  ">Hello World!</div><div id="s3-stackVertical-9" class="label  ">Hello World!</div><div id="s3-stackVertical-10" class="label  ">Hello World!</div><div id="s3-stackVertical-11" class="label  ">Hello World!</div><div id="s3-stackVertical-12" class="label  ">Hello World!</div><div id="s3-stackVertical-13" class="label  ">Hello World!</div><div id="s3-stackVertical-14" class="label  ">Hello World!</div><div id="s3-stackVertical-15" class="label  ">Hello World!</div><div id="s3-stackVertical-16" class="label  ">Hello World!</div><div id="s3-stackVertical-17" class="label  ">Hello World!</div><div id="s3-stackVertical-18" class="label  ">Hello World!</div><div id="s3-stackVertical-19" class="label  ">Hello World!</div><div id="s3-stackVertical-20" class="label  ">Hello World!</div><div id="s3-stackVertical-21" class="label  ">Hello World!</div><div id="s3-stackVertical-22" class="label  ">Hello World!</div><div id="s3-stackVertical-23" class="label  ">Hello World!</div><div id="s3-stackVertical-24" class="label  ">Hello World!</div><div id="s3-stackVertical-25" class="label  ">Hello World!</div><div id="s3-stackVertical-26" class="label  ">Hello World!</div><div id="s3-stackVertical-27" class="label  ">Hello World!</div><div id="s3-stackVertical-28" class="label  ">Hello World!</div><div id="s3-stackVertical-29" class="label  ">Hello World!</div><div id="s3-stackVertical-30" class="label  ">Hello World!</div><div id="s3-stackVertical-31" class="label  ">Hello World!</div><div id="s3-stackVertical-32" class="label  ">Hello World!</div><div id="s3-stackVertical-33" class="label  ">Hello World!</div><div id="s3-stackVertical-34" class="label  ">Hello World!</div><div id="s3-stackVertical-35" class="label  ">Hello World!</div><div id="s3-stackVertical-36" class="label  ">Hello World!</div><div id="s3-stackVertical-37" class="label  ">Hello World!</div><div id="s3-stackVertical-38" class="label  ">Hello World!</div><div id="s3-stackVertical-39" class="label  ">Hello World!</div><div id="s3-stackVertical-40" class="label  ">Hello World!</div><div id="s3-stackVertical-41" class="label  ">Hello World!</div><div id="s3-stackVertical-42" class="label  ">Hello World!</div><div id="s3-stackVertical-43" class="label  ">Hello World!</div><div id="s3-stackVertical-44" class="label  ">Hello World!</div><div id="s3-stackVertical-45" class="label  ">Hello World!</div><div id="s3-stackVertical-46" class="label  ">Hello World!</div><div id="s3-stackVertical-47" class="label  ">Hello World!</div><div id="s3-stackVertical-48" class="label  ">Hello World!</div><div id="s3-stackVertical-49" class="label  ">Hello World!</div><div id="s3-stackVertical-50" class="label  ">Hello World!</div><div id="s3-stackVertical-51" class="label  ">Hello World!</div><div id="s3-stackVertical-52" class="label  ">Hello World!</div><div id="s3-stackVertical-53" class="label  ">Hello World!</div></div>
+                </div>
+            </div>
+            <!--Inserted by template 'default'.-->
+            <div id="s3-prev" class="label  "><a href="../chapter-100/index.html">prev</a></div>
+            <div id="s3-next" class="label  "><a href="../chapter-200/index.html">next</a></div>
+        </section>
+        <section id="s4" class="slide" data-transition-id>
+            <div class="slide-content">
+                <div class="step" data-step-numerical-id="3" data-slide-id="s4">
+                    <div id="s4-stack" class="stack stack-vertical  ">
+                        <img id="s4-stack-0" class="image  " src="gfx\\chapter-150\\turtle.jpg"><div id="s4-stack-1" class="label  ">vel</div><img id="s4-stack-2" class="image  " src="gfx\\chapter-150\\buildings.jpg"><div id="s4-stack-3" class="label  ">repellendus</div><img id="s4-stack-4" class="image  " src="gfx\\chapter-150\\desert.jpg"><div id="s4-stack-5" class="label  ">laborum</div><img id="s4-stack-6" class="image  " src="gfx\\chapter-150\\buildings.jpg"><div id="s4-stack-7" class="label  ">natus</div><img id="s4-stack-8" class="image  " src="gfx\\chapter-150\\turtle.jpg"><div id="s4-stack-9" class="label  ">eaque</div><img id="s4-stack-10" class="image  " src="gfx\\chapter-150\\buildings.jpg"><div id="s4-stack-11" class="label  ">quas</div><img id="s4-stack-12" class="image  " src="gfx\\chapter-150\\desert.jpg"><div id="s4-stack-13" class="label  ">voluptate</div><img id="s4-stack-14" class="image  " src="gfx\\chapter-150\\buildings.jpg"><div id="s4-stack-15" class="label  ">beatae</div><img id="s4-stack-16" class="image  " src="gfx\\chapter-150\\turtle.jpg"><div id="s4-stack-17" class="label  ">provident</div><img id="s4-stack-18" class="image  " src="gfx\\chapter-150\\buildings.jpg"><div id="s4-stack-19" class="label  ">error</div><img id="s4-stack-20" class="image  " src="gfx\\chapter-150\\desert.jpg"><div id="s4-stack-21" class="label  ">occaecati</div><img id="s4-stack-22" class="image  " src="gfx\\chapter-150\\buildings.jpg"><div id="s4-stack-23" class="label  ">velit</div><img id="s4-stack-24" class="image  " src="gfx\\chapter-150\\turtle.jpg"><div id="s4-stack-25" class="label  ">facere</div><img id="s4-stack-26" class="image  " src="gfx\\chapter-150\\buildings.jpg"><div id="s4-stack-27" class="label  ">doloribus</div><img id="s4-stack-28" class="image  " src="gfx\\chapter-150\\desert.jpg"><div id="s4-stack-29" class="label  ">suscipit</div><img id="s4-stack-30" class="image  " src="gfx\\chapter-150\\buildings.jpg"><div id="s4-stack-31" class="label  ">ea</div><img id="s4-stack-32" class="image  " src="gfx\\chapter-150\\turtle.jpg"><div id="s4-stack-33" class="label  ">id</div><img id="s4-stack-34" class="image  " src="gfx\\chapter-150\\buildings.jpg"><div id="s4-stack-35" class="label  ">aut</div></div>
+                </div>
+            </div>
+            <!--Inserted by template 'default'.-->
+            <div id="s4-prev" class="label  "><a href="../chapter-100/index.html">prev</a></div>
+            <div id="s4-next" class="label  "><a href="../chapter-200/index.html">next</a></div>
+        </section>
+        <section id="s5" class="slide" data-transition-id>
+            <div class="slide-content">
+                <div class="step" data-step-numerical-id="4" data-slide-id="s5">
+                    <div id="s5-schedule" class="stack stack-horizontal  ">
+                        <div id="s5-schedule-0" class="stack stack-vertical  ">
+                            <div id="s5-schedule-0-0" class="label  "><b>Sunday</b></div><div id="s5-schedule-0-1" class="label  "><span style="background-color: cornflowerblue;">Free!</span></div><div id="s5-schedule-0-2" class="label  ">No drinking. Need to study tomorrow again!</div></div><div id="s5-schedule-1" class="stack stack-vertical  ">
+                            <div id="s5-schedule-1-0" class="label  "><b>Monday</b></div><div id="s5-schedule-1-1" class="label  ">Study Math</div><div id="s5-schedule-1-2" class="label  ">Drinking</div></div><div id="s5-schedule-2" class="stack stack-vertical  ">
+                            <div id="s5-schedule-2-0" class="label  "><b>Tuesday</b></div><div id="s5-schedule-2-1" class="label  ">Study Programming</div><div id="s5-schedule-2-2" class="label  ">Drinking</div></div><div id="s5-schedule-3" class="stack stack-vertical  ">
+                            <div id="s5-schedule-3-0" class="label  "><b>Wednesday</b></div><div id="s5-schedule-3-1" class="label  ">Done studying</div><div id="s5-schedule-3-2" class="label  ">Visiting AA</div></div><div id="s5-schedule-4" class="stack stack-vertical  ">
+                            <div id="s5-schedule-4-0" class="label  "><b>Thursday</b></div><div id="s5-schedule-4-1" class="label  ">Drinking</div><div id="s5-schedule-4-2" class="label  ">Drinking with friends</div></div><div id="s5-schedule-5" class="stack stack-vertical  ">
+                            <div id="s5-schedule-5-0" class="label  "><b>Friday</b></div><div id="s5-schedule-5-1" class="label  ">More drinking</div></div><div id="s5-schedule-6" class="stack stack-vertical  ">
+                            <div id="s5-schedule-6-0" class="label  "><b>Saturday</b></div><div id="s5-schedule-6-1" class="label  ">You guessed it!</div></div></div>
+                </div>
+            </div>
+            <!--Inserted by template 'default'.-->
+            <div id="s5-prev" class="label  "><a href="../chapter-100/index.html">prev</a></div>
+            <div id="s5-next" class="label  "><a href="../chapter-200/index.html">next</a></div>
+        </section>
+        <section id="t1" class="slide" data-transition-id>
+            <div class="slide-content">
+                <div class="step" data-step-numerical-id="5" data-slide-id="t1">
+                    <div id="t1-stack" class="stack stack-vertical  ">
+                        <div id="t1-stack-0" class="codeblock ">
+                            <pre class="line-numbers " data-start="1"><code class="language-clike">#include "main.h"
+
+int main(int argc, char** argv)
+{
+	char_array2d* values;
+	if (!parse_args(argc, argv, &values))
+	{
+		</code></pre></div><div id="t1-stack-1" class="codeblock ">
+                            <pre class="line-numbers " data-start="8"><code class="language-clike">		fprintf(stderr, "Please enter your minterms in the AcD format.\n");
+		return 1;
+	}
+	simplify_function(values);
+	return 0;
+}
+
+</code></pre></div><div id="t1-stack-2" class="codeblock ">
+                            <pre class="line-numbers " data-start="15"><code class="language-clike">bool parse_args(int argc, char** argv, char_array2d** values)
+{
+	int length = argc - 1;
+	if (length == 0)
+		return false;
+	*values = malloc(sizeof(char_array2d));
+	(*values)->length = length;
+	</code></pre></div><div id="t1-stack-3" class="codeblock ">
+                            <pre class="line-numbers " data-start="22"><code class="language-clike">(*values)->data = malloc(length * sizeof(char_array*));
+unsigned int minterm_length = 0;
+for (int i = 0; i < length; i++)
+{
+	char* cur_argv = argv[i + 1];
+	for (int j = 0; cur_argv[j]; j++)
+	{
+		</code></pre></div><div id="t1-stack-4" class="codeblock ">
+                            <pre class="line-numbers " data-start="29"><code class="language-clike">		int val = tolower(cur_argv[j]) - 'a' + 1;
+		if (val < 0 || val > 26)
+			return false;
+		if (val > minterm_length)
+			minterm_length = val;
+	}
+}
+</code></pre></div><div id="t1-stack-5" class="codeblock ">
+                            <pre class="line-numbers " data-start="36"><code class="language-clike">for (int i = 0; i < length; i++)
+{
+	char_array* cur = malloc(sizeof(char_array));
+	cur->length = minterm_length;
+	cur->has_been_compared = false;
+	cur->data = malloc(minterm_length * sizeof(char));
+	for (int j = 0; j < minterm_length; j++)
+		</code></pre></div><div id="t1-stack-6" class="codeblock ">
+                            <pre class="line-numbers " data-start="43"><code class="language-clike">	cur->data[j] = 2;
+for (int j = 0; argv[i + 1][j]; j++)
+{
+	char c = argv[i + 1][j];
+	int index = tolower(c) - 'a';
+	if (c >= 'A' && c <= 'Z')
+		cur->data[index] = 1;
+	</code></pre></div></div>
+                </div>
+            </div>
+            <!--Inserted by template 'default'.-->
+            <div id="t1-prev" class="label  "><a href="../chapter-100/index.html">prev</a></div>
+            <div id="t1-next" class="label  "><a href="../chapter-200/index.html">next</a></div>
+        </section>
+        <section id="t2" class="slide" data-transition-id>
+            <div class="slide-content">
+                <div class="step" data-step-numerical-id="6" data-slide-id="t2">
+                    <div id="t2-stack" class="stack stack-horizontal  ">
+                        <div id="t2-stack-0" class="codeblock ">
+                            <pre class="line-numbers " data-start="50"><code class="language-clike">			else if (c >= 'a' && c <= 'z')
+				cur->data[index] = 0;
+		}
+		(*values)->data[i] = cur;
+	}
+	return true;
+}
+</code></pre></div><div id="t2-stack-1" class="codeblock ">
+                            <pre class="line-numbers " data-start="57"><code class="language-clike">
+// void _parse_args(int argc, char **argv, char_array2d **values)
+// {
+// 	int length = argc - 1;
+// 	*values = malloc(sizeof(char_array2d));
+// 	(*values)->length = length;
+// 	(*values)->data = malloc(length * sizeof(char_array *));
+</code></pre></div><div id="t2-stack-2" class="codeblock ">
+                            <pre class="line-numbers " data-start="64"><code class="language-clike">// 	for (int i = 0; i < length; i++)
+// 	{
+// 		char_array *cur = malloc(sizeof(char_array));
+// 		cur->length = strlen(argv[i + 1]);
+// 		cur->has_been_compared = false;
+// 		//HOW DOES THIS EVEN WORK?? THAT'S A COMPLETELY DIFFERENT LENGTH?!
+// 		cur->data = calloc(length, sizeof(char));
+</code></pre></div><div id="t2-stack-3" class="codeblock ">
+                            <pre class="line-numbers " data-start="71"><code class="language-clike">// 		for (int c = 0; c < cur->length; c++)
+// 		{
+// 			switch (argv[i + 1][c])
+// 			{
+// 			case '1':
+// 				cur->data[c] = 1;
+// 				break;
+</code></pre></div><div id="t2-stack-4" class="codeblock ">
+                            <pre class="line-numbers " data-start="78"><code class="language-clike">// 			case '0':
+// 				cur->data[c] = 0;
+// 				break;
+// 			case '-':
+// 				cur->data[c] = 2;
+// 				break;
+// 			default:
+</code></pre></div><div id="t2-stack-5" class="codeblock ">
+                            <pre class="line-numbers " data-start="85"><code class="language-clike">// 				printf(">%d<", argv[i + 1][c]);
+// 				break;
+// 			}
+// 		}
+// 		(*values)->data[i] = cur;
+// 	}
+// }
+</code></pre></div><div id="t2-stack-6" class="codeblock ">
+                            <pre class="line-numbers " data-start="92"><code class="language-clike">
+void simplify_function(char_array2d* args)
+{
+	list* meta_list = create_empty_list();
+	list* result_list = create_empty_list();
+	for (int i = 0; i < args->length; i++)
+	{
+		</code></pre></div></div>
+                </div>
+            </div>
+            <!--Inserted by template 'default'.-->
+            <div id="t2-prev" class="label  "><a href="../chapter-100/index.html">prev</a></div>
+            <div id="t2-next" class="label  "><a href="../chapter-200/index.html">next</a></div>
+        </section>
+        <section id="t3" class="slide" data-transition-id>
+            <div class="slide-content">
+                <div class="step" data-step-numerical-id="7" data-slide-id="t3">
+                    <div id="t3-stack" class="stack stack-horizontal  ">
+                        <div id="t3-stack-0" class="label  ">Hello World!</div><div id="t3-stack-1" class="label  ">Hello World!</div><div id="t3-stack-2" class="label  ">Hello World!</div><div id="t3-stack-3" class="label  ">Hello World!</div></div>
+                </div>
+            </div>
+            <!--Inserted by template 'default'.-->
+            <div id="t3-prev" class="label  "><a href="../chapter-100/index.html">prev</a></div>
+            <div id="t3-next" class="label  "><a href="../chapter-200/index.html">next</a></div>
+        </section>
+    </body>
+</html>

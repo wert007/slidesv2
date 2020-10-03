@@ -218,6 +218,8 @@ namespace Minsk.CodeAnalysis
 			Report(span, message, DiagnosticLevel.Error);
 		}
 
+		//TODO! Complete suggestions for every undefined function!!
+
 		public void ReportUndefinedFunction(TextSpan span, string name)
 		{
 			var message = $"Function '{name}' doesn't exist.";
@@ -305,54 +307,17 @@ namespace Minsk.CodeAnalysis
 			Report(span, message, DiagnosticLevel.Error);
 		}
 
-		public void ReportCannotMatchArguments(TextSpan span, int expectedCount, int actualCount)
-		{
-			if (expectedCount == actualCount)
-				throw new Exception();
-			var message = $"Excpected {expectedCount} Argument{(expectedCount == 1 ? "" : "s")}, but received {actualCount}.";
-			Report(span, message, DiagnosticLevel.Error);
-		}
+		//public void ReportCannotMatchArguments(TextSpan span, int expectedCount, int actualCount)
+		//{
+		//	if (expectedCount == actualCount)
+		//		throw new Exception();
+		//	var message = $"Excpected {expectedCount} Argument{(expectedCount == 1 ? "" : "s")}, but received {actualCount}.";
+		//	Report(span, message, DiagnosticLevel.Error);
+		//}
 
 		public void ReportEmptyArray(TextSpan span)
 		{
 			var message = "Cannot create an empty Array.";
-			Report(span, message, DiagnosticLevel.Error);
-		}
-
-		public void ReportVariableVisibility(SyntaxToken preTildeToken, SyntaxToken identifier, SyntaxToken postTildeToken)
-		{
-			var message = $"Variable '{identifier.Text} cannot be defined as invisible (pre tilde) and as data (post tilde).";
-			var span = TextSpan.FromBounds(preTildeToken.Span.Start, postTildeToken.Span.End);
-			Report(span, message, DiagnosticLevel.Error);
-		}
-
-		public void ReportCannotBeInvisible(TextSpan span, TypeSymbol type)
-		{
-			if (type == PrimitiveTypeSymbol.Error)
-				return;
-			var message = $"Type '{type}' cannot be invisible, since it cannot be shown on a slide.";
-			Report(span, message, DiagnosticLevel.Error);
-		}
-
-		public void ReportVariableCannotBeFlaggedAsData(TextSpan span, TypeSymbol type)
-		{
-			if (type == PrimitiveTypeSymbol.Error)
-				return;
-			var message = $"Type '{type}' is no data type. Therefore you cannot declare it as such.";
-			Report(span, message, DiagnosticLevel.Error);
-		}
-
-		public void ReportVariableMustBeFlaggedAsData(TextSpan span, TypeSymbol type)
-		{
-			if (type == PrimitiveTypeSymbol.Error)
-				return;
-			var message = $"Type '{type}' is a data type. You must declare it as such and use post tilde.";
-			Report(span, message, DiagnosticLevel.Error);
-		}
-
-		public void ReportCannotChangeVisibility(TextSpan span, VariableSymbol expectedVariable)
-		{
-			var message = $"Variable '{expectedVariable.Name}' cannot change visibility.";
 			Report(span, message, DiagnosticLevel.Error);
 		}
 
@@ -370,7 +335,7 @@ namespace Minsk.CodeAnalysis
 
 		public void ReportInvalidStringFormat(int start)
 		{
-			var message = $"The dollar sign must be placed directly in front of quotes.";
+			var message = $"The dollar sign must be placed directly in front of quotes (').";
 			var span = new TextSpan(start, 2);
 			Report(span, message, DiagnosticLevel.Error);
 		}
@@ -544,6 +509,12 @@ namespace Minsk.CodeAnalysis
 		internal void ReportCannotWriteToTypeType(TextSpan span, TypeSymbol type)
 		{
 			var message = $"Cannot write to function return-type '{type}'.";
+			Report(span, message, DiagnosticLevel.Error);
+		}
+
+		internal void ReportVariableInvalidType(TextSpan span, SyntaxKind kind, TypeSymbol type)
+		{
+			var message = $"Cannot create a '{kind}' variable here with type '{type}'.";
 			Report(span, message, DiagnosticLevel.Error);
 		}
 	}

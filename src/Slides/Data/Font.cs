@@ -51,13 +51,21 @@ namespace Slides.Data
 			return exists;
 		}
 
-		public Vector2 Measure(string text, Unit fontsize)
+		public Vector2 Measure(string text, Unit fontsize, float lineHeight)
 		{
 
 			if (!exists)
 				return new Vector2();
-
-			var size = fontsize.Value;
+			// This is really just a magic number which yielded through trial and error
+			// the expected results. It should be somehow possible to replace. I hope.
+			/* Result of that trial an error.
+				stackHorizontal.height = 51.43746px;
+				              expected = 51.600px;
+				   stackVertical.width = 172.8371px;
+				              expected = 172.837px;
+			 */
+			const float shrinkFactor = 0.913447f;
+			var size = fontsize.Value * shrinkFactor;
 			if (fontsize.Kind == Unit.UnitKind.Point)
 				size *= SlidesConverter.PointUnitConversionFactor;
 			var unit = GraphicsUnit.World;
@@ -89,7 +97,10 @@ namespace Slides.Data
 				result = g.MeasureString(text, font);
 			}
 
-			return new Vector2(result);
+			var vec = new Vector2(result);
+			// Default browser lineheight is 1.2 which seems to be equivalent to 1.SOMETHING in System.Drawing.
+			vec.Y *= lineHeight - (0.2f * shrinkFactor);
+			return vec;
 		}
 	}
 }

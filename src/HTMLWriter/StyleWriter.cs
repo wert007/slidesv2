@@ -24,6 +24,7 @@ namespace HTMLWriter
 			{
 				//if (property.IsNonCSS) continue;
 				if (substyle.Selector.Name == "slide" && property.Key == "padding") continue;
+				if (substyle.Selector.Name == "coding" && property.Key == "coding-highlighting") continue;
 				writer.WriteAttribute(CSSWriter.ToCssAttribute(property.Key), property.Value);
 			}
 			writer.EndSelector();
@@ -57,6 +58,8 @@ namespace HTMLWriter
 				{
 					case "transition":
 						toWrite = (Transition)property.Value;
+						break;
+					case "useDarkTheme":
 						break;
 					default:
 						writer.WriteAttribute(CSSWriter.ToCssAttribute(property.Key), property.Value);
@@ -95,7 +98,10 @@ namespace HTMLWriter
 					case "transition":
 						toWrite = (Transition)property.Value;
 						break;
+
 					default:
+						if (property.Key.StartsWith("non-css-"))
+							continue;
 						writer.WriteAttribute(CSSWriter.ToCssAttribute(property.Key), property.Value);
 						break;
 				}
@@ -331,7 +337,7 @@ namespace HTMLWriter
 		//In CSS and in Slides. 
 		private static void WriteOrientation(CSSWriter writer, Element element, Element parent = null)
 		{
-			var isRelative = parent != null && parent is Stack || parent?.kind == ElementKind.List || parent?.kind == ElementKind.Captioned;
+			var isRelative = parent != null && (parent.kind == ElementKind.Stack || parent.kind == ElementKind.List || parent.kind == ElementKind.Captioned);
 			if (string.IsNullOrEmpty(element.position))
 			{
 				if (isRelative)
@@ -378,8 +384,53 @@ namespace HTMLWriter
 
 			if (!isRelative)
 				WriteOrientation_(writer, element, orientation, m);
+			else if(parent is Stack stack)
+				WriteStackAlignment(writer, stack.align, stack.StackFlow, marginSet);
 			else
 				writer.WriteAttributeIfValue("margin", marginSet);
+		}
+
+		private static void WriteStackAlignment(CSSWriter writer, StackAlignment align, FlowAxis flow, Thickness margin)
+		{
+			switch (align)
+			{
+				case StackAlignment.Unset:
+					writer.WriteMarginOrPadding("margin", margin);
+					break;
+				case StackAlignment.Top:
+					writer.WriteAttribute("vertical-align", "top");
+					writer.WriteMarginOrPadding("margin", margin);
+					break;
+				case StackAlignment.Bottom:
+					writer.WriteAttribute("vertical-align", "bottom");
+					writer.WriteMarginOrPadding("margin", margin);
+					break;
+				case StackAlignment.Left:
+					writer.WriteAttribute("text-align", "left");
+					writer.WriteMarginOrPadding("margin", new Thickness(margin?.left, margin?.top, Unit.Auto, margin?.bottom));
+					break;
+				case StackAlignment.Right:
+					writer.WriteAttribute("text-align", "right");
+					writer.WriteMarginOrPadding("margin", new Thickness(Unit.Auto, margin?.top, margin?.right, margin?.bottom));
+					break;
+				case StackAlignment.Center:
+					switch (flow)
+					{
+						case FlowAxis.Horizontal:
+							writer.WriteAttribute("vertical-align", "middle");
+							writer.WriteMarginOrPadding("margin", margin);
+							break;
+						case FlowAxis.Vertical:
+							writer.WriteMarginOrPadding("margin", new Thickness(Unit.Auto, margin?.top, Unit.Auto, margin?.bottom));
+							writer.WriteAttribute("text-align", "center");
+							break;
+						default:
+							throw new NotImplementedException();
+					}
+					break;
+				default:
+							throw new NotImplementedException();
+			}
 		}
 
 		private static void WriteOrientation_(CSSWriter writer, Element element, Orientation orientation, Thickness margin)
@@ -388,6 +439,7 @@ namespace HTMLWriter
 
 			var marginHorizontalOffset = margin.left - margin.right;
 			var marginVerticalOffset = margin.top - margin.bottom;
+
 			switch (orientation)
 			{
 				case Orientation.LeftTop:

@@ -17,6 +17,7 @@ namespace Slides.Elements
 		public void fill(Element element)
 		{
 			child = element;
+			child.h_Parent = this;
 			child.orientation = Orientation.Stretch;
 		}
 

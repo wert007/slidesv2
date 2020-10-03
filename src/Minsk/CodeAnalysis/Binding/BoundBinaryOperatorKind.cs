@@ -24,5 +24,6 @@ namespace Minsk.CodeAnalysis.Binding
 		FilterAddition,
 		Range,
 		NotNoneValue,
+		RangeMultiplication,
 	}
 }

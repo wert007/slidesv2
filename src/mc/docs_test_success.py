@@ -17,7 +17,7 @@ import tempfile
 
 # sys.stdout.writelines(diff)
 
-paths = Path('./docs').glob('*/*.*')
+paths = Path('.tests/docs').glob('*/*.*')
 for path in paths:
     path = str(path)
     path = '\\'.join(path.split('\\')[1:])

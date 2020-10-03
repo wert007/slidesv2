@@ -24,7 +24,7 @@ namespace Minsk.CodeAnalysis
 			_root = root;
 
 			_constants.Add(new VariableSymbol("seperator", true, _builtInTypes.LookSymbolUp(typeof(LibrarySymbol))), Library.Seperator);
-			_constants.Add(new VariableSymbol("code", true, _builtInTypes.LookSymbolUp(typeof(LibrarySymbol))), Library.Code);
+			_constants.Add(new VariableSymbol("coding", true, _builtInTypes.LookSymbolUp(typeof(LibrarySymbol))), Library.Code);
 			_constants.Add(new VariableSymbol("auto", true, _builtInTypes.LookSymbolUp(typeof(Unit))), new Unit(0, Unit.UnitKind.Auto));
 			_constants.Add(new VariableSymbol("thin", true, _builtInTypes.LookSymbolUp(typeof(Unit))), Unit.Thin);
 			_constants.Add(new VariableSymbol("medium", true, _builtInTypes.LookSymbolUp(typeof(Unit))), Unit.Medium);
@@ -270,6 +270,15 @@ namespace Minsk.CodeAnalysis
 					if (il <= ir)
 						return new Range(il, ir, 1);
 					return new Range(il, ir, -1);
+				case BoundBinaryOperatorKind.RangeMultiplication:
+					var range = left as Range ?? (Range)right;
+					var multiplicator = left as int? ?? (int)right;
+					if (multiplicator > 0)
+						return new Range(range.From * multiplicator, range.To * multiplicator, range.Step * multiplicator);
+					else if (multiplicator < 0)
+						return new Range(range.To * multiplicator, range.From * multiplicator, range.Step * multiplicator);
+					else
+						return new Range(0, 0, 0);
 				case BoundBinaryOperatorKind.NotNoneValue:
 					if (left == null) return right;
 					return left;
@@ -492,17 +501,55 @@ namespace Minsk.CodeAnalysis
 
 		protected virtual object EvaluateAnimationCall(AnimationSymbol parent, FunctionSymbol function, object[] args) => null;
 
+		protected bool EvaluateCustomFunctionAccessCall(object parent, FunctionSymbol function, object[] args, out object result)
+		{
+			int mod(int x, int m)
+			{
+				return (x % m + m) % m;
+			}
+
+			if (parent.GetType().IsArray)
+			{
+				switch (function.Name)
+				{
+					case "len":
+						result = ((ICollection<object>)parent).Count;
+						return true;
+					case "getSafe":
+						//TODO: Test getSafe with integers!!
+						result = ((ICollection<object>)parent).ElementAtOrDefault((int)args[0]);
+						return true;
+					case "getLoop":
+						var array = (ICollection<object>)parent;
+						result = array.ElementAt(mod((int)args[0],array.Count));
+						return true;
+					default:
+						result = null;
+						return false;
+				}
+			}
+			else if (parent is string str)
+			{
+				switch (function.Name)
+				{
+					case "split":
+						result = str.Split(new[] { (string)args[0] }, StringSplitOptions.None);
+						return true;
+					default:
+						result = null;
+						return false;
+				}
+			}
+			else
+			{
+				result = null;
+				return false;
+			}
+		}
+
 		protected object EvaluateFunctionAccessCall(object parent, FunctionSymbol function, object[] args)
 		{
-			if (function.Name == "len")
-				return ((ICollection<object>)parent).Count;
-			if (function.Name == "getSafe")
-				return ((ICollection<object>)parent).ElementAtOrDefault((int)args[0]);
-			if (function.Name == "getLoop")
-			{
-				var array = (ICollection<object>)parent;
-				return array.ElementAt((int)args[0] % array.Count);
-			}
+			if (EvaluateCustomFunctionAccessCall(parent, function, args, out var result)) return result;
 			var type = parent.GetType();
 			var parameters = function.Parameter.Select(p => _builtInTypes.LookTypeUp(p.Type)).ToArray();
 			var method = type.GetMethod(function.Name, parameters);

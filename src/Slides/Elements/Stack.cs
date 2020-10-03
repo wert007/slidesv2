@@ -5,35 +5,42 @@ using System.Collections.Generic;
 
 namespace Slides.Elements
 {
-	public class Stack : Element
+	public enum StackAlignment
+	{
+		Unset,
+		Top,
+		Bottom,
+		Left,
+		Right,
+		Center
+	}
+
+	public class Stack : ParentElement
 	{
 		private List<Element> _children = new List<Element>();
-		private Orientation _orientation;
-
 		public Element[] children => _children.ToArray();
+		public StackAlignment align { get; set; }
 		public FlowAxis StackFlow { get; }
 		public override ElementKind kind => ElementKind.Stack;
-		public new Orientation orientation
+
+
+		public override void UpdateLayout()
 		{
-			get => _orientation;
-			set
+			switch (StackFlow)
 			{
-				_orientation = value;
-				switch (StackFlow)
-				{
-					case FlowAxis.Horizontal:
-						foreach (var c in _children)
-							c.orientation = SlidesHelper.AddOrientations(SlidesHelper.GetHorizontal(c.orientation), SlidesHelper.GetVertical(_orientation));
-						break;
-					case FlowAxis.Vertical:
-						foreach (var c in _children)
-							c.orientation = SlidesHelper.AddOrientations(SlidesHelper.GetHorizontal(_orientation), SlidesHelper.GetVertical(c.orientation));
-						break;
-					default:
-						throw new NotImplementedException();
-				}
+				case FlowAxis.Horizontal:
+					foreach (var c in _children)
+						c.orientation = SlidesHelper.AddOrientations(SlidesHelper.GetHorizontal(c.orientation), SlidesHelper.GetVertical(orientation));
+					break;
+				case FlowAxis.Vertical:
+					foreach (var c in _children)
+						c.orientation = SlidesHelper.AddOrientations(SlidesHelper.GetHorizontal(orientation), SlidesHelper.GetVertical(c.orientation));
+					break;
+				default:
+					throw new NotImplementedException();
 			}
 		}
+
 
 		public Stack(FlowAxis orientation)
 		{
@@ -43,7 +50,13 @@ namespace Slides.Elements
 
 		public void add(Element child)
 		{
-			_children.Add(child);
+			add(_children.Count, child);
+		}
+
+		public void add(int index, Element child)
+		{
+			child.h_Parent = this;
+			_children.Insert(index, child);
 		}
 
 		internal override Unit get_InitialWidth()
@@ -103,5 +116,6 @@ namespace Slides.Elements
 			}
 		}
 
+		protected override IEnumerable<Element> get_Children() => _children;
 	}
 }

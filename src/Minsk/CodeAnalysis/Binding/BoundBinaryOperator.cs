@@ -59,6 +59,8 @@ namespace Minsk.CodeAnalysis.Binding
 				new BoundBinaryOperator(SyntaxKind.HatToken, BoundBinaryOperatorKind.Exponentiation, PrimitiveTypeSymbol.Float, PrimitiveTypeSymbol.Integer, PrimitiveTypeSymbol.Float),
 
 				new BoundBinaryOperator(SyntaxKind.PeriodPeriodToken, BoundBinaryOperatorKind.Range, PrimitiveTypeSymbol.Integer, Range),
+				new BoundBinaryOperator(SyntaxKind.StarToken, BoundBinaryOperatorKind.RangeMultiplication, PrimitiveTypeSymbol.Integer, Range, Range),
+				new BoundBinaryOperator(SyntaxKind.StarToken, BoundBinaryOperatorKind.RangeMultiplication, Range, PrimitiveTypeSymbol.Integer, Range),
 
 				new BoundBinaryOperator(SyntaxKind.PlusToken, BoundBinaryOperatorKind.Concatination, PrimitiveTypeSymbol.String),
 

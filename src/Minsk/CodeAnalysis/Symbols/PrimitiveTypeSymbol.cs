@@ -61,6 +61,39 @@ namespace Minsk.CodeAnalysis.Symbols
 			}
 		}
 
+		public override bool TryLookUpFunction(string name, out FunctionSymbol[] function)
+		{
+
+			switch (PrimitiveType)
+			{	
+				case PrimitiveType.String:
+					switch (name)
+					{
+						case "split":
+							function = new[]
+							{
+								new FunctionSymbol(name, new VariableSymbol("splitBy", true, String), new ArrayTypeSymbol(String))
+							};
+							return true;
+						default:
+							function = new FunctionSymbol[0];
+							return false;
+					}
+				case PrimitiveType.Bool:
+				case PrimitiveType.Integer:
+				case PrimitiveType.Float:
+				case PrimitiveType.Void:
+				case PrimitiveType.Error:
+				case PrimitiveType.Undefined:
+				case PrimitiveType.AnonymFor:
+				case PrimitiveType.Unit:
+				case PrimitiveType.Object:
+				default:
+					function = new FunctionSymbol[0];
+					return false;
+			}
+		}
+
 		public override bool InnerCanBeConvertedTo(TypeSymbol to)
 		{
 			if(to is PrimitiveTypeSymbol p)
