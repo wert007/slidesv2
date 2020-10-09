@@ -16,15 +16,28 @@ namespace HTMLWriter
 {
 	public static class StyleWriter
 	{
+		private static bool ShouldSkipTypedModification(string type, string field)
+		{
+			switch (field)
+			{
+				case "padding": return type == "slide";
+				case "coding-highlighting":
+				case "autoplay":
+				case "orientation":
+					return true;
+				default:
+					return false;
+			}
+		}
+
 		private static void WriteTypedModification(CSSWriter writer, Substyle substyle)
 		{
 			writer.StartSelector(SelectorToString(substyle.Selector));
 
 			foreach (var property in substyle.Properties)
 			{
+				if (ShouldSkipTypedModification(substyle.Selector.Name, property.Key)) continue;
 				//if (property.IsNonCSS) continue;
-				if (substyle.Selector.Name == "slide" && property.Key == "padding") continue;
-				if (substyle.Selector.Name == "coding" && property.Key == "coding-highlighting") continue;
 				writer.WriteAttribute(CSSWriter.ToCssAttribute(property.Key), property.Value);
 			}
 			writer.EndSelector();
@@ -60,6 +73,7 @@ namespace HTMLWriter
 						toWrite = (Transition)property.Value;
 						break;
 					case "useDarkTheme":
+					case "orientation":
 						break;
 					default:
 						writer.WriteAttribute(CSSWriter.ToCssAttribute(property.Key), property.Value);
@@ -156,7 +170,7 @@ namespace HTMLWriter
 
 		private static void WriteStdTransition(CSSWriter writer, string transitionName, TransitionCall from, TransitionCall to)
 		{
-			return;
+			//return;
 			writer.StartSelector($"section.slide.{transitionName}-from");
 			writer.WriteAttribute("animation-name", from.Name);
 			writer.WriteAttribute("animation-duration", from.Duration);
@@ -248,8 +262,11 @@ namespace HTMLWriter
 				case Table _:
 					writer.WriteAttribute("border-collapse", "collapse");
 					break;
+				case Video v:
+					writer.WriteAttributeIfNotDefault("object-fit", v.stretching, Stretching.Unset);
+					break;
 				case Image i:
-					writer.WriteAttribute("object-fit", i.stretching);
+					writer.WriteAttributeIfNotDefault("object-fit", i.stretching, Stretching.Unset);
 					break;
 				default:
 					break;
@@ -560,7 +577,7 @@ namespace HTMLWriter
 					break;
 				case Brush.BrushMode.ImageSource:
 					writer.WriteAttribute("background-image", background.Image);
-					writer.WriteAttribute("background-size", ImageStretching.Cover);
+					writer.WriteAttribute("background-size", Stretching.Cover);
 					writer.WriteAttribute("background-position", "center center");
 					break;
 				default:

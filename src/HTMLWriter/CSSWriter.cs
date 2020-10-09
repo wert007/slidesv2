@@ -113,6 +113,8 @@ namespace HTMLWriter
 					return "border-style";
 				case "text":
 					return "innerHTML"; //TODO: Hacky
+				case "stretching":
+					return "object-fit";
 				case "padding":
 				case "color":
 				case "background":
@@ -198,7 +200,7 @@ namespace HTMLWriter
 				case ImageSource i:
 					_writer.Write($"url(\"{i.h_Path.Replace('\\', '/')}\")");
 					break;
-				case ImageStretching stretching:
+				case Stretching stretching:
 					WriteImageStretching(stretching);
 					break;
 				case UnitSubtraction unitSubtraction:
@@ -361,17 +363,17 @@ namespace HTMLWriter
 			}
 		}
 
-		private void WriteImageStretching(ImageStretching stretching)
+		private void WriteImageStretching(Stretching stretching)
 		{
 			switch (stretching)
 			{
-				case ImageStretching.Stretch:
+				case Stretching.Stretch:
 					_writer.Write("100% 100%");
 					break;
-				case ImageStretching.Contain:
+				case Stretching.Contain:
 					_writer.Write("contain");
 					break;
-				case ImageStretching.Cover:
+				case Stretching.Cover:
 					_writer.Write("cover");
 					break;
 				default:

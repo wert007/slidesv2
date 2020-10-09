@@ -21,6 +21,7 @@
 		UnitRect,
 		YouTubePlayer,
 		UnitSVGShape,
-		Captioned
+		Captioned,
+		Video
 	}
 }

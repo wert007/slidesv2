@@ -214,8 +214,11 @@ namespace Slides.Elements
 					return h_Height;
 				case nameof(isVisible):
 					return h_IsVisible;
+				case nameof(Video.autoplay):
+					return null;
 				default:
-					throw new Exception();
+					SimpleLogger.Logger.Log($"Unknown field '{name}' in type '{GetType()}'.");
+					return null;
 			}
 		}
 

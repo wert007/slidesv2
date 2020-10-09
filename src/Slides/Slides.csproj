@@ -75,7 +75,7 @@
     <Compile Include="Elements\Element.cs" />
     <Compile Include="Elements\ElementKind.cs" />
     <Compile Include="Elements\FlowAxis.cs" />
-    <Compile Include="Elements\ImageStretching.cs" />
+    <Compile Include="Elements\Stretching.cs" />
     <Compile Include="Elements\ParentElement.cs" />
     <Compile Include="Elements\SplittedContainer.cs" />
     <Compile Include="Elements\TextElement.cs" />
@@ -87,6 +87,8 @@
     <Compile Include="Elements\IFrame.cs" />
     <Compile Include="Elements\Image.cs" />
     <Compile Include="Data\ImageSource.cs" />
+    <Compile Include="Elements\Video.cs" />
+    <Compile Include="Elements\VideoSource.cs" />
     <Compile Include="Elements\YouTubePlayer.cs" />
     <Compile Include="Filter.cs" />
     <Compile Include="Helpers\JavaScriptEmitter.cs" />

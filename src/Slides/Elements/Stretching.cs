@@ -1,7 +1,8 @@
 ﻿namespace Slides.Elements
 {
-	public enum ImageStretching
+	public enum Stretching
 	{
+		Unset,
 		Stretch,
 		Contain,
 		Cover,

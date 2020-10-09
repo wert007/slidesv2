@@ -24,6 +24,11 @@ namespace Slides
 			_lastTransitionCall = new TransitionCall("fadeIn", duration, delay);
 		}
 
+		public void fadeOut(Time delay, Time duration)
+		{
+			_lastTransitionCall = new TransitionCall("fadeOut", duration, delay);
+		}
+
 		public TransitionCall CreateTransitionCall()
 		{
 			return _lastTransitionCall;

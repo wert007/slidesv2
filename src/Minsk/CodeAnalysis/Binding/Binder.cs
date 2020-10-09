@@ -507,6 +507,7 @@ namespace Minsk.CodeAnalysis.Binding
 				_scope.TryDeclare(new VariableSymbol("Slide", false, _builtInTypes.LookSymbolUp(typeof(SlideAttributes))));
 				_scope.TryDeclare(new VariableSymbol("Label", false, _builtInTypes.LookSymbolUp(typeof(Label))));
 				_scope.TryDeclare(new VariableSymbol("Image", false, _builtInTypes.LookSymbolUp(typeof(Image))));
+				_scope.TryDeclare(new VariableSymbol("Video", false, _builtInTypes.LookSymbolUp(typeof(Video))));
 				_scope.TryDeclare(new VariableSymbol("Table", false, _builtInTypes.LookSymbolUp(typeof(Table))));
 				_scope.TryDeclare(new VariableSymbol("List", false, _builtInTypes.LookSymbolUp(typeof(List))));
 				_scope.TryDeclare(new VariableSymbol("Captioned", false, _builtInTypes.LookSymbolUp(typeof(Captioned))));

@@ -29,37 +29,52 @@ namespace HTMLWriter
 
 		private static void CopyFile(string name, string targetDirectory, bool alwaysCopy)
 		{
-			var path = Path.Combine(targetDirectory, name);
-			if (!File.Exists(path))
-				File.Copy(name, path);
-			else if (alwaysCopy)
+			try
 			{
-				File.Delete(path);
-				File.Copy(name, path);
+				var path = Path.Combine(targetDirectory, name);
+				if (!File.Exists(path))
+					File.Copy(name, path);
+				else if (alwaysCopy)
+				{
+					File.Delete(path);
+					File.Copy(name, path);
+				}
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex);
 			}
 		}
 
 		public static void Write(Presentation presentation, string targetDirectory, bool alwaysCopyEverything = false)
 		{
-			_stdTransition = null;
-			Directory.CreateDirectory(targetDirectory);
-			foreach (var referencedFile in presentation.ReferencedFiles)
+			try
 			{
-				var targetFile = Path.Combine(targetDirectory, referencedFile);
-				if (!File.Exists(targetFile))
+				_stdTransition = null;
+				Directory.CreateDirectory(targetDirectory);
+				foreach (var referencedFile in presentation.ReferencedFiles)
 				{
-					Directory.CreateDirectory(Path.Combine(targetDirectory, Path.GetDirectoryName(referencedFile)));
-					File.Copy(Path.Combine(CompilationFlags.Directory, referencedFile), targetFile);
+					var targetFile = Path.Combine(targetDirectory, referencedFile);
+					if (!File.Exists(targetFile))
+					{
+						Directory.CreateDirectory(Path.Combine(targetDirectory, Path.GetDirectoryName(referencedFile)));
+						File.Copy(Path.Combine(CompilationFlags.Directory, referencedFile), targetFile);
+					}
+					else if (alwaysCopyEverything)
+					{
+						File.Delete(targetFile);
+						File.Copy(Path.Combine(CompilationFlags.Directory, referencedFile), targetFile);
+					}
 				}
-				else if (alwaysCopyEverything)
-				{
-					File.Delete(targetFile);
-					File.Copy(Path.Combine(CompilationFlags.Directory, referencedFile), targetFile);
-				}
+			}
+			catch(Exception ex)
+			{
+				Console.WriteLine(ex);
+				throw ex;
 			}
 
 			CopyFile("core.css", targetDirectory, alwaysCopyEverything);
-			if(presentation.Flags.UseDarktheme)
+			if (presentation.Flags.UseDarktheme)
 				CopyFile("darkoverlay.css", targetDirectory, alwaysCopyEverything);
 			else
 				CopyFile("overlay.css", targetDirectory, alwaysCopyEverything);
@@ -89,20 +104,23 @@ namespace HTMLWriter
 						_htmlWriter.Start();
 						_htmlWriter.StartHead();
 
-						if(presentation.Flags.UsesYouTube)
+						_jsWriter.StartFunctionCollector("loadInnerAddVideo");
+						_jsWriter.SwitchInto("loadInner");
+						_jsWriter.WriteFunctionCall("loadInnerAddVideo");
+						_jsWriter.ResetWriter();
+
+						if (presentation.Flags.UsesYouTube)
 						{
 							_htmlWriter.PushAttribute("async");
 							_htmlWriter.UseJS("https://www.youtube.com/iframe_api");
 							_jsWriter.StartFunctionCollector("youtubeAPIReady");
-							_jsWriter.SwitchInto("youtubeAPIReady");
-							_jsWriter.WriteAssignment("ytPlayers", "[]");
-							_jsWriter.ResetWriter();
 						}
+
 
 						_htmlWriter.UseCSS("index.css");
 						_htmlWriter.UseJS("index.js");
 						_htmlWriter.UseCSS("core.css");
-						if(presentation.Flags.UseDarktheme)
+						if (presentation.Flags.UseDarktheme)
 							_htmlWriter.UseCSS("darkoverlay.css");
 						else
 							_htmlWriter.UseCSS("overlay.css");
@@ -175,6 +193,7 @@ namespace HTMLWriter
 							Write(transition);
 						}
 
+
 						foreach (var slide in presentation.Slides)
 						{
 							Write(slide);
@@ -219,7 +238,7 @@ namespace HTMLWriter
 				var functionName = insertionStack.Peek().FunctionName + "_" + kind;
 				if (kind == JSInsertionKind.Time)
 					timeFunctions.Add(functionName);
-				else if(kind == JSInsertionKind.Step)
+				else if (kind == JSInsertionKind.Step)
 				{
 					stepFunctions.Add((Step)insertionStack.Peek().Value);
 				}
@@ -305,7 +324,8 @@ namespace HTMLWriter
 			if (!slide.Attributes.isVisible)
 				return;
 			StyleWriter.WriteSlide(_cssWriter, slide);
-			_htmlWriter.PushAttribute("data-transition-id", _stdTransition);
+			if(_stdTransition != null)
+				_htmlWriter.PushAttribute("data-transition-id", _stdTransition);
 			_htmlWriter.StartTag("section", id: slide.Name, classes: "slide");
 			_htmlWriter.StartTag("div", classes: "slide-content");
 			foreach (var step in slide.Steps)
@@ -425,9 +445,13 @@ namespace HTMLWriter
 				case ElementKind.YouTubePlayer:
 					WriteYouTubePlayer(parentName, (YouTubePlayer)element, optionalFieldName, newLineAfterEndTag);
 					break;
+				case ElementKind.Video:
+					WriteVideo(parentName, (Video)element, optionalFieldName, newLineAfterEndTag);
+					break;
 				default:
 					throw new Exception($"ElementType unknown: {element.kind}");
 			}
+
 		}
 
 
@@ -442,8 +466,8 @@ namespace HTMLWriter
 			_htmlWriter.StartTag(startTag, id: id, classes: "list " + optionalFieldName + " " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
 			foreach (var child in element.children)
 			{
-				
-				if(child is Label) //TODO: Hacky. Replace <p> with <li> instead!
+
+				if (child is Label) //TODO: Hacky. Replace <p> with <li> instead!
 					_htmlWriter.StartTag("li", useNewLine: false);
 				WriteElement(id, child, element);
 				if (child is Label)
@@ -541,7 +565,7 @@ namespace HTMLWriter
 			//	}
 			//}
 			//else 
-				SVGWriter.Write(_htmlWriter, child);
+			SVGWriter.Write(_htmlWriter, child);
 			_htmlWriter.EndTag(newLineAfterEndTag);
 		}
 
@@ -553,7 +577,7 @@ namespace HTMLWriter
 			_htmlWriter.StartTag("div", id: id, classes: "rect " + optionalFieldName + " " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
 			_htmlWriter.EndTag(newLineAfterEndTag);
 		}
-		
+
 		private static void WriteUnitSVGShape(string parentName, UnitLine element, string optionalFieldName, bool newLineAfterEndTag)
 		{
 			var id = $"{parentName}-{element.name}";
@@ -619,7 +643,7 @@ namespace HTMLWriter
 			_jsWriter.SwitchInto("youtubeAPIReady");
 			var size = YouTubePlayer.GetDefaultPlayerSize(element.quality);
 			var shouldMuteString = "";
-			if(element.isMuted)
+			if (element.isMuted)
 				shouldMuteString = "e.target.mute();";
 
 			var playerInit = $@"new YT.Player('{id}', {{
@@ -640,8 +664,70 @@ namespace HTMLWriter
 			if (element.soundOnly)
 				_jsWriter.WriteAssignment("curPlayer.getIframe().style.display", "'none'");
 			_jsWriter.WriteAssignment("curPlayer.autoPaused", "false");
+			//_jsWriter.WriteAssignment("curPlayer.started", "false");
 
-			_jsWriter.WriteFunctionCall("ytPlayers.push", new JavaScriptObject("curPlayer"));
+			//_jsWriter.WriteAssignment("curPlayer.onplay", "function() { this.started = true; }");
+			_jsWriter.WriteAssignment("curPlayer.isPaused", "function() { return this.getPlayerState() == YT.PlayerState.Paused; }");
+			_jsWriter.WriteAssignment("curPlayer.pause", "function() { this.pauseVideo(); }");
+			_jsWriter.WriteAssignment("curPlayer.play", "function() { this.playVideo(); }");
+			//Video:
+			//	 slideId: int
+			//	 stepNumericalId: int
+			//	 keepPlaying: bool
+			//	 autoPaused: bool
+
+			//  fn isPaused()-> !paused
+			//  fn pause()
+			//  fn play()
+
+			//YTVideo:
+			//	 fn isPaused() -> getPlayerState() != YT.PlayerState.Paused
+			//	 fn pause() -> pauseVideo()
+			//	 fn play() -> playVideo()
+
+
+
+			_jsWriter.WriteFunctionCall("videoPlayers.push", new JavaScriptObject("curPlayer"));
+
+
+			_jsWriter.ResetWriter();
+		}
+
+		private static void WriteVideo(string parentName, Video element, string optionalFieldName, bool newLineAfterEndTag)
+		{
+			var id = $"{parentName}-{element.name}";
+			if (string.IsNullOrEmpty(element.name))
+				id = null;
+			if (element.sources.Length <= 0) throw new Exception("Video.sources.Length cannot be 0!");
+			_htmlWriter.PushAttribute("width", element.sources.First().Width.ToString());
+			_htmlWriter.PushAttribute("height", element.sources.First().Height.ToString());
+			_htmlWriter.StartTag("video", id: id, classes: "video " + optionalFieldName + " " + string.Join(" ", element.get_AppliedStyles().Select(s => s.Name)));
+			foreach (var source in element.sources)
+			{
+				_htmlWriter.PushAttribute("src", source.h_Path);
+				_htmlWriter.PushAttribute("type", "video/mp4");
+				_htmlWriter.WriteTag("source");
+			}
+			_htmlWriter.EndTag(newLineAfterEndTag);
+
+			_jsWriter.SwitchInto("loadInnerAddVideo");
+			_jsWriter.WriteAssignment("curPlayer", $"document.getElementById('{id}')");
+			_jsWriter.WriteAssignment("curPlayer.stepNumericalId", element.get_Step().ID.ToString());
+			_jsWriter.WriteAssignment("curPlayer.slideId", $"'{element.get_Step().ParentName}'");
+			_jsWriter.WriteAssignment("curPlayer.keepPlaying", element.keepPlaying.ToString().ToLower());
+			if (element.soundOnly)
+				_jsWriter.WriteAssignment("curPlayer.style.display", "'none'");
+
+			_jsWriter.WriteAssignment("curPlayer.autoPaused", element.autoplay.ToString().ToLower()); // element.autoplay.ToString().ToLower());
+			_jsWriter.WriteAssignment("curPlayer.controls", element.controls.ToString().ToLower());
+			_jsWriter.WriteAssignment("curPlayer.muted", element.muted.ToString().ToLower());
+			_jsWriter.WriteAssignment("curPlayer.autoPlay", element.autoplay.ToString().ToLower());
+			_jsWriter.WriteAssignment("curPlayer.started", "false");
+
+			_jsWriter.WriteAssignment("curPlayer.onplay", "function() { this.started = true; }");
+			_jsWriter.WriteAssignment("curPlayer.isPaused", "function() { return this.paused; }");
+			_jsWriter.WriteFunctionCall("videoPlayers.push", new JavaScriptObject("curPlayer"));
+
 			_jsWriter.ResetWriter();
 		}
 
@@ -672,7 +758,7 @@ namespace HTMLWriter
 			if (string.IsNullOrEmpty(stack.name))
 				id = null;
 			var stackFlow = stack.StackFlow == FlowAxis.Horizontal ? "stack-horizontal" : "stack-vertical";
-			_htmlWriter.StartTag("div", id: id, classes: "stack " + stackFlow +  " " + optionalFieldName + " " + string.Join(" ", stack.get_AppliedStyles().Select(s => s.Name)));
+			_htmlWriter.StartTag("div", id: id, classes: "stack " + stackFlow + " " + optionalFieldName + " " + string.Join(" ", stack.get_AppliedStyles().Select(s => s.Name)));
 			var i = 0;
 			foreach (var element in stack.children)
 			{
@@ -770,7 +856,7 @@ namespace HTMLWriter
 				switch (character)
 				{
 					case '\\':
-								i++;
+						i++;
 						switch (next)
 						{
 							case 'n':

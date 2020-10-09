@@ -12,10 +12,11 @@ let steps;
 let playingTransition;
 
 let plots;
-let ytPlayers = undefined;
+let videoPlayers = [];
+let generated_onhashchange = false;
 
 
-let searchModule = (function () {
+let searchModule = (function() {
     let searchModeActive = false;
     let selectedSuggestion = -1;
     let suggestionCount;
@@ -44,11 +45,11 @@ let searchModule = (function () {
         let addSuggestion = (toAdd, index) => {
             let newElement = document.createElement('li');
             newElement.innerHTML = toAdd;
-            newElement.onmouseover = function () {
+            newElement.onmouseover = function() {
                 selectedSuggestion = index;
                 updateSuggestionPaint();
             };
-            newElement.onclick = function () {
+            newElement.onclick = function() {
                 startSearch();
             };
             suggestions.push(newElement);
@@ -75,8 +76,7 @@ let searchModule = (function () {
             let alreadyTypedText = searchInput.value;
             let suggestionText = suggestions[selectedSuggestion].innerText;
             expectedElement.innerText = suggestionText.substr(alreadyTypedText.length);
-        }
-        else {
+        } else {
             expectedElement.innerText = '';
         }
         for (let i = 0; i < suggestions.length; i++) {
@@ -118,17 +118,14 @@ let searchModule = (function () {
         if (event.code === 'ArrowUp') {
             selectedSuggestion = Math.max(selectedSuggestion - 1, -1);
             updateSuggestionPaint();
-        }
-        else if (event.code === 'ArrowDown') {
+        } else if (event.code === 'ArrowDown') {
             selectedSuggestion = Math.min(selectedSuggestion + 1, suggestionCount - 1);
             updateSuggestionPaint();
-        }
-        else if (textBoxHasFocus && event.code === 'Enter')
+        } else if (textBoxHasFocus && event.code === 'Enter')
             startSearch();
         else if (event.code == 'Escape') {
             searchModule.enterSearchSlideMode();
-        }
-        else return;
+        } else return;
         event.preventDefault();
     }
 
@@ -145,7 +142,11 @@ let searchModule = (function () {
     };
 })();
 
-window.onhashchange = function () {
+window.onhashchange = function() {
+    if (generated_onhashchange) {
+        generated_onhashchange = false;
+        return;
+    }
     let wanted = window.location.hash;
     for (let i = 0; i < slides.length; i++) {
         if ('#' + slides[i].id === wanted) {
@@ -180,8 +181,8 @@ function load() {
         addClass(steps[i], 'invisible');
     }
     loadSlides();
-    showSlides();
     loadInner();
+    showSlides();
 
     let timerId = setInterval(() => {
         totalTime += 20;
@@ -200,12 +201,12 @@ function prev() {
     stepNumericalId = Math.max(stepNumericalId - 1, 0);
 
     if (stepIndex == 0) {
-        slideIndex = Math.max(slideIndex - 1, 0);
-        loadSlides();
-
         let transition = document.getElementById(currentSlide.dataset.transitionId)
         if (transition != undefined)
-            playTransition(transition);
+            playTransition(transition, false);
+
+        slideIndex = Math.max(slideIndex - 1, 0);
+        loadSlides();
 
         stepIndex = currentSteps.length - 1;
         if (stepIndex < 0) {
@@ -213,8 +214,7 @@ function prev() {
             console.log(currentSlide);
             console.log(currentSteps);
         }
-    }
-    else {
+    } else {
         stepIndex--;
     }
 
@@ -234,12 +234,11 @@ function next() {
     if (stepIndex == max) {
         let transition = document.getElementById(currentSlide.dataset.transitionId)
         if (transition != undefined)
-            playTransition(transition);
+            playTransition(transition, true);
         slideIndex = Math.min(slideIndex + 1, slides.length - 1);
         loadSlides();
         stepIndex = 0; //Will reset StepIndex no matter if we changed actual Slide ..
-    }
-    else {
+    } else {
         stepIndex++;
     }
 
@@ -255,8 +254,7 @@ function playAnimations(offset) {
         if (animation.step_numerical_id == actualNumericalId) {
             let element = document.getElementById(animation.element_id);
             animate(element, animation.animation, animation.duration);
-        }
-        else if (animation.step_numerical_id == actualNumericalId + offset) {
+        } else if (animation.step_numerical_id == actualNumericalId + offset) {
             let element = document.getElementById(animation.element_id);
             revertAnimation(element);
         }
@@ -312,31 +310,28 @@ function loadSlides() {
             stepLength++;
         }
     }
+    generated_onhashchange = true;
     window.location.hash = currentSlide.id;
 }
 
-function handleYouTubePlayers() {
-    if (ytPlayers === undefined)
-        return;
-
-
+function handleVideoPlayers() {
     var actualNumericalId = parseInt(currentSteps[currentSteps.length - 1].dataset.stepNumericalId);
 
-    for (let p of ytPlayers) {
-        if ((currentSlide.id !== p.slideId || p.stepNumericalId > actualNumericalId)
-            && !p.keepPlaying) {
-            p.autoPaused = p.getPlayerState() != YT.PlayerState.PAUSED
-            p.pauseVideo();
+    for (let p of videoPlayers) {
+        if ((currentSlide.id !== p.slideId || p.stepNumericalId > actualNumericalId) &&
+            !p.keepPlaying) {
+            p.autoPaused = !p.isPaused(); // p.getPlayerState() != YT.PlayerState.PAUSED
+            p.pause();
+        } else if ((p.isPaused() && p.autoPaused) || (p.autoPlay && (!p.started || !p.isPaused()))) {
+            p.play();
         }
-        else if (p.getPlayerState() == YT.PlayerState.PAUSED && p.autoPaused)
-            p.playVideo();
     }
 }
 
 function showSlides() {
     removeClass(currentSlide, 'invisible');
     currentSlide.startTime = totalTime;
-    handleYouTubePlayers();
+    handleVideoPlayers();
     let localVisibleSteps = stepIndex + 1;
     for (let i = 0; i < steps.length; i++) {
         if (currentSteps.includes(steps[i]) && localVisibleSteps > 0) {
@@ -350,7 +345,7 @@ function showSlides() {
     }
 }
 
-function playTransition(transition) {
+function playTransition(transition, goesForward) {
     if (playingTransition != undefined) {
         reset_animation(playingTransition);
     }
@@ -358,11 +353,26 @@ function playTransition(transition) {
     //Activate transition
     addClass(playingTransition, 'active');
     removeClass(playingTransition, 'invisible');
+    let next = slides[Math.min(slides.length - 1, slideIndex + 1)];
+    let from = slides[slideIndex];
+    if (goesForward) {
+        addClass(from, playingTransition.id + '-from');
+        addClass(next, playingTransition.id + '-to');
+    } else {
+        next = slides[Math.max(0, slideIndex - 1)];
+        addClass(from, playingTransition.id + '-from');
+        addClass(next, playingTransition.id + '-to');
+    }
+    removeClass(next, 'invisible');
+    removeClass(from, 'invisible');
+    console.log(from);
     let millisecondsToWait = playingTransition.dataset.duration;
-    setTimeout(function () {
+    setTimeout(function() {
         //Transition is done
         addClass(transition, 'invisible');
         removeClass(transition, 'active');
+        removeClass(from, playingTransition.id + '-from');
+        removeClass(next, playingTransition.id + '-to');
         playingTransition = undefined;
     }, millisecondsToWait);
 }
@@ -376,8 +386,7 @@ function keyDown(event) {
     }
     if (event.code === 'ArrowUp') {
         prev();
-    }
-    else if (event.code === 'ArrowDown')
+    } else if (event.code === 'ArrowDown')
         next();
     else if (!textBoxHasFocus && event.code === 'KeyF')
         enterFullScreen();
@@ -397,7 +406,7 @@ function reset_animation(el) {
 //source: https://stackoverflow.com/questions/9454125/javascript-request-fullscreen-is-unreliable#9747340
 function enterFullScreen() {
 
-    var isInFullScreen = (document.fullScreenElement && document.fullScreenElement !== null) ||    // alternative standard method  
+    var isInFullScreen = (document.fullScreenElement && document.fullScreenElement !== null) || // alternative standard method  
         (document.mozFullScreen || document.webkitIsFullScreen);
 
     var docElm = document.documentElement;
@@ -405,11 +414,9 @@ function enterFullScreen() {
 
         if (docElm.requestFullscreen) {
             docElm.requestFullscreen();
-        }
-        else if (docElm.mozRequestFullScreen) {
+        } else if (docElm.mozRequestFullScreen) {
             docElm.mozRequestFullScreen();
-        }
-        else if (docElm.webkitRequestFullScreen) {
+        } else if (docElm.webkitRequestFullScreen) {
             docElm.webkitRequestFullScreen();
         }
     }

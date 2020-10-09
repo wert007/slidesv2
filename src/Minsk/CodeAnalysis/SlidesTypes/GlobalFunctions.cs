@@ -134,6 +134,21 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			return new Range(r.From, r.To, step);
 		}
 
+		public static VideoSource video(string fileName)
+		{
+			var result = new VideoSource(fileName);
+			var path = Path.Combine(CompilationFlags.Directory, fileName);
+			Tracker.Reference = fileName;
+			var media = new FFmpeg.NET.MediaFile(path);
+			//TODO! another way to find ffmpeg!
+			var ffmpeg = new FFmpeg.NET.Engine(@"C:\ffmpeg-4.3.1-essentials_build\bin\ffmpeg.exe");
+			var meta = ffmpeg.GetMetaDataAsync(media).Result;
+			var data = meta?.VideoData?.FrameSize.Split('x') ?? new[] { "0", "0" };
+			result.Width = int.Parse(data[0]);
+			result.Height = int.Parse(data[1]);
+			return result;
+		}
+
 		public static ImageSource image(string fileName)
 		{
 			var result = new ImageSource(fileName);

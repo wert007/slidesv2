@@ -6,45 +6,64 @@
             position: relative;
             box-sizing: border-box;
         }
-
+        
         body {
             width: 100vw;
             height: 100vh;
             margin: 0;
         }
-
-        /* 
-            This is just compatibility reasons with chrome-like browsers. 
-            (Will hopefully be not needed anymore on day..) 
-        */
-        :-webkit-any(ul, ol) :-webkit-any(ul, ol) :-webkit-any(ul, ol) li {
-            background: green;
-        }
-        :is(ul, ol) :is(ul, ol) :is(ul, ol) li {
-            background: green;
-        }
     </style>
 </head>
 
 <body>
-    <ul>
-        <ul>
-            <ol>
-                <li>hi</li>
-                <li>na</li>
-                <li>hmm</li>
-                <li>okay</li>
-            </ol>
-            <li>not green</li>
-        </ul>
-        <li>still not green</li>
-    </ul>
+    <video id=vid controls>
+        <source
+            src="https://ia801001.us.archive.org/3/items/twitch-vod-v465368646/DANCE_SUBS_GET_SNAPCHAT-v465368646.ogv" />
+    </video>
+    <p id=state>...</p>
+    <script>
+        let vid = document.getElementById('vid');
+        let state = document.getElementById('state');
+        vid.muted = true;
+        vid.play();
+        setInterval(() => {
+            state.innerText = "" + (vid.paused || vid.ended);
+        }, 20);
+    </script>
+
+    <!-- 
+
+        Video:
+            slideId: int
+            stepNumericalId: int
+            keepPlaying: bool
+            autoPaused: bool
+
+            fn isPaused() -> !paused
+            fn pause()
+            fn play()
+
+        YTVideo:
+            fn isPaused() -> getPlayerState() != YT.PlayerState.Paused
+            fn pause() -> pauseVideo()
+            fn play() -> playVideo()
+
+            if (ytPlayers === undefined)
+        return;
+
+        
+    var actualNumericalId = parseInt(currentSteps[currentSteps.length - 1].dataset.stepNumericalId);
     
-    <!-- <div class="demoWrapper">
-        <div></div>
-        <span id="center">Hello World from the middle</span>
-        <span>Other thing</span>
-    </div> -->
+    for (let p of ytPlayers) {
+        if ((currentSlide.id !== p.slideId || p.stepNumericalId > actualNumericalId)
+             && !p.keepPlaying) {
+            p.autoPaused = p.getPlayerState() != YT.PlayerState.PAUSED
+            p.pauseVideo();
+        }
+        else if (p.getPlayerState() == YT.PlayerState.PAUSED && p.autoPaused)
+            p.playVideo();
+    }
+     -->
 </body>
 
 </html>

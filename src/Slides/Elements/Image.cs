@@ -1,20 +1,24 @@
 ﻿using Slides.Data;
 using Slides.Helpers;
 using System;
+using System.Linq;
 
 namespace Slides.Elements
 {
+
 	public class Image : Element
 	{
 		public Image(ImageSource source)
 		{
 			this.source = source;
 			alt = string.Empty;
-			stretching = ImageStretching.Contain;
+			stretching = Stretching.Unset;
+
+			addApplyStyleHandler("stretching", (value) => stretching = (Stretching)value);
 		}
 
 		public ImageSource source { get; set; }
-		public ImageStretching stretching { get; set; }
+		public Stretching stretching { get; set; }
 		public string alt { get; set; }
 
 		public override ElementKind kind => ElementKind.Image;
@@ -38,7 +42,7 @@ namespace Slides.Elements
 			if (h_Parent != null)
 				statedWidth = h_Parent.styling.get_StatedWidth();
 			if (statedWidth != null)
-				return statedWidth * source.aspectRatio;
+				return statedWidth / source.aspectRatio;
 			return new Unit(source.height, Unit.UnitKind.Pixel);
 		}
 
@@ -46,7 +50,7 @@ namespace Slides.Elements
 		{
 			var statedHeight = styling.get_StatedHeight();
 			if (statedHeight != null)
-				return statedHeight / source.aspectRatio;
+				return statedHeight * source.aspectRatio;
 			return new Unit(source.width, Unit.UnitKind.Pixel);
 		}
 	}

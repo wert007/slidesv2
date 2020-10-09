@@ -1,0 +1,740 @@
+<enum  name="Alignment">Unset, Left, Center, Right, Block</enum>
+<class name="Vector2"  >
+    <setable>
+        <variable name="x" type="double" value="0">
+        <variable name="y" type="double" value="0">
+    </setable>
+    <functions>
+        <constructor>
+            <parameter>
+                <variable name="x" type="double">
+                <variable name="y" type="double">
+            </parameter>
+            <impl>
+                <assign field="x">x</assign>
+                <assign field="y">y</assign>
+            </impl>
+        </constructor>
+        <operator name="add" resultType="Vector2">
+            <parameter>
+                <variable name="left"  type="Vector2">
+                <variable name="right" type="Vector2">
+            </parameter>
+            <impl>
+                <externFuncCall resultType="Vector2">
+                    <args>left, right</args>
+                </externFuncCall>
+            </impl>
+        </operator>
+    </functions>
+</class>
+<class name="ImageSource">
+    <setable>
+        <variable name="width"  type="int">0</variable>
+        <variable name="height" type="int">0</variable>
+    </setable>
+    <getable>
+        <variable name="~Path"       type="string">""</variable>
+        <variable name="aspectRatio" type="double">
+            (double)(width) / height
+        </variable>
+    </getable>
+    <functions>
+        <constructor>
+            <parameter>
+                <variable name="path" type="string">
+            </parameter>
+            <impl>
+                <assign field="~Path">path</assign>
+            </impl>
+        </constructor>
+    </functions>
+</class>
+<class name="Color">
+    <getable>
+        <variable name="~R" type="int">0</variable>
+        <variable name="~G" type="int">0</variable>
+        <variable name="~B" type="int">0</variable>
+        <variable name="~A" type="int">0</variable>
+    </getable>
+    <functions>
+        <constructor>
+            <parameter>
+                <variable name="r" type="double">
+                <variable name="g" type="double">
+                <variable name="b" type="double">
+                <variable name="a" type="double">
+            </parameter>
+            <impl>
+                <assign field="~R">(int)(r * 255)</assign>
+                <assign field="~G">(int)(g * 255)</assign>
+                <assign field="~B">(int)(b * 255)</assign>
+                <assign field="~A">(int)(a * 255)</assign>
+            </impl>
+        </constructor>
+        <constructor>
+            <parameter>
+                <variable name="r" type="int">
+                <variable name="g" type="int">
+                <variable name="b" type="int">
+                <variable name="a" type="int">
+            </parameter>
+            <impl>
+                <assign field="~R">r</assign>
+                <assign field="~G">g</assign>
+                <assign field="~B">b</assign>
+                <assign field="~A">a</assign>
+            </impl>
+        </constructor>
+        <custom name="invert" returnType="Color">
+            <parameter></parameter>
+            <impl>
+                <construct type="Color">
+                    <args>
+                        255 - ~R,
+                        255 - ~G,
+                        255 - ~B,
+                        ~A,
+                    </args>
+                </construct>
+            </impl>
+        </custom>
+        <eq><fields>~R,~G,~B,~A<fields></eq>
+    </functions>
+</class>
+<class name="Brush">
+    <getable>
+        <variable name="~Image" type="ImageSource?">none</variable>
+        <variable name="~Color" type="Color?"      >none</variable>
+    </getable>
+    <functions>
+        <constructor>
+            <parameter>
+                <variable name="color" type="Color">
+            </parameter>
+            <impl>
+                <assign field="~Color">color</assign>
+            </impl>
+        </constructor>
+        <constructor>
+            <parameter>
+                <variable name="image" type="ImageSource">
+            </parameter>
+            <impl>
+                <assign field="~Image">image</assign>
+            </impl>
+        </constructor>
+    </functions>
+</class>
+<enum name="UnitKind">Point,Percent,Pixel,Auto,Addition,Subtraction,HorizontalPercent,VerticalPercent</enum>
+<class name="Unit">
+    <getable>
+        <variable name="~Value" type="double">0</variable>
+        <variable name="~Kind" type="UnitKind">UnitKind.Pixel</variable>
+    </getable>
+    <functions>
+        <constructor></constructor>
+        <constructor>
+            <parameter>
+                <variable name="value" type="float">
+                <variable name="kind" type="UnitKind">
+            </parameter>
+            <impl>
+                <assign field="~Value">value</assign>
+                <assign field="~Kind">kind</assign>
+            </impl>
+        </constructor>
+        <constructor>
+            <parameter>
+                <variabe name="unit" type="Unit">
+            </parameter>
+            <impl>
+                <assign field="~Value">unit.~Value</assign>
+                <assign field="~Kind">unit.~Kind</assign>
+            </impl>
+        </constructor>
+        <operator name="str">
+            <parameter></parameter>
+            <externFuncCall resultType="string">
+                <args></args>
+            </externFuncCall>
+        </operator>
+        <operator name="add">
+            <parameter>
+                <variabe name="other" type="Unit">
+            </parameter>
+            <impl>
+                <externFuncCall returnType="Unit">
+                    <args>other</args>
+                </externFuncCall>
+            </impl>
+        </operator>
+        <operator name="sub">
+            <parameter>
+                <variabe name="other" type="Unit">
+            </parameter>
+            <impl>
+                <externFuncCall returnType="Unit">
+                    <args>other</args>
+                </externFuncCall>
+            </impl>
+        </operator>
+        <operator name="mul">
+            <parameter>
+                <variabe name="other" type="float">
+            </parameter>
+            <impl>
+                <construct>
+                    <args>~Value * other, ~Kind</args>
+                </construct>
+            </impl>
+        </operator>
+        <operator name="div">
+            <parameter>
+                <variabe name="other" type="float">
+            </parameter>
+            <impl>
+                <construct>
+                    <args>~Value / other, ~Kind</args>
+                </construct>
+            </impl>
+        </operator>
+        <!-- Are 0pt and 0px equal? -->
+        <eq><fields>~Value,~Kind</fields></eq>
+        <!-- TODO: Keep this like this??? -->
+        <custom name="GetMaxComponent" returnType="Unit">
+            <parameter></parameter>
+            <impl>
+                this
+            </impl>
+        </custom>
+    </functions>
+</class>
+<class name="UnitCalc" base="Unit">
+    <getable>
+        <variable name="~Left"  type="Unit">
+        <variable name="~Right" type="Unit">
+    </getable>
+    <functions>
+        <constructor>
+            <parameter>
+                <variable name="left"  type="Unit">
+                <variable name="right" type="Unit">
+                <!-- TODO: Debateable -->
+                <variable name="calcType" type="UnitKind">
+            </parameter>
+            <impl>
+                <assign field="~Left" >left</assign>
+                <assign field="~Right">right</assign>
+                <assign field="~Kind" >calcType</assign>
+            </impl>
+        </constructor>
+        <operator name="add">
+            <parameter><variabe name="other" type="Unit"></parameter>
+            <impl>
+                <externFuncCall returnType="UnitCalc">
+                    <args>other</args>
+                </externFuncCall>
+            </impl>
+        </operator>
+        <operator name="sub">
+            <parameter><variabe name="other" type="Unit"></parameter>
+            <impl>
+                <externFuncCall returnType="UnitCalc">
+                    <args>other</args>
+                </externFuncCall>
+            </impl>
+        </operator>
+        <operator name="mul">
+            <parameter><variable name="other" type="double"></parameter>
+            <impl>
+                <construct type="UnitCalc">
+                    <args>~Left * other, ~Right * other, ~Kind</args>
+                </construct>
+            </impl>
+        </operator>
+        <operator name="div">
+            <parameter><variable name="other" type="double"></parameter>
+            <impl>
+                <construct type="UnitCalc">
+                    <args>~Left / other, ~Right / other, ~Kind</args>
+                </construct>
+            </impl>
+        </operator>
+    </functions>
+</class>
+<class name="Thickness">
+    <setable>
+        <variable name="top" type="Unit">
+            <construct type="Unit">
+                <args>0, UnitKind.Pixel</args>
+            </construct>
+        </variable>
+        <variable name="right" type="Unit">
+            <construct type="Unit">
+                <args>0, UnitKind.Pixel</args>
+            </construct>
+        </variable>
+        <variable name="left" type="Unit">
+            <construct type="Unit">
+                <args>0, UnitKind.Pixel</args>
+            </construct>
+        </variable>
+        <variable name="bottom" type="Unit">
+            <construct type="Unit">
+                <args>0, UnitKind.Pixel</args>
+            </construct>
+        </variable>
+    </setable>
+    <getable>
+        <variabe name="~Vertical" type="Unit">top + bottom</variable>
+        <variabe name="~Horizontal" type="Unit">left + right</variable>
+    </getable>
+    <functions>
+        <constructor><parameter></parameter></constructor>
+        <constructor>
+            <parameter>
+                <variabe name="top"    type="Unit">
+                <variabe name="right"  type="Unit">
+                <variabe name="bottom" type="Unit">
+                <variabe name="left"   type="Unit">
+            </parameter>
+            <impl>
+                <assign field="top">top</assign>
+                <assign field="right">right</assign>
+                <assign field="bottom">bottom</assign>
+                <assign field="left">left</assign>
+            </impl>
+        </constructor>
+        <eq><fields>top, right, bottom, left</fields></eq>
+        <operator name="add">
+            <parameter><variabe name="other" type="Thickness"></parameter>
+            <impl>
+                <construct type="Thickness">
+                    <args>
+                    top + other.top,
+                    right + other.right,
+                    bottom + other.bottom,
+                    left + other.left,
+                    </args>
+                </construct>
+            </impl>
+        </operator>
+        <operator name="sub">
+            <parameter><variabe name="other" type="Thickness"></parameter>
+            <impl>
+                <construct type="Thickness">
+                    <args>
+                    top - other.top,
+                    right - other.right,
+                    bottom - other.bottom,
+                    left - other.left,
+                    </args>
+                </construct>
+            </impl>
+        </operator>
+    </functions>
+</class>
+<class name="FilterInput"></class>
+<class name="Element" base="FilterInput">
+
+</class>
+
+abstract class Element < IFilterInput
+{
+    func
+    {
+        () = {
+            //setup stuff
+        };
+    }
+    set 
+    {
+        ~Background: Brush?      = none;
+        ~Color: Color?           = none;
+        ~Filter: Filter?         = none;
+        ~Margin: Thickness?      = none;
+        ~Padding: Thickness?     = none;
+        ~Width: Unit?            = none;
+        ~Height: Unit?           = none;
+        ~IsVisible: bool?        = none;
+        ~Parent: ParentElement   = none;
+        ~Name: string            = ...;
+
+        position: string         = "";
+        background: Brush        = Brush(Color(0,0,0,0));
+        color: Color             = ~Parent?.color     ?? Color(0,0,0,255);
+        filter: Filter?          = ~Parent?.filter    ?? none;
+        orientation: Orientation = Orientation.TopLeft;
+        margin: Thickness        = Thickness(0,0,0,0);
+        padding: Thickness       = Thickness(0,0,0,0);
+        width: Unit              = {
+
+        };
+        height: Unit             = {
+
+        };
+        isVisible: bool          = ~Parent?.isVisible ?? true;
+    }
+    get 
+    {
+        marginAndPadding: Thickness = this.padding + this.margin;
+        top: Unit                   = {
+
+        };
+        right: Unit                 = {
+
+        };
+        bottom: Unit;
+        left: Unit;
+        rightSide: Unit             = this.left + this.width;
+        bottomSide: Unit            = this.top + this.height;
+
+        ~AllowsVerticalStretching: bool   = virtual true;
+        ~AllowsHorizontalStretching: bool = virtual true;
+        ~Kind: ElementKind                = abstract;
+        ~InitialWidth: Unit               = abstract;
+        ~InitialHeight: Unit              = abstract;
+    }
+}
+
+abstract class TextElement < Element 
+{
+    constr
+    {
+        () => {
+            // setup stuff
+        }; 
+    }
+    set
+    {
+        font: Font        = this.parent?.font     ?? Font("Arial"); 
+        fontsize: Unit    = this.parent?.fontsize ?? 14pt; 
+        lineheight: float = 1.4f
+    }
+}
+class Label < TextElement
+{
+    constr
+    {
+        (text: string) => {
+            this.text = text;
+        }
+    }
+    set
+    {
+        text: string = "";
+        align: Alignment = Alignment.Unset;
+    }
+    get
+    {
+        ~Kind: ElementKind = ElementKind.Label;
+        ~InitialWidth: Unit  = px(MeasureText(this.text));
+        ~InitialHeight: Unit = abstract;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class Vector2 
+{
+    func 
+    {
+        (x: double, y: double) = {
+            this.x = x;
+            this.y = y;
+        };
+    }
+    set 
+    {
+        x: double;
+        y: double;
+    }
+}
+
+extern MeasureText(string) -> Vector2
+
+enum Alignment 
+{
+    Unset,
+    Left,
+    Center,
+    Right,
+    Block,
+}
+
+class ImageSource
+{
+    func
+    {
+        (path: string) = {
+            this.~Path = path;
+        };
+    }
+    set
+    {
+        width: int  = 0;
+        height: int = 0;
+    }
+    get
+    {
+        ~Path: string      = "";
+        aspectRatio: float = float(width) / height;
+    }
+}
+
+class Color
+{
+    func
+    {
+        (r: float, g: float, b: float, a: float) = {
+            this.~R = int(r * 255); 
+            this.~G = int(g * 255); 
+            this.~B = int(b * 255); 
+            this.~A = int(a * 255); 
+        };
+        (r: int, g: int, b: int, a: int) = {
+            this.~R = r;
+            this.~G = g;
+            this.~B = b;
+            this.~A = a;
+        };
+        invert() -> Color = {
+            ret Color(255 - this.~R, 255 - this.~G, 255 - this.~B, A)
+        }
+        // op
+        eq(left: Color, right: Color) -> bool = {
+            ret left.~R == right.~R && left.~G == right.~G && left.~B == right.~B && left.~A == right.~A; 
+        }
+    }
+    get
+    {
+        ~R: int = 0;
+        ~G: int = 0;
+        ~B: int = 0;
+        ~A: int = 0;
+    }
+}
+
+class Brush 
+{
+    func
+    {
+        (color: Color) = {
+            this.~Color = color;
+        };
+        (image: ImageSource) = {
+            this.~Image = image;
+        }
+    }
+    get
+    {
+        ~Image: ImageSource? = none;
+        ~Color: Color?       = none;
+    }
+}
+
+enum UnitKind
+{
+    Point,
+    Percent,
+    Pixel,
+    Auto,
+    Addition,
+    Subtraction,
+    HorizontalPercent,
+    VerticalPercent,
+}
+
+extern kindToStr(kind: UnitKind) -> string;
+
+class Unit
+{
+    func
+    {
+        (value: float, kind: UnitKind) = {
+            this.~Value = value;
+            this.~Kind = kind;
+        };
+        () = {
+
+        };
+        str(obj: Unit) -> string = {
+            if kind == UnitKind.Auto {
+                return "auto";
+            }
+            return value + "" + kindToStr(kind);
+        }
+    }
+    get
+    {
+        ~Value: float   = 0;
+        ~Kind: UnitKind = UnitKind.Pixel;
+    }
+}
+
+class Thickness
+{
+    func
+    {
+        (top: Unit, right: Unit, bottom: Unit, left: Unit) = {
+            this.top = top;
+            this.right = right;
+            this.bottom = bottom;
+            this.left = left;
+        };
+        () = {
+
+        };
+        str(obj: Thickness) -> string = {
+            return $"Thickness({obj.top} {obj.right} {obj.bottom} {obj.left})";
+        };
+        add(left: Thickness, right: Thickness) -> Thickness = {
+            return Thickness(
+                left.top + right.top, 
+                left.right + right.right, 
+                left.bottom + right.bottom, 
+                left.left + right.left);
+        };
+        eq(left: Thickness, right: Thickness) -> bool = {
+            return left.top == right.top &&
+                   left.right == right.right &&
+                   left.bottom == right.bottom &&
+                   left.left == right.left;
+        };
+    }
+    set
+    {
+        top: Unit    = px(0);
+        right: Unit  = px(0);
+        bottom: Unit = px(0);
+        left: Unit   = px(0);
+    }
+    get
+    {
+        ~Vertical: Unit   = top + bottom;
+        ~Horizontal: Unit = left + right;
+    }
+}
+
+abstract class IFilterInput 
+{
+
+}
+
+abstract class Element < IFilterInput
+{
+    func
+    {
+        () = {
+            //setup stuff
+        };
+    }
+    set 
+    {
+        ~Background: Brush?      = none;
+        ~Color: Color?           = none;
+        ~Filter: Filter?         = none;
+        ~Margin: Thickness?      = none;
+        ~Padding: Thickness?     = none;
+        ~Width: Unit?            = none;
+        ~Height: Unit?           = none;
+        ~IsVisible: bool?        = none;
+        ~Parent: ParentElement   = none;
+        ~Name: string            = ...;
+
+        position: string         = "";
+        background: Brush        = Brush(Color(0,0,0,0));
+        color: Color             = ~Parent?.color     ?? Color(0,0,0,255);
+        filter: Filter?          = ~Parent?.filter    ?? none;
+        orientation: Orientation = Orientation.TopLeft;
+        margin: Thickness        = Thickness(0,0,0,0);
+        padding: Thickness       = Thickness(0,0,0,0);
+        width: Unit              = {
+
+        };
+        height: Unit             = {
+
+        };
+        isVisible: bool          = ~Parent?.isVisible ?? true;
+    }
+    get 
+    {
+        marginAndPadding: Thickness = this.padding + this.margin;
+        top: Unit                   = {
+
+        };
+        right: Unit                 = {
+
+        };
+        bottom: Unit;
+        left: Unit;
+        rightSide: Unit             = this.left + this.width;
+        bottomSide: Unit            = this.top + this.height;
+
+        ~AllowsVerticalStretching: bool   = virtual true;
+        ~AllowsHorizontalStretching: bool = virtual true;
+        ~Kind: ElementKind                = abstract;
+        ~InitialWidth: Unit               = abstract;
+        ~InitialHeight: Unit              = abstract;
+    }
+}
+
+abstract class TextElement < Element 
+{
+    constr
+    {
+        () => {
+            // setup stuff
+        }; 
+    }
+    set
+    {
+        font: Font        = this.parent?.font     ?? Font("Arial"); 
+        fontsize: Unit    = this.parent?.fontsize ?? 14pt; 
+        lineheight: float = 1.4f
+    }
+}
+class Label < TextElement
+{
+    constr
+    {
+        (text: string) => {
+            this.text = text;
+        }
+    }
+    set
+    {
+        text: string = "";
+        align: Alignment = Alignment.Unset;
+    }
+    get
+    {
+        ~Kind: ElementKind = ElementKind.Label;
+        ~InitialWidth: Unit  = px(MeasureText(this.text));
+        ~InitialHeight: Unit = abstract;
+    }
+}

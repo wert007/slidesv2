@@ -181,8 +181,11 @@ namespace Minsk.CodeAnalysis
 			Add(typeof(Element), name: "any", canBeCastedTo: implementsIFilterInput);
 			Add(typeof(TextElement));
 			Add(typeof(ParentElement));
-			Add(typeof(ImageStretching));
+			Add(typeof(Stretching));
 			Add(typeof(Image));
+			Add(typeof(VideoSource));
+			Add(typeof(Video));
+
 			Add(typeof(FlowAxis));
 			Add(typeof(StackAlignment));
 			Add(typeof(Stack));

@@ -207,6 +207,15 @@ svg#custom-filters {
     }
 }
 
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
 section.invisible {
     display: none;
 }

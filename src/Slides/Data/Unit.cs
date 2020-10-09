@@ -218,6 +218,7 @@ namespace Slides.Data
 				char.IsLetter(text[split - 1]))
 			{
 				split--;
+				if (split == 0) return false;
 			}
 			var kind = ToUnitKind(text.Substring(split));
 			if (kind == null)

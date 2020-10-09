@@ -14,5 +14,9 @@ function getAnimations(){
 }
 
 function loadInner(){
+    loadInnerAddVideo();
+}
+
+function loadInnerAddVideo(){
 }
 
