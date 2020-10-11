@@ -1,0 +1,351 @@
+<functions>
+  <!--  Global functions -->
+  <externFunction name="join" returnType="string">
+    <variable name="seperator" type="string"/>
+    <variable name="array" type="object[]"/>
+  </externFunction>
+  <externFunction name="utf32" returnType="string">
+    <variable name="codepoint" type="int"/>
+  </externFunction>
+  <externFunction name="utf32" returnType="int[]">
+    <variable name="str" type="string"/>
+  </externFunction>
+  <externFunction name="contains" returnType="bool">
+    <variable name="hay" type="string"/>
+    <variable name="needle" type="string"/>
+  </externFunction>
+  <externFunction name="toTime" returnType="string">
+    <variable name="time" type="int"/>
+  </externFunction>
+  <externFunction name="fixedWidth" returnType="string">
+    <variable name="source" type="object"/>
+    <variable name="length" type="int"/>
+  </externFunction>
+  <externFunction name="float" returnType="float">
+    <variable name="i" type="int"/>
+  </externFunction>
+  <externFunction name="int" returnType="int">
+    <variable name="f" type="float"/>
+  </externFunction>
+  <externFunction name="mod" returnType="int">
+    <variable name="left" type="int"/>
+    <variable name="right" type="int"/>
+  </externFunction>
+  <externFunction name="min" returnType="int">
+    <variable name="a" type="int"/>
+    <variable name="b" type="int"/>
+  </externFunction>
+  <externFunction name="min" returnType="float">
+    <variable name="a" type="float"/>
+    <variable name="b" type="float"/>
+  </externFunction>
+  <externFunction name="min" returnType="Unit">
+    <variable name="a" type="Unit"/>
+    <variable name="b" type="Unit"/>
+  </externFunction>
+  <externFunction name="max" returnType="int">
+    <variable name="a" type="int"/>
+    <variable name="b" type="int"/>
+  </externFunction>
+  <externFunction name="max" returnType="int">
+    <variable name="a" type="float"/>
+    <variable name="b" type="float"/>
+  </externFunction>
+  <externFunction name="max" returnType="Unit">
+    <variable name="a" type="Unit"/>
+    <variable name="b" type="Unit"/>
+  </externFunction>
+  <externFunction name="csv" returnType="CSVFile">
+    <variable name="fileName" type="string"/>
+  </externFunction>
+  <externFunction name="stepBy" returnType="Range">
+    <variable name="r" type="Range"/>
+    <variable name="step" type="int"/>
+  </externFunction>
+  <externFunction name="video" returnType="VideoSource">
+    <variable name="fileName" type="string"/>
+  </externFunction>
+  <externFunction name="image" returnType="ImageSource">
+    <variable name="fileName" type="string"/>
+  </externFunction>
+  <externFunction name="crop" returnType="ImageSource">
+    <variable name="source" type="ImageSource"/>
+    <variable name="top" type="Unit"/>
+    <variable name="right" type="Unit"/>
+    <variable name="bottom" type="Unit"/>
+    <variable name="left" type="Unit"/>
+  </externFunction>
+  <externFunction name="youtube" returnType="YouTubePlayer">
+    <variable name="video" type="string"/>
+    <variable name="quality" type="YouTubeQuality"/>
+  </externFunction>
+  <externFunction name="println" returnType="void">
+  </externFunction>
+  <externFunction name="println" returnType="void">
+    <variable name="message" type="string"/>
+  </externFunction>
+  <externFunction name="print" returnType="void">
+    <variable name="message" type="string"/>
+  </externFunction>
+  <externFunction name="hsl" returnType="Color">
+    <variable name="hue" type="int"/>
+    <variable name="sat" type="int"/>
+    <variable name="light" type="int"/>
+  </externFunction>
+  <externFunction name="hsla" returnType="Color">
+    <variable name="hue" type="int"/>
+    <variable name="sat" type="int"/>
+    <variable name="light" type="int"/>
+    <variable name="alpha" type="int"/>
+  </externFunction>
+  <externFunction name="hex" returnType="Color">
+    <variable name="hex" type="string"/>
+  </externFunction>
+  <externFunction name="rgb" returnType="Color">
+    <variable name="r" type="int"/>
+    <variable name="g" type="int"/>
+    <variable name="b" type="int"/>
+  </externFunction>
+  <externFunction name="rgba" returnType="Color">
+    <variable name="r" type="int"/>
+    <variable name="g" type="int"/>
+    <variable name="b" type="int"/>
+    <variable name="a" type="int"/>
+  </externFunction>
+  <externFunction name="alpha" returnType="Color">
+    <variable name="color" type="Color"/>
+    <variable name="alpha" type="float"/>
+  </externFunction>
+  <externFunction name="identityMatrix" returnType="Matrix">
+    <variable name="width" type="int"/>
+    <variable name="height" type="int"/>
+  </externFunction>
+  <externFunction name="matrix" returnType="Matrix">
+    <variable name="values" type="float[]"/>
+    <variable name="width" type="int"/>
+    <variable name="height" type="int"/>
+  </externFunction>
+  <externFunction name="px" returnType="Unit">
+    <variable name="value" type="float"/>
+  </externFunction>
+  <externFunction name="pt" returnType="Unit">
+    <variable name="value" type="float"/>
+  </externFunction>
+  <externFunction name="pct" returnType="Unit">
+    <variable name="value" type="float"/>
+  </externFunction>
+  <externFunction name="float" returnType="float">
+    <variable name="value" type="Unit"/>
+  </externFunction>
+  <externFunction name="border" returnType="BorderLine">
+    <variable name="width" type="Unit"/>
+    <variable name="style" type="BorderStyle"/>
+    <variable name="color" type="Color"/>
+  </externFunction>
+  <!--  Global thickness functions -->
+  <externFunction name="toVertical" returnType="Unit">
+    <variable name="value" type="Unit"/>
+  </externFunction>
+  <externFunction name="toHorizontal" returnType="Unit">
+    <variable name="value" type="Unit"/>
+  </externFunction>
+  <externFunction name="padding" returnType="Thickness">
+    <variable name="value" type="Unit"/>
+  </externFunction>
+  <externFunction name="padding" returnType="Thickness">
+    <variable name="vertical" type="Unit"/>
+    <variable name="horizontal" type="Unit"/>
+  </externFunction>
+  <externFunction name="padding" returnType="Thickness">
+    <variable name="top" type="Unit"/>
+    <variable name="right" type="Unit"/>
+    <variable name="bottom" type="Unit"/>
+    <variable name="left" type="Unit"/>
+  </externFunction>
+  <externFunction name="margin" returnType="Thickness">
+    <variable name="value" type="Unit"/>
+  </externFunction>
+  <externFunction name="margin" returnType="Thickness">
+    <variable name="vertical" type="Unit"/>
+    <variable name="horizontal" type="Unit"/>
+  </externFunction>
+  <externFunction name="margin" returnType="Thickness">
+    <variable name="top" type="Unit"/>
+    <variable name="right" type="Unit"/>
+    <variable name="bottom" type="Unit"/>
+    <variable name="left" type="Unit"/>
+  </externFunction>
+  <!--  Global filter functions -->
+  <externFunction name="flood" returnType="SVGFilter">
+    <variable name="color" type="Color"/>
+    <variable name="opacity" type="float"/>
+  </externFunction>
+  <externFunction name="turbulence" returnType="SVGFilter">
+    <variable name="baseFrequency" type="float"/>
+    <variable name="numOctaves" type="int"/>
+  </externFunction>
+  <externFunction name="pointLight" returnType="Light">
+    <variable name="x" type="float"/>
+    <variable name="y" type="float"/>
+    <variable name="z" type="float"/>
+  </externFunction>
+  <externFunction name="distantLight" returnType="Light">
+    <variable name="azimuth" type="float"/>
+    <variable name="elevation" type="float"/>
+  </externFunction>
+  <externFunction name="spotLight" returnType="Light">
+    <variable name="x" type="float"/>
+    <variable name="y" type="float"/>
+    <variable name="z" type="float"/>
+    <variable name="pointAtX" type="float"/>
+    <variable name="pointAtY" type="float"/>
+    <variable name="pointAtZ" type="float"/>
+    <variable name="specularExponent" type="float"/>
+    <variable name="limitingConeAngle" type="float"/>
+  </externFunction>
+  <externFunction name="diffuseLight" returnType="SVGFilter">
+    <variable name="input" type="FilterInput"/>
+    <variable name="surfaceScale" type="float"/>
+    <variable name="diffuseConstant" type="float"/>
+    <variable name="child" type="Light"/>
+  </externFunction>
+  <externFunction name="specularLight" returnType="SVGFilter">
+    <variable name="input" type="FilterInput"/>
+    <variable name="surfaceScale" type="float"/>
+    <variable name="specularConstant" type="float"/>
+    <variable name="specularExponent" type="float"/>
+    <variable name="child" type="Light"/>
+  </externFunction>
+  <externFunction name="blend" returnType="SVGFilter">
+    <variable name="input1" type="FilterInput"/>
+    <variable name="input2" type="FilterInput"/>
+    <variable name="mode" type="BlendMode"/>
+  </externFunction>
+  <externFunction name="convolve" returnType="SVGFilter">
+    <variable name="input" type="FilterInput"/>
+    <variable name="matrix" type="Matrix"/>
+  </externFunction>
+  <externFunction name="erode" returnType="SVGFilter">
+    <variable name="input" type="FilterInput"/>
+    <variable name="radius" type="float"/>
+  </externFunction>
+  <externFunction name="dilate" returnType="SVGFilter">
+    <variable name="input" type="FilterInput"/>
+    <variable name="radius" type="float"/>
+  </externFunction>
+  <externFunction name="linearNode" returnType="ComponentTransferFilterChild">
+    <variable name="intercept" type="float"/>
+  </externFunction>
+  <externFunction name="identityNode" returnType="ComponentTransferFilterChild">
+  </externFunction>
+  <externFunction name="gammaNode" returnType="ComponentTransferFilterChild">
+    <variable name="amplitude" type="float"/>
+    <variable name="exponent" type="float"/>
+    <variable name="offset" type="float"/>
+  </externFunction>
+  <externFunction name="tableNode" returnType="ComponentTransferFilterChild">
+    <variable name="values" type="float[]"/>
+  </externFunction>
+  <externFunction name="discreteNode" returnType="ComponentTransferFilterChild">
+    <variable name="values" type="float[]"/>
+  </externFunction>
+  <externFunction name="transfer" returnType="SVGFilter">
+    <variable name="input" type="FilterInput"/>
+    <variable name="red" type="ComponentTransferFilterChild"/>
+    <variable name="green" type="ComponentTransferFilterChild"/>
+    <variable name="blue" type="ComponentTransferFilterChild"/>
+    <variable name="alpha" type="ComponentTransferFilterChild"/>
+  </externFunction>
+  <externFunction name="blur" returnType="SVGFilter">
+    <variable name="input" type="FilterInput"/>
+    <variable name="stdDeviation" type="float"/>
+  </externFunction>
+  <externFunction name="saturate" returnType="SVGFilter">
+    <variable name="input" type="FilterInput"/>
+    <variable name="value" type="float"/>
+  </externFunction>
+  <externFunction name="colorMatrix" returnType="SVGFilter">
+    <variable name="input" type="FilterInput"/>
+    <variable name="matrix" type="Matrix"/>
+  </externFunction>
+  <externFunction name="blur" returnType="Filter">
+    <variable name="blurFactor" type="float"/>
+  </externFunction>
+  <externFunction name="brightness" returnType="Filter">
+    <variable name="value" type="float"/>
+  </externFunction>
+  <externFunction name="contrast" returnType="Filter">
+    <variable name="value" type="float"/>
+  </externFunction>
+  <externFunction name="grayscale" returnType="Filter">
+    <variable name="value" type="float"/>
+  </externFunction>
+  <externFunction name="invert" returnType="Filter">
+    <variable name="value" type="float"/>
+  </externFunction>
+  <externFunction name="opacity" returnType="Filter">
+    <variable name="value" type="float"/>
+  </externFunction>
+  <externFunction name="saturate" returnType="Filter">
+    <variable name="value" type="float"/>
+  </externFunction>
+  <externFunction name="sepia" returnType="Filter">
+    <variable name="value" type="float"/>
+  </externFunction>
+  <externFunction name="dropShadow" returnType="Filter">
+    <variable name="horizontal" type="int"/>
+    <variable name="vertical" type="int"/>
+    <variable name="blur" type="int"/>
+    <variable name="spread" type="int"/>
+    <variable name="color" type="Color"/>
+  </externFunction>
+  <externFunction name="hueRotate" returnType="Filter">
+    <variable name="value" type="float"/>
+  </externFunction>
+  <!--  Global SVG functions -->
+  <externFunction name="rect" returnType="UnitRect">
+    <variable name="width" type="Unit"/>
+    <variable name="height" type="Unit"/>
+  </externFunction>
+  <externFunction name="rect" returnType="UnitRect">
+    <variable name="topLeft" type="UnitPair"/>
+    <variable name="bottomRight" type="UnitPair"/>
+  </externFunction>
+  <externFunction name="line" returnType="UnitLine">
+    <variable name="p1" type="UnitPair"/>
+    <variable name="p2" type="UnitPair"/>
+  </externFunction>
+  <externFunction name="line" returnType="UnitLine">
+    <variable name="x1" type="Unit"/>
+    <variable name="y1" type="Unit"/>
+    <variable name="x2" type="Unit"/>
+    <variable name="y2" type="Unit"/>
+  </externFunction>
+  <externFunction name="path" returnType="Path">
+    <variable name="m" type="string"/>
+    <variable name="width" type="int"/>
+    <variable name="height" type="int"/>
+  </externFunction>
+  <externFunction name="arrow" returnType="Path">
+    <variable name="direction" type="Direction"/>
+    <variable name="arrowLength" type="int"/>
+    <variable name="arrowWidth" type="int"/>
+    <variable name="baseWidthPercent" type="float"/>
+    <variable name="arrowHeadLengthPercent" type="float"/>
+  </externFunction>
+  <externFunction name="intersectPaths" returnType="Path">
+    <variable name="a" type="Path"/>
+    <variable name="b" type="Path"/>
+  </externFunction>
+  <externFunction name="unitePaths" returnType="Path">
+    <variable name="a" type="Path"/>
+    <variable name="b" type="Path"/>
+  </externFunction>
+  <externFunction name="differPaths" returnType="Path">
+    <variable name="a" type="Path"/>
+    <variable name="b" type="Path"/>
+  </externFunction>
+  <externFunction name="loadSVG" returnType="SVGTag">
+    <variable name="fileName" type="string"/>
+  </externFunction>
+</functions>

@@ -18,7 +18,7 @@ namespace Minsk.CodeAnalysis
 		protected readonly BoundStatement _root;
 		protected VariableValueCollection _constants = new VariableValueCollection(null);
 		protected readonly BuiltInTypes _builtInTypes = BuiltInTypes.Instance;
-
+		protected readonly _GlobalFunctionsConverter _builtInFunctions = _GlobalFunctionsConverter.Instance;
 		public BasicEvaluator(BoundStatement root)
 		{
 			_root = root;
@@ -375,23 +375,22 @@ namespace Minsk.CodeAnalysis
 				case "setData":
 				case "lib": return EvaluateNativeFunction(function.Name, args);
 			}
-			MethodInfo method = null;
 			if (source != null)
 			{
-				method = source.LookMethodInfoUp(function);
+				var result = source.Call(function, args);
 				AddReferencedLibrary(source);
+				return result;
 			}
 			else
 			{
-				method = GlobalFunctionsConverter.Instance.LookMethodInfoUp(function);
+				var tracker = new ReferenceTracker();
+				GlobalFunctions.Set_BackDump(tracker);
+				var result = _builtInFunctions.Call(function, args);
+				GlobalFunctions.Set_BackDump(null);
+				if (tracker.Reference != null)
+					AddReferencedFile(tracker.Reference);
+				return result;
 			}
-			var tracker = new ReferenceTracker();
-			GlobalFunctions.Set_BackDump(tracker);
-			var result =MethodInvoke(method, null, args);
-			GlobalFunctions.Set_BackDump(null);
-			if (tracker.Reference != null)
-				AddReferencedFile(tracker.Reference);
-			return result;
 		}
 
 		protected virtual object EvaluateNativeFunction(string name, object[] args) => null;

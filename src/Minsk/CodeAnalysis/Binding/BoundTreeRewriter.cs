@@ -35,7 +35,7 @@ namespace Minsk.CodeAnalysis.Binding
 				var lengthFunction = new BoundFunctionExpression(ArrayTypeSymbol.LenFunction, new BoundExpression[0], null);
 				BoundExpression initializer = new BoundFunctionAccessExpression(_usedAnonymFor.Pop(), lengthFunction);
 				FunctionSymbol minFunction = null;
-				GlobalFunctionsConverter.Instance.TryGetSymbol("min", out var functions);
+				_GlobalFunctionsConverter.Instance.TryGetSymbol("min", out var functions);
 				foreach (var function in functions)
 				{
 					if (function.Parameter.Count == 2 &&

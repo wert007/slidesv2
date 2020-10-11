@@ -243,7 +243,7 @@ namespace Minsk.CodeAnalysis
 		public void ReportUndefinedFunction(TextSpan span, string name, LibrarySymbol library)
 		{
 			var message = $"Function '{library.Name}.{name} doesn't exist in '{library.Name}'.";
-			var mostSimiliarOnes = SimiliarValues(library.GlobalFunctions.Select(f => f.Name).Distinct().ToArray(), name);
+			var mostSimiliarOnes = SimiliarValues(library.GlobalFunctions.Keys.Select(f => f.Name).Distinct().ToArray(), name);
 			if (mostSimiliarOnes.Length > 0)
 				message += $" Maybe try {Join(mostSimiliarOnes, "'", "'")}.";
 			Report(span, message, DiagnosticLevel.Error);

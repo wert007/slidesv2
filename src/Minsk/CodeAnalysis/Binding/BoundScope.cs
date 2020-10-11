@@ -15,7 +15,7 @@ namespace Minsk.CodeAnalysis.Binding
 
 
 		private static BuiltInTypes _builtInTypes = BuiltInTypes.Instance;
-		private static GlobalFunctionsConverter _builtInFunctions = GlobalFunctionsConverter.Instance;
+		private static _GlobalFunctionsConverter _builtInFunctions = _GlobalFunctionsConverter.Instance;
 
 		public BoundScope(BoundScope parent)
 		{
@@ -103,7 +103,7 @@ namespace Minsk.CodeAnalysis.Binding
 			if (_functions.ContainsKey(function.Name))
 				return false;
 
-			if (_builtInFunctions.ContainsSymbol(function))
+			if (_builtInFunctions.ContainsKey(function))
 				return false;
 
 			_functions.Add(function.Name, function);

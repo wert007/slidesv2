@@ -93,13 +93,14 @@
     <Compile Include="Filter.cs" />
     <Compile Include="Helpers\JavaScriptEmitter.cs" />
     <Compile Include="Helpers\SlidesHelper.cs" />
-    <Compile Include="ImportExpression.cs" />
+    <Compile Include="ImportValue.cs" />
     <Compile Include="Data\Interpolation.cs" />
     <Compile Include="Elements\Label.cs" />
     <Compile Include="Elements\LineChart.cs" />
     <Compile Include="Elements\List.cs" />
     <Compile Include="Data\Matrix.cs" />
     <Compile Include="Data\Orientation.cs" />
+    <Compile Include="ImportValueType.cs" />
     <Compile Include="Math\MathFormula.cs" />
     <Compile Include="Math\MathPlot.cs" />
     <Compile Include="OptionalValue.cs" />

@@ -4,6 +4,7 @@ using Minsk.CodeAnalysis.Symbols;
 
 namespace Minsk.CodeAnalysis
 {
+
 	[Serializable]
 	public sealed class VariableValueCollection : Dictionary<VariableSymbol, object>
 	{

@@ -475,14 +475,11 @@ namespace Minsk.CodeAnalysis
 
 		protected override object CheckIfIsImport(object value)
 		{
-			if (value is ImportExpression<LibrarySymbol> importLibrary)
+			if(value is ImportValue import)
 			{
-				return importLibrary.Value;
-			}
-			else if (value is ImportExpression<Font> importFont)
-			{
-				_presentationBuilder.AddImport(importFont.Href);
-				return importFont.Value;
+				if (import.Type != ImportValueType.Library)
+					_presentationBuilder.AddImport(import.Href);
+				return import.Value;
 			}
 			return value;
 		}

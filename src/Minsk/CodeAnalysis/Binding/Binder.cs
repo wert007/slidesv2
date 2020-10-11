@@ -236,13 +236,16 @@ namespace Minsk.CodeAnalysis.Binding
 		{
 			var name = syntax.Identifier.Text;
 			var initializer = BindExpression(syntax.Initializer);
+			var type = initializer.Type;
 			//Make sure referenced libraries actually work!
 			//EDIT: I don't know if we do. But i think we do..
 			var libraryType = _builtInTypes.LookSymbolUp(typeof(LibrarySymbol));
-			if (initializer.Type != _builtInTypes.LookSymbolUp(typeof(Font)) && initializer.Type != libraryType)
+			if (type != _builtInTypes.LookSymbolUp(typeof(Font)) && type != libraryType)
+			{
 				_diagnostics.ReportCannotConvert(syntax.Initializer.Span, initializer.Type, new TypeSymbol[] { _builtInTypes.LookSymbolUp(typeof(Font)), libraryType });
-
-			var variable = new VariableSymbol(name, false, initializer.Type);
+				type = PrimitiveTypeSymbol.Error;
+			}
+			var variable = new VariableSymbol(name, false, type);
 
 			TextSpan? span = syntax.Identifier.Span;
 
