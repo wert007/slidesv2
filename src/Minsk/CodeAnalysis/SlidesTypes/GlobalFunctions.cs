@@ -308,20 +308,20 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			return new BorderLine(width, style, color);
 		}
 
-		public static ImportValue lib(string path) => throw new NotSupportedException();
+		public static ImportExpression<LibrarySymbol> lib(string path) => throw new NotSupportedException();
 
 		//public static Font gfont(string name)
 		//{
 		//	return _gfont(name).Value;
 		//}
 
-		public static ImportValue font(string name)
+		public static ImportExpression<Font> font(string name)
 		{
 			var font = new Font(name);
-			return new ImportValue(font, ImportValueType.Font);
+			return new ImportExpression<Font>(font);
 		}
 
-		public static ImportValue gfont(string name)
+		public static ImportExpression<Font> gfont(string name)
 		{
 			var font = new Font(name);
 
@@ -342,7 +342,7 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			}
 			var src = GtSrc(contnts);
 			font.LoadFontFamily(src);
-			return new ImportValue(font, ImportValueType.Font, href);
+			return new ImportExpression<Font>(font, href);
 		}
 
 		private static string GtSrc(string url)

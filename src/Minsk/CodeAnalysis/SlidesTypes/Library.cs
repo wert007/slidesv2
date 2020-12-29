@@ -17,7 +17,8 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 		public BodySymbol[] CustomTypes { get; }
 		public Style[] Styles { get; }
 		public VariableValueCollection GlobalVariables { get; }
-		public FunctionCallableCollection GlobalFunctions { get; }
+		public FunctionSymbol[] GlobalFunctions { get; }
+		public string[] GlobalFunctionsReflectionsNames { get; }
 		public string[] Imports { get; }
 		public static LibrarySymbol Seperator => GetSeperator();
 		public static LibrarySymbol Code => CodeLibrary.GetLibrary();
@@ -25,9 +26,9 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 		public Type SourceType { get; set; }
 
 		public LibrarySymbol(string name, LibrarySymbol[] libraries, BodySymbol[] customTypes, Style[] styles, VariableValueCollection globalVariables, string[] imports)
-			: this(name, libraries, customTypes, styles, globalVariables, new FunctionCallableCollection(), imports)
+			: this(name, libraries, customTypes, styles, globalVariables, new FunctionSymbol[0], new string[0], imports)
 		{ }
-		public LibrarySymbol(string name, LibrarySymbol[] libraries, BodySymbol[] customTypes, Style[] styles, VariableValueCollection globalVariables, FunctionCallableCollection globalFunctions, string[] imports)
+		public LibrarySymbol(string name, LibrarySymbol[] libraries, BodySymbol[] customTypes, Style[] styles, VariableValueCollection globalVariables, FunctionSymbol[] globalFunctions, string[] globalFunctionsReflections, string[] imports)
 		{
 			Name = name;
 			Libraries = libraries;
@@ -35,7 +36,10 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			Styles = styles;
 			GlobalVariables = globalVariables;
 			Imports = imports;
+			if (globalFunctions.Length != globalFunctionsReflections.Length)
+				throw new ArgumentOutOfRangeException();
 			GlobalFunctions = globalFunctions;
+			GlobalFunctionsReflectionsNames = globalFunctionsReflections;
 			SourceType = typeof(LibrarySymbol);
 		}
 
@@ -62,14 +66,6 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			return result;
 		}
 
-		private class SeperatorCallable : Callable
-		{
-			public override object Call(FunctionSymbol function, object[] args)
-			{
-				return CreateVerticalSeperator((Unit)args[0]);
-			}
-		}
-
 		public static LibrarySymbol GetSeperator()
 		{
 			var name = "seperator";
@@ -78,24 +74,30 @@ namespace Minsk.CodeAnalysis.SlidesTypes
 			var styles = new Style[0];
 			var globalVariables = new VariableValueCollection(null);
 			var builtInTypes = BuiltInTypes.Instance;
-			var globalFunctions = new FunctionCallableCollection(new Dictionary<FunctionSymbol, Callable>{
-				{ 
-					new FunctionSymbol("vertical", new VariableSymbol("width", true, builtInTypes.LookSymbolUp(typeof(Unit))), builtInTypes.LookSymbolUp(typeof(SplittedContainer))),
-					new SeperatorCallable() },
-			});
+			var globalFunctions = new FunctionSymbol[]
+			{
+				new FunctionSymbol("vertical", new VariableSymbol("width", true, builtInTypes.LookSymbolUp(typeof(Unit))), builtInTypes.LookSymbolUp(typeof(SplittedContainer))),
+			};
+			var globalFunctionsReflections = new string[]
+			{
+				nameof(CreateVerticalSeperator),
+			};
 			var imports = new string[0];
-			var result = new LibrarySymbol(name, libraries, customTypes, styles, globalVariables, globalFunctions, imports);
+			var result = new LibrarySymbol(name, libraries, customTypes, styles, globalVariables, globalFunctions, globalFunctionsReflections, imports);
 			return result;
 		}
 
 		public bool TryLookUpFunction(string name, out FunctionSymbol[] functions)
 		{
-			return GlobalFunctions.TryGetSymbol(name, out functions);
+			functions = GlobalFunctions.Where(f => f.Name == name).ToArray();
+			return GlobalFunctions.Any(f => f.Name == name);
 		}
 
-		internal object Call(FunctionSymbol function, object[] args)
+		public MethodInfo LookMethodInfoUp(FunctionSymbol symbol)
 		{
-			return GlobalFunctions[function].Call(function, args);
+			var index = Array.IndexOf(GlobalFunctions, symbol);
+			return SourceType.GetMethod(GlobalFunctionsReflectionsNames[index]);
+			//return _globalFunctionsReflections[index];
 		}
 	}
 }

@@ -5,6 +5,31 @@ using System;
 
 namespace Minsk.CodeAnalysis
 {
+	[Serializable]
+	public class SerializableBodySymbol
+	{
+		public VariableSymbol Symbol { get; }
+		public string Body { get; }
+		public SerializableLibrarySymbol Source { get; internal set; }
+
+		public SerializableBodySymbol(BodySymbol body)
+		{
+			Symbol = body.Symbol;
+			if(body.Body != null)
+				Body = Serializer.Serialize(body.Body);
+		}
+
+		public BodySymbol ToBody(LibrarySymbol[] references)
+		{
+			BoundBlockStatement body = null;
+			if(Body != null)
+			{
+				var deserializer = new Deserializer(Body, references);
+				body = (BoundBlockStatement)deserializer.Deserialize();
+			}
+			return new BodySymbol(Symbol, body);
+		}
+	}
 	public class BodySymbol
 	{
 		//TODO(Minor): Maybe use TypeSymbol instead of VariableSymbol

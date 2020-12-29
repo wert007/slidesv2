@@ -1,49 +1,4 @@
-interface IType {}
-
-interface IValue {
-    IType Type;
-}
-
-class EnumValue : IValue {
-    public EnumTypeSymbol Type { get; }
-    public int ValueIndex { get; }
-    public string Value => Type.Values[ValueIndex];
-
-    public EnumValue(EnumTypeSymbol type, int valueIndex) {
-        Type = type;
-        ValueIndex = valueIndex;
-    }
-}
-
-
-
-class ClassInstance : IValue{
-    public Action<ClassInstance, FunctionSymbol, IValue[]>;
-    public AdvancedTypeSymbol Type { get; }
-    public VariableValueCollection Fields { get; }
-    public FunctionCallbackCollection<ClassInstance> Functions { get; }
-    public FunctionCallbackCollection Functions { get; }
-    public Dict<FunctionSymbol, FunctionPointer> Functions { get; }
-
-    public ClassInstance(AdvancedTypeSymbol type, IValue[] args) {
-        Type = type;
-        Fields = new VariableValueCollection(null);
-        for(int i = 0; i < type.Fields.Count; i++) {
-            var field = type.Fields[i];
-            var default = type.FieldDefaultValues[i];
-            var computedDefault = ...;
-
-            Fields.Add(field, computedDefault);
-        }
-        foreach(var f in type.Functions) {
-            Functions.Add(f, ...callback...);
-        }
-    }
-}
-
-
 <enum  name="Alignment">Unset, Left, Center, Right, Block</enum>
-
 <class name="Vector2"  >
     <setable>
         <variable name="x" type="double" value="0">

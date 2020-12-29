@@ -109,9 +109,6 @@ namespace Minsk.CodeAnalysis
 			Add(typeof(Range));
 			Add(typeof(MathFormula));
 
-			Add(typeof(ImportValueType));
-			Add(typeof(ImportValue), CreateEmptySymbol(nameof(ImportValue)));
-
 			Add(typeof(Style), CreateEmptySymbol("Style"));
 			Add(typeof(CustomStyle), CreateEmptySymbol("Style"));
 			Add(typeof(StdStyle), CreateEmptySymbol("Style"));
